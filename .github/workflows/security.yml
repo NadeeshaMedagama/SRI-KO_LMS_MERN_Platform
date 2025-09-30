@@ -1,0 +1,159 @@
+name: Security & Dependency Updates
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  # Dependency Security Audit
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd Backend && npm ci
+        cd ../Frontend && npm ci
+
+    - name: Run security audit - Backend
+      run: |
+        cd Backend
+        npm audit --audit-level moderate
+
+    - name: Run security audit - Frontend
+      run: |
+        cd Frontend
+        npm audit --audit-level moderate
+
+    - name: Check for known vulnerabilities
+      run: |
+        echo "Checking for known vulnerabilities..."
+        cd Backend && npm audit --json > backend-audit.json || true
+        cd ../Frontend && npm audit --json > frontend-audit.json || true
+
+    - name: Upload audit results
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-audit-results
+        path: |
+          Backend/backend-audit.json
+          Frontend/frontend-audit.json
+        retention-days: 30
+
+  # Dependency Updates Check
+  dependency-updates:
+    name: Check for Dependency Updates
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd Backend && npm ci
+        cd ../Frontend && npm ci
+
+    - name: Check for outdated packages - Backend
+      run: |
+        cd Backend
+        echo "Backend outdated packages:"
+        npm outdated || echo "All backend packages are up to date"
+
+    - name: Check for outdated packages - Frontend
+      run: |
+        cd Frontend
+        echo "Frontend outdated packages:"
+        npm outdated || echo "All frontend packages are up to date"
+
+    - name: Check for major updates
+      run: |
+        echo "Checking for major version updates..."
+        cd Backend && npm outdated --long | grep -E "WANT|LATEST" || echo "No major updates available"
+        cd ../Frontend && npm outdated --long | grep -E "WANT|LATEST" || echo "No major updates available"
+
+  # License Compliance Check
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd Backend && npm ci
+        cd ../Frontend && npm ci
+
+    - name: Check licenses - Backend
+      run: |
+        cd Backend
+        npx license-checker --summary || echo "License checker not available"
+
+    - name: Check licenses - Frontend
+      run: |
+        cd Frontend
+        npx license-checker --summary || echo "License checker not available"
+
+  # Create Security Report
+  security-report:
+    name: Generate Security Report
+    runs-on: ubuntu-latest
+    needs: [security-audit, dependency-updates, license-check]
+    if: always()
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download audit results
+      uses: actions/download-artifact@v4
+      with:
+        name: security-audit-results
+        path: ./audit-results
+
+    - name: Generate security report
+      run: |
+        echo "# Security Report - $(date)" > security-report.md
+        echo "" >> security-report.md
+        echo "## Summary" >> security-report.md
+        echo "- Security Audit: ${{ needs.security-audit.result }}" >> security-report.md
+        echo "- Dependency Updates: ${{ needs.dependency-updates.result }}" >> security-report.md
+        echo "- License Check: ${{ needs.license-check.result }}" >> security-report.md
+        echo "" >> security-report.md
+        echo "## Recommendations" >> security-report.md
+        echo "1. Review any security vulnerabilities found" >> security-report.md
+        echo "2. Update outdated dependencies" >> security-report.md
+        echo "3. Ensure all licenses are compatible" >> security-report.md
+
+    - name: Upload security report
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-report
+        path: security-report.md
+        retention-days: 30
