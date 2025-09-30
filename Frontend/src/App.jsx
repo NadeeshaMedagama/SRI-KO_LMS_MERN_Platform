@@ -1,33 +1,33 @@
-import { Routes, Route } from 'react-router-dom'
-import { useAuth } from './context/AuthContext'
-import Layout from './components/Layout'
-import LoadingSpinner from './components/LoadingSpinner'
+import { Routes, Route } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import Layout from './components/Layout';
+import LoadingSpinner from './components/LoadingSpinner';
 
 // Pages
-import HomePage from './pages/HomePage'
-import LoginPage from './pages/LoginPage'
-import RegisterPage from './pages/RegisterPage'
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 // Protected Pages
-import DashboardPage from './pages/DashboardPage'
-import CoursesPage from './pages/CoursesPage'
-import CourseDetailPage from './pages/CourseDetailPage'
-import ProfilePage from './pages/ProfilePage'
-import CreateCoursePage from './pages/CreateCoursePage'
-import EditCoursePage from './pages/EditCoursePage'
+import DashboardPage from './pages/DashboardPage';
+import CoursesPage from './pages/CoursesPage';
+import CourseDetailPage from './pages/CourseDetailPage';
+import ProfilePage from './pages/ProfilePage';
+import CreateCoursePage from './pages/CreateCoursePage';
+import EditCoursePage from './pages/EditCoursePage';
 
 // Protected Route Component
-import ProtectedRoute from './components/ProtectedRoute'
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
-  const { loading } = useAuth()
+  const { loading } = useAuth();
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
       </div>
-    )
+    );
   }
 
   return (
@@ -53,8 +53,8 @@ function App() {
         <Route path="courses/:id/edit" element={<EditCoursePage />} />
       </Route>
     </Routes>
-  )
+  );
 }
 
-export default App
+export default App;
 

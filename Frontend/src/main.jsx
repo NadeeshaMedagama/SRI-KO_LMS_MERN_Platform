@@ -1,11 +1,11 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from 'react-query'
-import { Toaster } from 'react-hot-toast'
-import App from './App.jsx'
-import { AuthProvider } from './context/AuthContext.jsx'
-import './index.css'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { Toaster } from 'react-hot-toast';
+import App from './App.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
+import './index.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -14,15 +14,15 @@ const queryClient = new QueryClient({
       cacheTime: 1000 * 60 * 30, // 30 minutes
     },
   },
-})
+});
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-        <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <App />
-          <Toaster 
+          <Toaster
             position="top-right"
             toastOptions={{
               duration: 4000,
@@ -50,4 +50,4 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       </QueryClientProvider>
     </BrowserRouter>
   </React.StrictMode>,
-)
+);

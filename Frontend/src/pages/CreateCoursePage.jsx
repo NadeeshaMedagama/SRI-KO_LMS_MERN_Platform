@@ -4,7 +4,7 @@ const CreateCoursePage = () => {
       <h1 className="text-2xl font-bold">Create Course Page</h1>
       <p className="text-gray-600">Course creation form will be implemented here</p>
     </div>
-  )
-}
+  );
+};
 
-export default CreateCoursePage
+export default CreateCoursePage;

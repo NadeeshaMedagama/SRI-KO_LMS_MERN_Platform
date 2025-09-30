@@ -4,7 +4,7 @@ const EditCoursePage = () => {
       <h1 className="text-2xl font-bold">Edit Course Page</h1>
       <p className="text-gray-600">Course editing form will be implemented here</p>
     </div>
-  )
-}
+  );
+};
 
-export default EditCoursePage
+export default EditCoursePage;

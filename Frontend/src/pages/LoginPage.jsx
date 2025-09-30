@@ -1,39 +1,39 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
-  })
-  
-  const { login, loading, error } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
+    password: '',
+  });
 
-  const from = location.state?.from?.pathname || '/dashboard'
+  const { login, loading, error } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || '/dashboard';
 
   useEffect(() => {
     if (error) {
-      console.error('Login error:', error)
+      console.error('Login error:', error);
     }
-  }, [error])
+  }, [error]);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    const result = await login(formData.email, formData.password)
+    e.preventDefault();
+    const result = await login(formData.email, formData.password);
     if (result.success) {
-      navigate(from, { replace: true })
+      navigate(from, { replace: true });
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -57,7 +57,7 @@ const LoginPage = () => {
             </Link>
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
@@ -76,7 +76,7 @@ const LoginPage = () => {
                 onChange={handleChange}
               />
             </div>
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
@@ -130,7 +130,7 @@ const LoginPage = () => {
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default LoginPage
+export default LoginPage;

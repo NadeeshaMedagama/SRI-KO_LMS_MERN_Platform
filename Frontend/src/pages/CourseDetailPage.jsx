@@ -4,7 +4,7 @@ const CourseDetailPage = () => {
       <h1 className="text-2xl font-bold">Course Detail Page</h1>
       <p className="text-gray-600">Course details will be implemented here</p>
     </div>
-  )
-}
+  );
+};
 
-export default CourseDetailPage
+export default CourseDetailPage;

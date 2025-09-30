@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -8,32 +8,32 @@ const RegisterPage = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'student'
-  })
-  
-  const { register, loading } = useAuth()
-  const navigate = useNavigate()
+    role: 'student',
+  });
+
+  const { register, loading } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match')
-      return
+      alert('Passwords do not match');
+      return;
     }
 
-    const result = await register(formData.name, formData.email, formData.password, formData.role)
+    const result = await register(formData.name, formData.email, formData.password, formData.role);
     if (result.success) {
-      navigate('/dashboard')
+      navigate('/dashboard');
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -54,7 +54,7 @@ const RegisterPage = () => {
             </Link>
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
@@ -106,7 +106,7 @@ const RegisterPage = () => {
                 <option value="instructor">Instructor</option>
               </select>
             </div>
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
@@ -154,7 +154,7 @@ const RegisterPage = () => {
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default RegisterPage
+export default RegisterPage;

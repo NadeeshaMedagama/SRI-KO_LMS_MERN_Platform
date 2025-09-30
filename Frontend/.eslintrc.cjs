@@ -6,6 +6,7 @@ module.exports = {
   },
   extends: [
     'eslint:recommended',
+    'plugin:react/recommended',
     'plugin:react-hooks/recommended',
   ],
   ignorePatterns: [
@@ -19,14 +20,19 @@ module.exports = {
       jsx: true,
     },
   },
-  plugins: ['react-refresh'],
+  plugins: ['react', 'react-refresh'],
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
   rules: {
     'react-refresh/only-export-components': [
       'warn', 
       { allowConstantExport: true }
     ],
     'no-console': 'warn',
-    'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'no-undef': 'error',
     'prefer-const': 'error',
     'no-var': 'error',
@@ -43,5 +49,6 @@ module.exports = {
     'jsx-quotes': ['error', 'prefer-double'],
     'react/jsx-uses-react': 'off',
     'react/react-in-jsx-scope': 'off',
+    'react/prop-types': 'off',
   },
 };

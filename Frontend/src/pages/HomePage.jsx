@@ -1,38 +1,38 @@
-import { Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const HomePage = () => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated } = useAuth();
 
   const features = [
     {
       title: 'Expert Instructors',
       description: 'Learn from industry professionals with years of experience',
-      icon: '👨‍🏫'
+      icon: '👨‍🏫',
     },
     {
       title: 'Flexible Learning',
       description: 'Study at your own pace with 24/7 access to course materials',
-      icon: '🕒'
+      icon: '🕒',
     },
     {
       title: 'Certificates',
       description: 'Earn certificates upon completion to boost your career',
-      icon: '🏆'
+      icon: '🏆',
     },
     {
       title: 'Community Support',
       description: 'Join a vibrant community of learners and get help when you need it',
-      icon: '👥'
-    }
-  ]
+      icon: '👥',
+    },
+  ];
 
   const stats = [
     { label: 'Students Enrolled', value: '10,000+' },
     { label: 'Courses Available', value: '500+' },
     { label: 'Expert Instructors', value: '100+' },
-    { label: 'Success Rate', value: '95%' }
-  ]
+    { label: 'Success Rate', value: '95%' },
+  ];
 
   return (
     <div className="min-h-screen">
@@ -45,7 +45,7 @@ const HomePage = () => {
               <span className="text-yellow-300">SRI-KO LMS</span>
             </h1>
             <p className="text-xl text-gray-200 mb-8 max-w-3xl mx-auto">
-              Empower your learning journey with our comprehensive online education platform. 
+              Empower your learning journey with our comprehensive online education platform.
               Master new skills and advance your career with expert-led courses.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -122,7 +122,7 @@ const HomePage = () => {
         </section>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default HomePage
+export default HomePage;

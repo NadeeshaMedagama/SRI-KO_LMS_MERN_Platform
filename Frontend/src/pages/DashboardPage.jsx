@@ -1,7 +1,7 @@
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/AuthContext';
 
 const DashboardPage = () => {
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   return (
     <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -11,7 +11,7 @@ const DashboardPage = () => {
             Welcome back, {user?.name}!
           </h1>
           <p className="mt-2 text-gray-600">
-            Here's your learning dashboard
+            Here&apos;s your learning dashboard
           </p>
         </div>
 
@@ -52,7 +52,7 @@ const DashboardPage = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default DashboardPage
+export default DashboardPage;

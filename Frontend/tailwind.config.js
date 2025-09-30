@@ -1,8 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
@@ -32,7 +32,7 @@ export default {
           800: '#115e59',
           900: '#134e4a',
           950: '#042f2e',
-        }
+        },
       },
       fontFamily: {
         'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
@@ -40,4 +40,4 @@ export default {
     },
   },
   plugins: [],
-}
+};

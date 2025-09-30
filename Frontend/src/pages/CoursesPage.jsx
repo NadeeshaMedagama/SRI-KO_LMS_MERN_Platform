@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const CoursesPage = () => {
-  const [courses, setCourses] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Mock data for now
@@ -17,7 +17,7 @@ const CoursesPage = () => {
         price: 99,
         thumbnail: '',
         level: 'beginner',
-        category: 'programming'
+        category: 'programming',
       },
       {
         id: 2,
@@ -28,15 +28,15 @@ const CoursesPage = () => {
         price: 149,
         thumbnail: '',
         level: 'intermediate',
-        category: 'design'
-      }
-    ]
+        category: 'design',
+      },
+    ];
 
     setTimeout(() => {
-      setCourses(mockCourses)
-      setLoading(false)
-    }, 1000)
-  }, [])
+      setCourses(mockCourses);
+      setLoading(false);
+    }, 1000);
+  }, []);
 
   if (loading) {
     return (
@@ -46,7 +46,7 @@ const CoursesPage = () => {
           <p className="mt-4 text-gray-600">Loading courses...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -83,8 +83,8 @@ const CoursesPage = () => {
                 <div className="mt-3 flex items-center justify-between">
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                     course.level === 'beginner' ? 'bg-green-100 text-green-800' :
-                    course.level === 'intermediate'? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
+                      course.level === 'intermediate'? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
                   }`}>
                     {course.level.toUpperCase()}
                   </span>
@@ -102,7 +102,7 @@ const CoursesPage = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CoursesPage
+export default CoursesPage;

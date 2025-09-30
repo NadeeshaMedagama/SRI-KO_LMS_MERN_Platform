@@ -1,28 +1,28 @@
-import { Fragment } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Menu, Transition } from '@headlessui/react'
-import { Bars3Icon, XMarkIcon, UserIcon, Cog6ToothIcon } from '@heroicons/react/24/outline'
-import { useAuth } from '../context/AuthContext'
+import { Fragment } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, Transition } from '@headlessui/react';
+import { UserIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
-  const { isAuthenticated, user, logout } = useAuth()
-  const navigate = useNavigate()
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout()
-    navigate('/')
-  }
+    logout();
+    navigate('/');
+  };
 
   const navigation = [
     { name: 'Home', href: '/', public: true },
     { name: 'Courses', href: '/courses', public: true },
     { name: 'Dashboard', href: '/dashboard', public: false },
-  ]
+  ];
 
   const userNavigation = [
     { name: 'Profile', href: '/profile', icon: UserIcon },
     { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
-  ]
+  ];
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -124,7 +124,7 @@ const Header = () => {
         </div>
       </nav>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -14,7 +14,7 @@ const Footer = () => {
               <span className="ml-2 text-xl font-bold">SRI-KO LMS</span>
             </div>
             <p className="text-gray-300 mb-6 max-w-md">
-              Empowering learners worldwide with our comprehensive learning management system. 
+              Empowering learners worldwide with our comprehensive learning management system.
               Learn, grow, and achieve your goals with our expertly crafted courses.
             </p>
             <div className="flex space-x-4">
@@ -92,7 +92,7 @@ const Footer = () => {
         </div>
       </div>
     </footer>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;
