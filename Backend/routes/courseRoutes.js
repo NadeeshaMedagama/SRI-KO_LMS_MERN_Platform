@@ -3,11 +3,10 @@ const Course = require('../models/Course');
 const Progress = require('../models/Progress');
 const User = require('../models/User');
 const { protect, authorize, checkCourseAccess } = require('../middleware/auth');
-const { 
-  validateCourseCreation, 
-  validateCurriculum, 
-  validateReview, 
-  handleValidationErrors 
+const {
+  validateCourseCreation,
+  validateReview,
+  handleValidationErrors,
 } = require('../middleware/validation');
 
 const router = express.Router();
@@ -22,17 +21,17 @@ router.get('/', async (req, res) => {
     const skip = (page - 1) * limit;
 
     const filter = {};
-    
+
     // Filter by category
     if (req.query.category) {
       filter.category = req.query.category;
     }
-    
+
     // Filter by level
     if (req.query.level) {
       filter.level = req.query.level;
     }
-    
+
     // Filter by published status
     if (req.query.published) {
       filter.isPublished = req.query.published === 'true';
@@ -55,15 +54,15 @@ router.get('/', async (req, res) => {
     res.status(200).json({
       success: true,
       count: courses.length,
-      total: total,
-      page: page,
+      total,
+      page,
       pages: Math.ceil(total / limit),
-      courses
+      courses,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -78,24 +77,24 @@ router.get('/:id', async (req, res) => {
       .populate('enrolledStudents', 'name avatar')
       .populate({
         path: 'reviews.user',
-        select: 'name avatar'
+        select: 'name avatar',
       });
 
     if (!course) {
       return res.status(404).json({
         success: false,
-        message: 'Course not found'
+        message: 'Course not found',
       });
     }
 
     res.status(200).json({
       success: true,
-      course
+      course,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -108,7 +107,7 @@ router.post('/', protect, authorize('instructor', 'admin'), validateCourseCreati
     // Add instructor to course data
     const courseData = {
       ...req.body,
-      instructor: req.user.id
+      instructor: req.user.id,
     };
 
     const course = await Course.create(courseData);
@@ -119,12 +118,12 @@ router.post('/', protect, authorize('instructor', 'admin'), validateCourseCreati
     res.status(201).json({
       success: true,
       message: 'Course created successfully',
-      course
+      course,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -139,7 +138,7 @@ router.put('/:id', protect, authorize('instructor', 'admin'), checkCourseAccess,
     if (!course) {
       return res.status(404).json({
         success: false,
-        message: 'Course not found'
+        message: 'Course not found',
       });
     }
 
@@ -147,7 +146,7 @@ router.put('/:id', protect, authorize('instructor', 'admin'), checkCourseAccess,
     if (course.instructor.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to update this course'
+        message: 'Not authorized to update this course',
       });
     }
 
@@ -156,19 +155,19 @@ router.put('/:id', protect, authorize('instructor', 'admin'), checkCourseAccess,
       req.body,
       {
         new: true,
-        runValidators: true
-      }
+        runValidators: true,
+      },
     ).populate('instructor', 'name avatar');
 
     res.status(200).json({
       success: true,
       message: 'Course updated successfully',
-      course
+      course,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -183,7 +182,7 @@ router.delete('/:id', protect, authorize('instructor', 'admin'), checkCourseAcce
     if (!course) {
       return res.status(404).json({
         success: false,
-        message: 'Course not found'
+        message: 'Course not found',
       });
     }
 
@@ -191,7 +190,7 @@ router.delete('/:id', protect, authorize('instructor', 'admin'), checkCourseAcce
     if (course.instructor.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to delete this course'
+        message: 'Not authorized to delete this course',
       });
     }
 
@@ -199,12 +198,12 @@ router.delete('/:id', protect, authorize('instructor', 'admin'), checkCourseAcce
 
     res.status(200).json({
       success: true,
-      message: 'Course deleted successfully'
+      message: 'Course deleted successfully',
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -219,27 +218,27 @@ router.post('/:id/enroll', protect, authorize('student'), async (req, res) => {
     if (!course) {
       return res.status(404).json({
         success: false,
-        message: 'Course not found'
+        message: 'Course not found',
       });
     }
 
     if (!course.isPublished) {
       return res.status(400).json({
         success: false,
-        message: 'Course is not published yet'
+        message: 'Course is not published yet',
       });
     }
 
     // Check if already enrolled
     const existingProgress = await Progress.findOne({
       student: req.user.id,
-      course: req.params.id
+      course: req.params.id,
     });
 
     if (existingProgress) {
       return res.status(400).json({
         success: false,
-        message: 'You are already enrolled in this course'
+        message: 'You are already enrolled in this course',
       });
     }
 
@@ -252,13 +251,13 @@ router.post('/:id/enroll', protect, authorize('student'), async (req, res) => {
       student: req.user.id,
       course: req.params.id,
       currentWeek: 1,
-      overallProgress: 0
+      overallProgress: 0,
     });
 
     // Add course to user's enrolled courses
     await User.findByIdAndUpdate(
       req.user.id,
-      { $push: { enrolledCourses: req.params.id } }
+      { $push: { enrolledCourses: req.params.id } },
     );
 
     res.status(200).json({
@@ -267,13 +266,13 @@ router.post('/:id/enroll', protect, authorize('student'), async (req, res) => {
       course: {
         id: course._id,
         title: course.title,
-        progress: progress.overallProgress
-      }
+        progress: progress.overallProgress,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -287,18 +286,18 @@ router.get('/my-courses', protect, async (req, res) => {
       path: 'enrolledCourses',
       populate: {
         path: 'instructor',
-        select: 'name avatar'
-      }
+        select: 'name avatar',
+      },
     });
 
     res.status(200).json({
       success: true,
-      courses: user.enrolledCourses
+      courses: user.enrolledCourses,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -313,26 +312,26 @@ router.post('/:id/reviews', protect, authorize('student', 'instructor', 'admin')
     if (!course) {
       return res.status(404).json({
         success: false,
-        message: 'Course not found'
+        message: 'Course not found',
       });
     }
 
     // Check if user has already reviewed this course
     const existingReview = course.reviews.find(
-      review => review.user.toString() === req.user.id.toString()
+      review => review.user.toString() === req.user.id.toString(),
     );
 
     if (existingReview) {
       return res.status(400).json({
         success: false,
-        message: 'You have already reviewed this course'
+        message: 'You have already reviewed this course',
       });
     }
 
     const review = {
       user: req.user.id,
       rating: req.body.rating,
-      comment: req.body.comment
+      comment: req.body.comment,
     };
 
     course.reviews.push(review);
@@ -345,18 +344,18 @@ router.post('/:id/reviews', protect, authorize('student', 'instructor', 'admin')
 
     await course.populate({
       path: 'reviews.user',
-      select: 'name avatar'
+      select: 'name avatar',
     });
 
     res.status(200).json({
       success: true,
       message: 'Review added successfully',
-      course
+      course,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
