@@ -38,7 +38,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/sri-ko-lm
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-  .then(() => console.log('📦 MongoDB connected successfully'))
+  .then(() => console.warn('📦 MongoDB connected successfully'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Routes
@@ -77,8 +77,8 @@ app.use('*', (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🌐 API URL: http://localhost:${PORT}/api`);
+  console.warn(`🚀 Server running on port ${PORT}`);
+  console.warn(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.warn(`🌐 API URL: http://localhost:${PORT}/api`);
 });
 

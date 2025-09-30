@@ -31,7 +31,7 @@ module.exports = {
       'warn', 
       { allowConstantExport: true }
     ],
-    'no-console': 'warn',
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
     'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'no-undef': 'error',
     'prefer-const': 'error',
