@@ -1,5 +1,9 @@
 # SRI-KO Learning Management System (LMS) - MERN Platform
 
+[![CI/CD Pipeline](https://github.com/NadeeshaMedagama/SRI-KO_LMS_MERN_Platform/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/NadeeshaMedagama/SRI-KO_LMS_MERN_Platform/actions/workflows/ci-cd.yml)
+[![Security Scan](https://github.com/NadeeshaMedagama/SRI-KO_LMS_MERN_Platform/actions/workflows/security.yml/badge.svg)](https://github.com/NadeeshaMedagama/SRI-KO_LMS_MERN_Platform/actions/workflows/security.yml)
+[![Code Quality](https://github.com/NadeeshaMedagama/SRI-KO_LMS_MERN_Platform/actions/workflows/quality.yml/badge.svg)](https://github.com/NadeeshaMedagama/SRI-KO_LMS_MERN_Platform/actions/workflows/quality.yml)
+
 A comprehensive Learning Management System built with the MERN stack (MongoDB, Express.js, React.js, Node.js) and Tailwind CSS.
 
 ## 🌟 Features
@@ -211,6 +215,30 @@ The application is fully responsive and works seamlessly across:
 - 💻 Desktop (1024px+)
 - 🖥️ Large screens (1440px+)
 
+## 🚀 CI/CD Pipeline
+
+This project includes comprehensive GitHub Actions workflows for:
+
+### **Main Workflows**
+- **`ci-cd.yml`** - Main CI/CD pipeline with testing, building, and deployment
+- **`development.yml`** - Development workflow for feature branches
+- **`security.yml`** - Security scanning and dependency updates
+- **`quality.yml`** - Code quality, coverage, and performance testing
+- **`database.yml`** - Database operations and maintenance
+
+### **Pipeline Features**
+- ✅ **Automated Testing** - Backend and frontend tests
+- 🔒 **Security Scanning** - Vulnerability detection and audits
+- 📊 **Code Coverage** - Test coverage reporting
+- 🚀 **Automated Deployment** - Vercel, Railway, Heroku support
+- 📈 **Performance Testing** - Lighthouse CI integration
+- 🔍 **Code Quality** - ESLint, Prettier, complexity checks
+
+### **Deployment Options**
+- **Frontend**: Vercel, Netlify, GitHub Pages
+- **Backend**: Railway, Heroku, DigitalOcean
+- **Database**: MongoDB Atlas (configured)
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -218,6 +246,12 @@ The application is fully responsive and works seamlessly across:
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+### **Development Workflow**
+- All changes trigger automated testing
+- Code quality checks run on every PR
+- Security scans ensure no vulnerabilities
+- Performance tests validate optimization
 
 ## 📄 License
 
