@@ -54,7 +54,7 @@ router.put(
 
       // Remove undefined values
       Object.keys(fieldsToUpdate).forEach(
-        key => fieldsToUpdate[key] === undefined && delete fieldsToUpdate[key]
+        key => fieldsToUpdate[key] === undefined && delete fieldsToUpdate[key],
       );
 
       const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
@@ -80,7 +80,7 @@ router.put(
         message: 'Server error',
       });
     }
-  }
+  },
 );
 
 // @desc    Change password

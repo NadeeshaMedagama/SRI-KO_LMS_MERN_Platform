@@ -67,7 +67,7 @@ router.post(
         message: 'Server error during registration',
       });
     }
-  }
+  },
 );
 
 // @desc    Login user
@@ -131,7 +131,7 @@ router.post(
         message: 'Server error during login',
       });
     }
-  }
+  },
 );
 
 // @desc    Get current user

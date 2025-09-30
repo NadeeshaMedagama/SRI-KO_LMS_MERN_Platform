@@ -132,7 +132,7 @@ router.post(
         message: 'Server error',
       });
     }
-  }
+  },
 );
 
 // @desc    Update course
@@ -181,7 +181,7 @@ router.put(
         message: 'Server error',
       });
     }
-  }
+  },
 );
 
 // @desc    Delete course
@@ -226,7 +226,7 @@ router.delete(
         message: 'Server error',
       });
     }
-  }
+  },
 );
 
 // @desc    Enroll in course
@@ -344,7 +344,7 @@ router.post(
 
       // Check if user has already reviewed this course
       const existingReview = course.reviews.find(
-        review => review.user.toString() === req.user.id.toString()
+        review => review.user.toString() === req.user.id.toString(),
       );
 
       if (existingReview) {
@@ -365,7 +365,7 @@ router.post(
       // Recalculate average rating
       const totalRating = course.reviews.reduce(
         (sum, review) => sum + review.rating,
-        0
+        0,
       );
       course.averageRating = totalRating / course.reviews.length;
 
@@ -387,7 +387,7 @@ router.post(
         message: 'Server error',
       });
     }
-  }
+  },
 );
 
 module.exports = router;

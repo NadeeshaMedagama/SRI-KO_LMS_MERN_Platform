@@ -60,7 +60,7 @@ const progressSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Index for efficient queries
@@ -72,7 +72,7 @@ progressSchema.methods.calculateProgress = function (course) {
 
   const totalLessons = course.curriculum.reduce(
     (total, week) => total + week.lessons.length,
-    0
+    0,
   );
   const completedCount = this.completedLessons.length;
 

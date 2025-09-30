@@ -40,7 +40,7 @@ module.exports = {
     'comma-dangle': ['error', 'always-multiline'],
     semi: ['error', 'always'],
     quotes: ['error', 'single'],
-    indent: ['error', 2],
+    indent: 'off',
     'no-trailing-spaces': 'error',
     'eol-last': 'error',
     'jsx-quotes': ['error', 'prefer-double'],

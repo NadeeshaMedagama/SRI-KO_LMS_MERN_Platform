@@ -142,7 +142,7 @@ const courseSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Calculate average rating before saving
@@ -150,7 +150,7 @@ courseSchema.pre('save', function (next) {
   if (this.reviews && this.reviews.length > 0) {
     const totalRating = this.reviews.reduce(
       (sum, review) => sum + review.rating,
-      0
+      0,
     );
     this.averageRating = totalRating / this.reviews.length;
   }

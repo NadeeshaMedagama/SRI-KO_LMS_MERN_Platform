@@ -33,7 +33,7 @@ const RegisterPage = () => {
       formData.name,
       formData.email,
       formData.password,
-      formData.role
+      formData.role,
     );
     if (result.success) {
       navigate('/dashboard');
