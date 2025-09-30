@@ -26,8 +26,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Backend && npm ci
-        cd ../Frontend && npm ci
+        cd Backend && npm install
+        cd ../Frontend && npm install
 
     - name: Run security audit - Backend
       run: |
@@ -70,8 +70,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Backend && npm ci
-        cd ../Frontend && npm ci
+        cd Backend && npm install
+        cd ../Frontend && npm install
 
     - name: Check for outdated packages - Backend
       run: |
@@ -107,8 +107,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Backend && npm ci
-        cd ../Frontend && npm ci
+        cd Backend && npm install
+        cd ../Frontend && npm install
 
     - name: Check licenses - Backend
       run: |

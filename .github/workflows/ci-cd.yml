@@ -38,13 +38,11 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        cache-dependency-path: Backend/package-lock.json
 
     - name: Install backend dependencies
       run: |
         cd Backend
-        npm ci
+        npm install
 
     - name: Run backend linting
       run: |
@@ -78,13 +76,11 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        cache-dependency-path: Frontend/package-lock.json
 
     - name: Install frontend dependencies
       run: |
         cd Frontend
-        npm ci
+        npm install
 
     - name: Run frontend linting
       run: |

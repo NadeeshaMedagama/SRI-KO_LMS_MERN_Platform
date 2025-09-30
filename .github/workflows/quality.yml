@@ -26,8 +26,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Backend && npm ci
-        cd ../Frontend && npm ci
+        cd Backend && npm install
+        cd ../Frontend && npm install
 
     - name: Run backend tests with coverage
       run: |
@@ -63,8 +63,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Backend && npm ci
-        cd ../Frontend && npm ci
+        cd Backend && npm install
+        cd ../Frontend && npm install
 
     - name: Run ESLint
       run: |
@@ -117,8 +117,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Backend && npm ci
-        cd ../Frontend && npm ci
+        cd Backend && npm install
+        cd ../Frontend && npm install
 
     - name: Build frontend
       run: |
@@ -157,7 +157,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Frontend && npm ci
+        cd Frontend && npm install
 
     - name: Build frontend
       run: |

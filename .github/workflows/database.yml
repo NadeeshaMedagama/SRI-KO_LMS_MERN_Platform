@@ -44,7 +44,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Backend && npm ci
+        cd Backend && npm install
 
     - name: Create database backup
       run: |
@@ -77,7 +77,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Backend && npm ci
+        cd Backend && npm install
 
     - name: Run database migrations
       run: |
@@ -103,7 +103,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Backend && npm ci
+        cd Backend && npm install
 
     - name: Seed database
       run: |
@@ -129,7 +129,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Backend && npm ci
+        cd Backend && npm install
 
     - name: Validate database schema
       run: |
@@ -162,7 +162,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Backend && npm ci
+        cd Backend && npm install
 
     - name: Database connection test
       run: |
