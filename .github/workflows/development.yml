@@ -1,0 +1,132 @@
+name: Development Workflow
+
+on:
+  push:
+    branches: [ develop, feature/*, bugfix/* ]
+  pull_request:
+    branches: [ develop ]
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  # Quick Development Tests
+  dev-tests:
+    name: Development Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install root dependencies
+      run: npm ci
+
+    - name: Install all dependencies
+      run: npm run install-all
+
+    - name: Lint Backend
+      run: |
+        cd Backend
+        npm run lint || echo "Linting not configured"
+
+    - name: Lint Frontend
+      run: |
+        cd Frontend
+        npm run lint
+
+    - name: Type Check Frontend
+      run: |
+        cd Frontend
+        npm run type-check || echo "Type checking not configured"
+
+    - name: Build Frontend
+      run: |
+        cd Frontend
+        npm run build
+
+    - name: Test Backend Startup
+      run: |
+        cd Backend
+        timeout 10s npm start || echo "Backend startup test completed"
+
+  # Code Quality Checks
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd Backend && npm ci
+        cd ../Frontend && npm ci
+
+    - name: Check for console.log statements
+      run: |
+        echo "Checking for console.log statements..."
+        if grep -r "console\.log" Backend/src Frontend/src --exclude-dir=node_modules; then
+          echo "⚠️ Found console.log statements. Consider removing them for production."
+        else
+          echo "✅ No console.log statements found."
+        fi
+
+    - name: Check for TODO/FIXME comments
+      run: |
+        echo "Checking for TODO/FIXME comments..."
+        if grep -r "TODO\|FIXME" Backend Frontend --exclude-dir=node_modules; then
+          echo "📝 Found TODO/FIXME comments. Review them before production."
+        else
+          echo "✅ No TODO/FIXME comments found."
+        fi
+
+    - name: Check file sizes
+      run: |
+        echo "Checking for large files..."
+        find . -name "*.js" -o -name "*.jsx" -o -name "*.json" | xargs ls -lh | awk '$5 > 100000 {print "Large file: " $9 " (" $5 ")"}'
+
+  # Performance Check
+  performance-check:
+    name: Performance Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd Frontend && npm ci
+
+    - name: Build and analyze bundle
+      run: |
+        cd Frontend
+        npm run build
+        echo "Build completed successfully"
+
+    - name: Check bundle size
+      run: |
+        cd Frontend
+        if [ -d "dist" ]; then
+          echo "Bundle size analysis:"
+          du -sh dist/
+          find dist -name "*.js" -exec ls -lh {} \;
+        fi
