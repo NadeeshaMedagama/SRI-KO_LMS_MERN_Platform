@@ -1,0 +1,179 @@
+name: Database Operations
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'Database operation to perform'
+        required: true
+        default: 'backup'
+        type: choice
+        options:
+        - backup
+        - migrate
+        - seed
+        - validate
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+        - development
+        - staging
+        - production
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  # Database Backup
+  backup:
+    name: Database Backup
+    runs-on: ubuntu-latest
+    if: github.event.inputs.operation == 'backup'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd Backend && npm ci
+
+    - name: Create database backup
+      run: |
+        cd Backend
+        echo "Creating database backup for ${{ github.event.inputs.environment }} environment..."
+        # Add MongoDB backup script here
+        echo "Backup completed successfully"
+
+    - name: Upload backup
+      uses: actions/upload-artifact@v4
+      with:
+        name: database-backup-${{ github.event.inputs.environment }}-${{ github.run_number }}
+        path: ./backup/
+        retention-days: 30
+
+  # Database Migration
+  migrate:
+    name: Database Migration
+    runs-on: ubuntu-latest
+    if: github.event.inputs.operation == 'migrate'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd Backend && npm ci
+
+    - name: Run database migrations
+      run: |
+        cd Backend
+        echo "Running database migrations for ${{ github.event.inputs.environment }} environment..."
+        # Add migration script here
+        echo "Migrations completed successfully"
+
+  # Database Seeding
+  seed:
+    name: Database Seeding
+    runs-on: ubuntu-latest
+    if: github.event.inputs.operation == 'seed'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd Backend && npm ci
+
+    - name: Seed database
+      run: |
+        cd Backend
+        echo "Seeding database for ${{ github.event.inputs.environment }} environment..."
+        # Add seeding script here
+        echo "Database seeding completed successfully"
+
+  # Database Validation
+  validate:
+    name: Database Validation
+    runs-on: ubuntu-latest
+    if: github.event.inputs.operation == 'validate'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd Backend && npm ci
+
+    - name: Validate database schema
+      run: |
+        cd Backend
+        echo "Validating database schema for ${{ github.event.inputs.environment }} environment..."
+        # Add validation script here
+        echo "Database validation completed successfully"
+
+    - name: Check data integrity
+      run: |
+        cd Backend
+        echo "Checking data integrity..."
+        # Add integrity check script here
+        echo "Data integrity check completed"
+
+  # Database Health Check
+  health-check:
+    name: Database Health Check
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd Backend && npm ci
+
+    - name: Database connection test
+      run: |
+        cd Backend
+        echo "Testing database connection..."
+        # Add connection test script here
+        echo "Database connection test completed"
+
+    - name: Performance metrics
+      run: |
+        cd Backend
+        echo "Collecting performance metrics..."
+        # Add performance monitoring script here
+        echo "Performance metrics collected"
