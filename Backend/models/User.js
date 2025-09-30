@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a name'],
     trim: true,
-    maxlength: [50, 'Name cannot be more than 50 characters']
+    maxlength: [50, 'Name cannot be more than 50 characters'],
   },
   email: {
     type: String,
@@ -15,46 +15,46 @@ const userSchema = new mongoose.Schema({
     unique: true,
     lowercase: true,
     match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-      'Please provide a valid email'
-    ]
+      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+      'Please provide a valid email',
+    ],
   },
   password: {
     type: String,
     required: [true, 'Please provide a password'],
     minlength: [6, 'Password should be at least 6 characters'],
-    select: false
+    select: false,
   },
   role: {
     type: String,
     enum: ['student', 'instructor', 'admin'],
-    default: 'student'
+    default: 'student',
   },
   avatar: {
     type: String,
-    default:''
+    default:'',
   },
   bio: {
     type: String,
-    maxlength: [500, 'Bio cannot be more than 500 characters']
+    maxlength: [500, 'Bio cannot be more than 500 characters'],
   },
   isActive: {
     type: Boolean,
-    default: true
+    default: true,
   },
   enrolledCourses: [{
     type: mongoose.Schema.ObjectId,
-    ref: 'Course'
+    ref: 'Course',
   }],
   resetPasswordToken: String,
   resetPasswordExpire: Date,
   emailVerificationToken: String,
   emailVerified: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 }, {
-  timestamps: true
+  timestamps: true,
 });
 
 // Encrypt password using bcrypt
@@ -62,7 +62,7 @@ userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
     next();
   }
-  
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
@@ -76,13 +76,13 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
 userSchema.methods.getResetPasswordToken = function() {
   // Generate token
   const resetToken = crypto.randomBytes(20).toString('hex');
-  
+
   // Hash token and set to resetPasswordToken field
   this.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-  
+
   // Set expire
   this.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
-  
+
   return resetToken;
 };
 
