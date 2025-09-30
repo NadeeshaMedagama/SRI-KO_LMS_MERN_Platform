@@ -1,7 +1,10 @@
 const express = require('express');
 const User = require('../models/User');
 const { protect, authorize } = require('../middleware/auth');
-const { validateProfileUpdate, handleValidationErrors } = require('../middleware/validation');
+const {
+  validateProfileUpdate,
+  handleValidationErrors,
+} = require('../middleware/validation');
 
 const router = express.Router();
 
@@ -36,47 +39,49 @@ router.get('/profile', protect, async (req, res) => {
 // @desc    Update user profile
 // @route   PUT /api/users/profile
 // @access  Private
-router.put('/profile', protect, validateProfileUpdate, handleValidationErrors, async (req, res) => {
-  try {
-    const fieldsToUpdate = {
-      name: req.body.name,
-      bio: req.body.bio,
-      avatar: req.body.avatar,
-    };
+router.put(
+  '/profile',
+  protect,
+  validateProfileUpdate,
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const fieldsToUpdate = {
+        name: req.body.name,
+        bio: req.body.bio,
+        avatar: req.body.avatar,
+      };
 
-    // Remove undefined values
-    Object.keys(fieldsToUpdate).forEach(key =>
-      fieldsToUpdate[key] === undefined && delete fieldsToUpdate[key],
-    );
+      // Remove undefined values
+      Object.keys(fieldsToUpdate).forEach(
+        key => fieldsToUpdate[key] === undefined && delete fieldsToUpdate[key]
+      );
 
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      fieldsToUpdate,
-      {
+      const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
         new: true,
         runValidators: true,
-      },
-    );
+      });
 
-    res.status(200).json({
-      success: true,
-      message: 'Profile updated successfully',
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatar: user.avatar,
-        bio: user.bio,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-    });
+      res.status(200).json({
+        success: true,
+        message: 'Profile updated successfully',
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar,
+          bio: user.bio,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+      });
+    }
   }
-});
+);
 
 // @desc    Change password
 // @route   PUT /api/users/password
@@ -191,14 +196,10 @@ router.get('/:id', protect, authorize('admin'), async (req, res) => {
 // @access  Private/Admin
 router.put('/:id', protect, authorize('admin'), async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      },
-    ).select('-password');
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    }).select('-password');
 
     if (!user) {
       return res.status(404).json({

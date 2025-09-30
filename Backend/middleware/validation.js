@@ -29,7 +29,9 @@ exports.validateUserRegistration = [
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long')
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+    .withMessage(
+      'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+    ),
 
   body('role')
     .optional()
@@ -43,9 +45,7 @@ exports.validateUserLogin = [
     .normalizeEmail()
     .withMessage('Please provide a valid email address'),
 
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required'),
+  body('password').notEmpty().withMessage('Password is required'),
 ];
 
 exports.validateProfileUpdate = [
@@ -75,7 +75,14 @@ exports.validateCourseCreation = [
     .withMessage('Description must be between 10 and 1000 characters'),
 
   body('category')
-    .isIn(['programming', 'design', 'business', 'marketing', 'lifestyle', 'other'])
+    .isIn([
+      'programming',
+      'design',
+      'business',
+      'marketing',
+      'lifestyle',
+      'other',
+    ])
     .withMessage('Invalid category'),
 
   body('level')

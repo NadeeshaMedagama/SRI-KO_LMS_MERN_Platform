@@ -6,7 +6,10 @@ exports.protect = async (req, res, next) => {
   let token;
 
   // Check for token in headers
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
     token = req.headers.authorization.split(' ')[1];
   }
 
@@ -77,7 +80,10 @@ exports.checkCourseAccess = async (req, res, next) => {
     }
 
     // Admin and instructors have access
-    if (req.user.role === 'admin' || course.instructor.toString() === req.user._id.toString()) {
+    if (
+      req.user.role === 'admin' ||
+      course.instructor.toString() === req.user._id.toString()
+    ) {
       req.course = course;
       return next();
     }

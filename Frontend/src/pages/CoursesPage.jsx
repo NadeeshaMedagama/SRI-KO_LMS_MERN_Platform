@@ -22,7 +22,8 @@ const CoursesPage = () => {
       {
         id: 2,
         title: 'UI/UX Design Fundamentals',
-        description: 'Master the principles of user interface and user experience design',
+        description:
+          'Master the principles of user interface and user experience design',
         instructor: 'Jane Smith',
         duration: 8,
         price: 149,
@@ -62,7 +63,7 @@ const CoursesPage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course) => (
+          {courses.map(course => (
             <Link key={course.id} to={`/courses/${course.id}`}>
               <div className="card hover:shadow-lg transition-shadow duration-200">
                 <div className="h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center">
@@ -75,20 +76,28 @@ const CoursesPage = () => {
                   {course.description}
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">by {course.instructor}</span>
+                  <span className="text-sm text-gray-500">
+                    by {course.instructor}
+                  </span>
                   <span className="text-lg font-bold text-primary-600">
                     ${course.price}
                   </span>
                 </div>
                 <div className="mt-3 flex items-center justify-between">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    course.level === 'beginner' ? 'bg-green-100 text-green-800' :
-                      course.level === 'intermediate'? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      course.level === 'beginner'
+                        ? 'bg-green-100 text-green-800'
+                        : course.level === 'intermediate'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-red-100 text-red-800'
+                    }`}
+                  >
                     {course.level.toUpperCase()}
                   </span>
-                  <span className="text-sm text-gray-500">{course.duration} weeks</span>
+                  <span className="text-sm text-gray-500">
+                    {course.duration} weeks
+                  </span>
                 </div>
               </div>
             </Link>

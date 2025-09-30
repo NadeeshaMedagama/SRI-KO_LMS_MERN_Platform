@@ -33,7 +33,9 @@ const Header = () => {
               <div className="h-8 w-8 bg-gradient-to-r from-primary-600 to-secondary-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">SK</span>
               </div>
-              <span className="ml-2 text-xl font-bold text-gray-900">SRI-KO LMS</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">
+                SRI-KO LMS
+              </span>
             </Link>
           </div>
 
@@ -41,7 +43,7 @@ const Header = () => {
           <div className="hidden md:flex md:items-center md:space-x-8">
             {navigation
               .filter(item => item.public || isAuthenticated)
-              .map((item) => (
+              .map(item => (
                 <Link
                   key={item.name}
                   to={item.href}
@@ -78,7 +80,7 @@ const Header = () => {
                     leaveTo="transform opacity-0 scale-95"
                   >
                     <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      {userNavigation.map((item) => (
+                      {userNavigation.map(item => (
                         <Menu.Item key={item.name}>
                           {({ active }) => (
                             <Link

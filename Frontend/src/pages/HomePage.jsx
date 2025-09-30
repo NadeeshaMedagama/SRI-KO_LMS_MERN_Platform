@@ -12,7 +12,8 @@ const HomePage = () => {
     },
     {
       title: 'Flexible Learning',
-      description: 'Study at your own pace with 24/7 access to course materials',
+      description:
+        'Study at your own pace with 24/7 access to course materials',
       icon: '🕒',
     },
     {
@@ -22,7 +23,8 @@ const HomePage = () => {
     },
     {
       title: 'Community Support',
-      description: 'Join a vibrant community of learners and get help when you need it',
+      description:
+        'Join a vibrant community of learners and get help when you need it',
       icon: '👥',
     },
   ];
@@ -41,24 +43,33 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Welcome to{' '}
-              <span className="text-yellow-300">SRI-KO LMS</span>
+              Welcome to <span className="text-yellow-300">SRI-KO LMS</span>
             </h1>
             <p className="text-xl text-gray-200 mb-8 max-w-3xl mx-auto">
-              Empower your learning journey with our comprehensive online education platform.
-              Master new skills and advance your career with expert-led courses.
+              Empower your learning journey with our comprehensive online
+              education platform. Master new skills and advance your career with
+              expert-led courses.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {isAuthenticated ? (
-                <Link to="/dashboard" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors duration-200">
+                <Link
+                  to="/dashboard"
+                  className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors duration-200"
+                >
                   Go to Dashboard
                 </Link>
               ) : (
                 <>
-                  <Link to="/register" className="bg-primary-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary-700 transition-colors duration-200">
+                  <Link
+                    to="/register"
+                    className="bg-primary-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary-700 transition-colors duration-200"
+                  >
                     Get Started Free
                   </Link>
-                  <Link to="/courses" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors duration-200">
+                  <Link
+                    to="/courses"
+                    className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors duration-200"
+                  >
                     Browse Courses
                   </Link>
                 </>
@@ -74,7 +85,9 @@ const HomePage = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {stats.map((stat, index) => (
               <div key={index} className="card">
-                <div className="text-3xl font-bold text-primary-600 mb-2">{stat.value}</div>
+                <div className="text-3xl font-bold text-primary-600 mb-2">
+                  {stat.value}
+                </div>
                 <div className="text-gray-600">{stat.label}</div>
               </div>
             ))}
@@ -97,7 +110,9 @@ const HomePage = () => {
             {features.map((feature, index) => (
               <div key={index} className="card text-center">
                 <div className="text-4xl mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                  {feature.title}
+                </h3>
                 <p className="text-gray-600">{feature.description}</p>
               </div>
             ))}
@@ -113,7 +128,8 @@ const HomePage = () => {
               Ready to Start Learning?
             </h2>
             <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of students who are already advancing their careers with our courses.
+              Join thousands of students who are already advancing their careers
+              with our courses.
             </p>
             <Link to="/register" className="btn-secondary">
               Create Your Account

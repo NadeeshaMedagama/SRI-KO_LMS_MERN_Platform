@@ -42,11 +42,14 @@ function App() {
       </Route>
 
       {/* Protected Routes */}
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Layout />
-        </ProtectedRoute>
-      }>
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="courses/create" element={<CreateCoursePage />} />
@@ -57,4 +60,3 @@ function App() {
 }
 
 export default App;
-

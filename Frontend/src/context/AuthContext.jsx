@@ -7,51 +7,51 @@ const AuthContext = createContext();
 // Auth reducer
 const authReducer = (state, action) => {
   switch (action.type) {
-  case 'LOGIN_START':
-    return {
-      ...state,
-      loading: true,
-      error: null,
-    };
-  case 'LOGIN_SUCCESS':
-    return {
-      ...state,
-      user: action.payload.user,
-      token: action.payload.token,
-      loading: false,
-      error: null,
-      isAuthenticated: true,
-    };
-  case 'LOGIN_FAILURE':
-    return {
-      ...state,
-      user: null,
-      token: null,
-      loading: false,
-      error: action.payload,
-      isAuthenticated: false,
-    };
-  case 'LOGOUT':
-    return {
-      ...state,
-      user: null,
-      token: null,
-      loading: false,
-      error: null,
-      isAuthenticated: false,
-    };
-  case 'UPDATE_USER':
-    return {
-      ...state,
-      user: { ...state.user, ...action.payload },
-    };
-  case 'SET_LOADING':
-    return {
-      ...state,
-      loading: action.payload,
-    };
-  default:
-    return state;
+    case 'LOGIN_START':
+      return {
+        ...state,
+        loading: true,
+        error: null,
+      };
+    case 'LOGIN_SUCCESS':
+      return {
+        ...state,
+        user: action.payload.user,
+        token: action.payload.token,
+        loading: false,
+        error: null,
+        isAuthenticated: true,
+      };
+    case 'LOGIN_FAILURE':
+      return {
+        ...state,
+        user: null,
+        token: null,
+        loading: false,
+        error: action.payload,
+        isAuthenticated: false,
+      };
+    case 'LOGOUT':
+      return {
+        ...state,
+        user: null,
+        token: null,
+        loading: false,
+        error: null,
+        isAuthenticated: false,
+      };
+    case 'UPDATE_USER':
+      return {
+        ...state,
+        user: { ...state.user, ...action.payload },
+      };
+    case 'SET_LOADING':
+      return {
+        ...state,
+        loading: action.payload,
+      };
+    default:
+      return state;
   }
 };
 
@@ -126,7 +126,12 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password, role = 'student') => {
     dispatch({ type: 'LOGIN_START' });
     try {
-      const response = await api.post('/auth/register', { name, email, password, role });
+      const response = await api.post('/auth/register', {
+        name,
+        email,
+        password,
+        role,
+      });
       const { token, user } = response.data;
 
       localStorage.setItem('token', token);
@@ -159,7 +164,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Update user profile
-  const updateUser = (userData) => {
+  const updateUser = userData => {
     dispatch({
       type: 'UPDATE_USER',
       payload: userData,
@@ -174,11 +179,7 @@ export const AuthProvider = ({ children }) => {
     updateUser,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

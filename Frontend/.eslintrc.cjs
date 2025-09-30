@@ -1,18 +1,15 @@
 module.exports = {
   root: true,
-  env: { 
-    browser: true, 
-    es2020: true 
+  env: {
+    browser: true,
+    es2020: true,
   },
   extends: [
     'eslint:recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
   ],
-  ignorePatterns: [
-    'dist', 
-    '.eslintrc.cjs'
-  ],
+  ignorePatterns: ['dist', '.eslintrc.cjs'],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
@@ -28,8 +25,8 @@ module.exports = {
   },
   rules: {
     'react-refresh/only-export-components': [
-      'warn', 
-      { allowConstantExport: true }
+      'warn',
+      { allowConstantExport: true },
     ],
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
@@ -41,9 +38,9 @@ module.exports = {
     'template-curly-spacing': 'error',
     'arrow-spacing': 'error',
     'comma-dangle': ['error', 'always-multiline'],
-    'semi': ['error', 'always'],
-    'quotes': ['error', 'single'],
-    'indent': ['error', 2],
+    semi: ['error', 'always'],
+    quotes: ['error', 'single'],
+    indent: ['error', 2],
     'no-trailing-spaces': 'error',
     'eol-last': 'error',
     'jsx-quotes': ['error', 'prefer-double'],

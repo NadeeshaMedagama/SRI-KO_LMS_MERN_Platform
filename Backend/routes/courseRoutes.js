@@ -102,111 +102,132 @@ router.get('/:id', async (req, res) => {
 // @desc    Create course
 // @route   POST /api/courses
 // @access  Private/Instructor/Admin
-router.post('/', protect, authorize('instructor', 'admin'), validateCourseCreation, handleValidationErrors, async (req, res) => {
-  try {
-    // Add instructor to course data
-    const courseData = {
-      ...req.body,
-      instructor: req.user.id,
-    };
+router.post(
+  '/',
+  protect,
+  authorize('instructor', 'admin'),
+  validateCourseCreation,
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      // Add instructor to course data
+      const courseData = {
+        ...req.body,
+        instructor: req.user.id,
+      };
 
-    const course = await Course.create(courseData);
+      const course = await Course.create(courseData);
 
-    // Populate the instructor field
-    await course.populate('instructor', 'name avatar');
+      // Populate the instructor field
+      await course.populate('instructor', 'name avatar');
 
-    res.status(201).json({
-      success: true,
-      message: 'Course created successfully',
-      course,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-    });
+      res.status(201).json({
+        success: true,
+        message: 'Course created successfully',
+        course,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+      });
+    }
   }
-});
+);
 
 // @desc    Update course
 // @route   PUT /api/courses/:id
 // @access  Private/Instructor/Admin
-router.put('/:id', protect, authorize('instructor', 'admin'), checkCourseAccess, async (req, res) => {
-  try {
-    let course = await Course.findById(req.params.id);
+router.put(
+  '/:id',
+  protect,
+  authorize('instructor', 'admin'),
+  checkCourseAccess,
+  async (req, res) => {
+    try {
+      let course = await Course.findById(req.params.id);
 
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: 'Course not found',
-      });
-    }
+      if (!course) {
+        return res.status(404).json({
+          success: false,
+          message: 'Course not found',
+        });
+      }
 
-    // Check if user is the instructor or admin
-    if (course.instructor.toString() !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to update this course',
-      });
-    }
+      // Check if user is the instructor or admin
+      if (
+        course.instructor.toString() !== req.user.id &&
+        req.user.role !== 'admin'
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to update this course',
+        });
+      }
 
-    course = await Course.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
+      course = await Course.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
         runValidators: true,
-      },
-    ).populate('instructor', 'name avatar');
+      }).populate('instructor', 'name avatar');
 
-    res.status(200).json({
-      success: true,
-      message: 'Course updated successfully',
-      course,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-    });
+      res.status(200).json({
+        success: true,
+        message: 'Course updated successfully',
+        course,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+      });
+    }
   }
-});
+);
 
 // @desc    Delete course
 // @route   DELETE /api/courses/:id
 // @access  Private/Instructor/Admin
-router.delete('/:id', protect, authorize('instructor', 'admin'), checkCourseAccess, async (req, res) => {
-  try {
-    const course = await Course.findById(req.params.id);
+router.delete(
+  '/:id',
+  protect,
+  authorize('instructor', 'admin'),
+  checkCourseAccess,
+  async (req, res) => {
+    try {
+      const course = await Course.findById(req.params.id);
 
-    if (!course) {
-      return res.status(404).json({
+      if (!course) {
+        return res.status(404).json({
+          success: false,
+          message: 'Course not found',
+        });
+      }
+
+      // Check if user is the instructor or admin
+      if (
+        course.instructor.toString() !== req.user.id &&
+        req.user.role !== 'admin'
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to delete this course',
+        });
+      }
+
+      await Course.findByIdAndDelete(req.params.id);
+
+      res.status(200).json({
+        success: true,
+        message: 'Course deleted successfully',
+      });
+    } catch (error) {
+      res.status(500).json({
         success: false,
-        message: 'Course not found',
+        message: 'Server error',
       });
     }
-
-    // Check if user is the instructor or admin
-    if (course.instructor.toString() !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to delete this course',
-      });
-    }
-
-    await Course.findByIdAndDelete(req.params.id);
-
-    res.status(200).json({
-      success: true,
-      message: 'Course deleted successfully',
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-    });
   }
-});
+);
 
 // @desc    Enroll in course
 // @route   POST /api/courses/:id/enroll
@@ -255,10 +276,9 @@ router.post('/:id/enroll', protect, authorize('student'), async (req, res) => {
     });
 
     // Add course to user's enrolled courses
-    await User.findByIdAndUpdate(
-      req.user.id,
-      { $push: { enrolledCourses: req.params.id } },
-    );
+    await User.findByIdAndUpdate(req.user.id, {
+      $push: { enrolledCourses: req.params.id },
+    });
 
     res.status(200).json({
       success: true,
@@ -305,59 +325,69 @@ router.get('/my-courses', protect, async (req, res) => {
 // @desc    Add course review
 // @route   POST /api/courses/:id/reviews
 // @access  Private
-router.post('/:id/reviews', protect, authorize('student', 'instructor', 'admin'), validateReview, handleValidationErrors, async (req, res) => {
-  try {
-    const course = await Course.findById(req.params.id);
+router.post(
+  '/:id/reviews',
+  protect,
+  authorize('student', 'instructor', 'admin'),
+  validateReview,
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const course = await Course.findById(req.params.id);
 
-    if (!course) {
-      return res.status(404).json({
+      if (!course) {
+        return res.status(404).json({
+          success: false,
+          message: 'Course not found',
+        });
+      }
+
+      // Check if user has already reviewed this course
+      const existingReview = course.reviews.find(
+        review => review.user.toString() === req.user.id.toString()
+      );
+
+      if (existingReview) {
+        return res.status(400).json({
+          success: false,
+          message: 'You have already reviewed this course',
+        });
+      }
+
+      const review = {
+        user: req.user.id,
+        rating: req.body.rating,
+        comment: req.body.comment,
+      };
+
+      course.reviews.push(review);
+
+      // Recalculate average rating
+      const totalRating = course.reviews.reduce(
+        (sum, review) => sum + review.rating,
+        0
+      );
+      course.averageRating = totalRating / course.reviews.length;
+
+      await course.save();
+
+      await course.populate({
+        path: 'reviews.user',
+        select: 'name avatar',
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Review added successfully',
+        course,
+      });
+    } catch (error) {
+      res.status(500).json({
         success: false,
-        message: 'Course not found',
+        message: 'Server error',
       });
     }
-
-    // Check if user has already reviewed this course
-    const existingReview = course.reviews.find(
-      review => review.user.toString() === req.user.id.toString(),
-    );
-
-    if (existingReview) {
-      return res.status(400).json({
-        success: false,
-        message: 'You have already reviewed this course',
-      });
-    }
-
-    const review = {
-      user: req.user.id,
-      rating: req.body.rating,
-      comment: req.body.comment,
-    };
-
-    course.reviews.push(review);
-
-    // Recalculate average rating
-    const totalRating = course.reviews.reduce((sum, review) => sum + review.rating, 0);
-    course.averageRating = totalRating / course.reviews.length;
-
-    await course.save();
-
-    await course.populate({
-      path: 'reviews.user',
-      select: 'name avatar',
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'Review added successfully',
-      course,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-    });
   }
-});
+);
 
 module.exports = router;
