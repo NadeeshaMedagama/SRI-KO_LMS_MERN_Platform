@@ -1,0 +1,30 @@
+{
+  "name": "sri-ko-lms-platform",
+  "version": "1.0.0",
+  "description": "SRI-KO Learning Management System - Full Stack MERN Application",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd Backend && npm run dev",
+    "client": "cd Frontend && npm run dev",
+    "build": "cd Frontend && npm run build",
+    "install-all": "npm install && cd Backend && npm install && cd ../Frontend && npm install",
+    "start": "cd Backend && npm start"
+  },
+  "keywords": [
+    "LMS",
+    "Learning Management System",
+    "MERN",
+    "MongoDB",
+    "Express",
+    "React",
+    "Node.js",
+    "Education",
+    "Tailwind CSS"
+  ],
+  "author": "Nadeesha Medagama",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
