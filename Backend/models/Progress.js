@@ -4,58 +4,58 @@ const progressSchema = new mongoose.Schema({
   student: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
   },
   course: {
     type: mongoose.Schema.ObjectId,
     ref: 'Course',
-    required: true
+    required: true,
   },
   completedLessons: [{
     lesson: {
       type: mongoose.Schema.ObjectId,
-      required: true
+      required: true,
     },
     completedAt: {
       type: Date,
-      default: Date.now
+      default: Date.now,
     },
     score: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   }],
   currentWeek: {
     type: Number,
-    default: 1
+    default: 1,
   },
   overallProgress: {
     type: Number,
     default: 0,
     min: 0,
-    max: 100
+    max: 100,
   },
   timeSpent: {
     type: Number,
-    default: 0 // in minutes
+    default: 0, // in minutes
   },
   lastAccessed: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   isCompleted: {
     type: Boolean,
-    default: false
+    default: false,
   },
   completionDate: {
-    type: Date
+    type: Date,
   },
   certificate: {
     type: String,
-    default: ''
-  }
+    default: '',
+  },
 }, {
-  timestamps: true
+  timestamps: true,
 });
 
 // Index for efficient queries
@@ -64,10 +64,10 @@ progressSchema.index({ student: 1, course: 1 }, { unique: true });
 // Calculate overall progress
 progressSchema.methods.calculateProgress = function(course) {
   if (!course || !course.curriculum) return 0;
-  
+
   const totalLessons = course.curriculum.reduce((total, week) => total + week.lessons.length, 0);
   const completedCount = this.completedLessons.length;
-  
+
   return totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 };
 

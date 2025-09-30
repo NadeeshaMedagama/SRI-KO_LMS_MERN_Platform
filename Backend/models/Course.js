@@ -5,122 +5,122 @@ const courseSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a course title'],
     trim: true,
-    maxlength: [100, 'Course title cannot be more than 100 characters']
+    maxlength: [100, 'Course title cannot be more than 100 characters'],
   },
   description: {
     type: String,
     required: [true, 'Please provide a course description'],
-    maxlength: [1000, 'Description cannot be more than 1000 characters']
+    maxlength: [1000, 'Description cannot be more than 1000 characters'],
   },
   instructor: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
   },
   category: {
     type: String,
     required: [true, 'Please provide a category'],
-    enum: ['programming', 'design', 'business', 'marketing', 'lifestyle', 'other']
+    enum: ['programming', 'design', 'business', 'marketing', 'lifestyle', 'other'],
   },
   level: {
     type: String,
     required: [true, 'Please provide course level'],
-    enum: ['beginner', 'intermediate', 'advanced']
+    enum: ['beginner', 'intermediate', 'advanced'],
   },
   duration: {
     type: Number,
-    required: [true, 'Please provide course duration in weeks']
+    required: [true, 'Please provide course duration in weeks'],
   },
   price: {
     type: Number,
     required: [true, 'Please provide a price'],
-    min: [0, 'Price cannot be negative']
+    min: [0, 'Price cannot be negative'],
   },
   thumbnail: {
     type: String,
-    default: ''
+    default: '',
   },
   curriculum: [{
     week: {
       type: Number,
-      required: true
+      required: true,
     },
     title: {
       type: String,
-      required: true
+      required: true,
     },
     description: {
       type: String,
-      required: true
+      required: true,
     },
     lessons: [{
       title: {
         type: String,
-        required: true
+        required: true,
       },
       content: {
         type: String,
-        required: true
+        required: true,
       },
       duration: {
         type: Number,
-        required: true // in minutes
+        required: true, // in minutes
       },
       type: {
         type: String,
         enum: ['video', 'text', 'quiz', 'assignment'],
-        default: 'video'
+        default: 'video',
       },
       isFreePreview: {
         type: Boolean,
-        default: false
-      }
-    }]
+        default: false,
+      },
+    }],
   }],
   enrolledStudents: [{
     type: mongoose.Schema.ObjectId,
-    ref: 'User'
+    ref: 'User',
   }],
   reviews: [{
     user: {
       type: mongoose.Schema.ObjectId,
-      ref: 'User'
+      ref: 'User',
     },
     rating: {
       type: Number,
       required: true,
       min: 1,
-      max: 5
+      max: 5,
     },
     comment: {
       type: String,
-      maxlength: [500, 'Review comment cannot be more than 500 characters']
+      maxlength: [500, 'Review comment cannot be more than 500 characters'],
     },
     createdAt: {
       type: Date,
-      default: Date.now
-    }
+      default: Date.now,
+    },
   }],
   averageRating: {
     type: Number,
     default: 0,
     min: 0,
-    max: 5
+    max: 5,
   },
   isPublished: {
     type: Boolean,
-    default: false
+    default: false,
   },
   tags: [{
     type: String,
-    trim: true
+    trim: true,
   }],
   prerequisites: [{
     type: String,
-    trim: true
-  }]
+    trim: true,
+  }],
 }, {
-  timestamps: true
+  timestamps: true,
 });
 
 // Calculate average rating before saving

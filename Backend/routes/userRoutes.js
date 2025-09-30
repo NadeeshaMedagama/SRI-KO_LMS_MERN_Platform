@@ -22,13 +22,13 @@ router.get('/profile', protect, async (req, res) => {
         avatar: user.avatar,
         bio: user.bio,
         enrolledCourses: user.enrolledCourses,
-        createdAt: user.createdAt
-      }
+        createdAt: user.createdAt,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -41,12 +41,12 @@ router.put('/profile', protect, validateProfileUpdate, handleValidationErrors, a
     const fieldsToUpdate = {
       name: req.body.name,
       bio: req.body.bio,
-      avatar: req.body.avatar
+      avatar: req.body.avatar,
     };
 
     // Remove undefined values
-    Object.keys(fieldsToUpdate).forEach(key => 
-      fieldsToUpdate[key] === undefined && delete fieldsToUpdate[key]
+    Object.keys(fieldsToUpdate).forEach(key =>
+      fieldsToUpdate[key] === undefined && delete fieldsToUpdate[key],
     );
 
     const user = await User.findByIdAndUpdate(
@@ -54,8 +54,8 @@ router.put('/profile', protect, validateProfileUpdate, handleValidationErrors, a
       fieldsToUpdate,
       {
         new: true,
-        runValidators: true
-      }
+        runValidators: true,
+      },
     );
 
     res.status(200).json({
@@ -67,13 +67,13 @@ router.put('/profile', protect, validateProfileUpdate, handleValidationErrors, a
         email: user.email,
         role: user.role,
         avatar: user.avatar,
-        bio: user.bio
-      }
+        bio: user.bio,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -88,14 +88,14 @@ router.put('/password', protect, async (req, res) => {
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
         success: false,
-        message: 'Current password and new password are required'
+        message: 'Current password and new password are required',
       });
     }
 
     if (newPassword.length < 6) {
       return res.status(400).json({
         success: false,
-        message: 'New password must be at least 6 characters long'
+        message: 'New password must be at least 6 characters long',
       });
     }
 
@@ -108,7 +108,7 @@ router.put('/password', protect, async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({
         success: false,
-        message: 'Current password is incorrect'
+        message: 'Current password is incorrect',
       });
     }
 
@@ -117,12 +117,12 @@ router.put('/password', protect, async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Password updated successfully'
+      message: 'Password updated successfully',
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -150,12 +150,12 @@ router.get('/', protect, authorize('admin'), async (req, res) => {
       total,
       page,
       pages: Math.ceil(total / limit),
-      users
+      users,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -170,18 +170,18 @@ router.get('/:id', protect, authorize('admin'), async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'User not found',
       });
     }
 
     res.status(200).json({
       success: true,
-      user
+      user,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -196,26 +196,26 @@ router.put('/:id', protect, authorize('admin'), async (req, res) => {
       req.body,
       {
         new: true,
-        runValidators: true
-      }
+        runValidators: true,
+      },
     ).select('-password');
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'User not found',
       });
     }
 
     res.status(200).json({
       success: true,
       message: 'User updated successfully',
-      user
+      user,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -230,7 +230,7 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'User not found',
       });
     }
 
@@ -238,12 +238,12 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'User deleted successfully'
+      message: 'User deleted successfully',
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });

@@ -2,10 +2,10 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
-const { 
-  validateUserRegistration, 
-  validateUserLogin, 
-  handleValidationErrors 
+const {
+  validateUserRegistration,
+  validateUserLogin,
+  handleValidationErrors,
 } = require('../middleware/validation');
 
 const router = express.Router();
@@ -29,7 +29,7 @@ router.post('/register', validateUserRegistration, handleValidationErrors, async
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'User with this email already exists'
+        message: 'User with this email already exists',
       });
     }
 
@@ -38,7 +38,7 @@ router.post('/register', validateUserRegistration, handleValidationErrors, async
       name,
       email,
       password,
-      role: role || 'student'
+      role: role || 'student',
     });
 
     // Generate token
@@ -53,14 +53,14 @@ router.post('/register', validateUserRegistration, handleValidationErrors, async
         name: user.name,
         email: user.email,
         role: user.role,
-        avatar: user.avatar
-      }
+        avatar: user.avatar,
+      },
     });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error during registration'
+      message: 'Server error during registration',
     });
   }
 });
@@ -78,7 +78,7 @@ router.post('/login', validateUserLogin, handleValidationErrors, async (req, res
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: 'Invalid email or password',
       });
     }
 
@@ -86,7 +86,7 @@ router.post('/login', validateUserLogin, handleValidationErrors, async (req, res
     if (!user.isActive) {
       return res.status(401).json({
         success: false,
-        message: 'Account is deactivated'
+        message: 'Account is deactivated',
       });
     }
 
@@ -96,7 +96,7 @@ router.post('/login', validateUserLogin, handleValidationErrors, async (req, res
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: 'Invalid email or password',
       });
     }
 
@@ -112,14 +112,14 @@ router.post('/login', validateUserLogin, handleValidationErrors, async (req, res
         name: user.name,
         email: user.email,
         role: user.role,
-        avatar: user.avatar
-      }
+        avatar: user.avatar,
+      },
     });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error during login'
+      message: 'Server error during login',
     });
   }
 });
@@ -141,14 +141,14 @@ router.get('/me', protect, async (req, res) => {
         avatar: user.avatar,
         bio: user.bio,
         enrolledCourses: user.enrolledCourses,
-        createdAt: user.createdAt
-      }
+        createdAt: user.createdAt,
+      },
     });
   } catch (error) {
     console.error('Get me error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 });
@@ -159,7 +159,7 @@ router.get('/me', protect, async (req, res) => {
 router.post('/logout', protect, async (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Logged out successfully'
+    message: 'Logged out successfully',
   });
 });
 

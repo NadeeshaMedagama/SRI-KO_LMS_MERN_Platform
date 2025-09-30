@@ -14,7 +14,7 @@ exports.protect = async (req, res, next) => {
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Not authorized to access this route'
+      message: 'Not authorized to access this route',
     });
   }
 
@@ -28,14 +28,14 @@ exports.protect = async (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Token is not valid'
+        message: 'Token is not valid',
       });
     }
 
     if (!req.user.isActive) {
       return res.status(401).json({
         success: false,
-        message: 'Account is deactivated'
+        message: 'Account is deactivated',
       });
     }
 
@@ -43,7 +43,7 @@ exports.protect = async (req, res, next) => {
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: 'Token is not valid'
+      message: 'Token is not valid',
     });
   }
 };
@@ -54,7 +54,7 @@ exports.authorize = (...roles) => {
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: `User role ${req.user.role} is not authorized to access this route`
+        message: `User role ${req.user.role} is not authorized to access this route`,
       });
     }
     next();
@@ -66,13 +66,13 @@ exports.checkCourseAccess = async (req, res, next) => {
   try {
     const Course = require('../models/Course');
     const Progress = require('../models/Progress');
-    
+
     const course = await Course.findById(req.params.id || req.params.courseId);
-    
+
     if (!course) {
       return res.status(404).json({
         success: false,
-        message: 'Course not found'
+        message: 'Course not found',
       });
     }
 
@@ -86,13 +86,13 @@ exports.checkCourseAccess = async (req, res, next) => {
     if (req.user.role === 'student') {
       const progress = await Progress.findOne({
         student: req.user._id,
-        course: course._id
+        course: course._id,
       });
 
       if (!progress) {
         return res.status(403).json({
           success: false,
-          message: 'You are not enrolled in this course'
+          message: 'You are not enrolled in this course',
         });
       }
 
@@ -104,7 +104,7 @@ exports.checkCourseAccess = async (req, res, next) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
     });
   }
 };
