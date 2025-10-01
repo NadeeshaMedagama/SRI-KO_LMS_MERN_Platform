@@ -9,7 +9,7 @@ import {
   ChartBarIcon,
   BellIcon,
   // DocumentTextIcon,
-  // CogIcon,
+  CogIcon,
   // EyeIcon,
   // PencilIcon,
   // TrashIcon,

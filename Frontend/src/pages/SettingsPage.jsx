@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -51,7 +51,7 @@ const SettingsPage = () => {
   });
 
   // Function to refresh user data
-  const refreshUserData = async () => {
+  const refreshUserData = useCallback(async () => {
     try {
       const response = await api.get('/auth/me');
       if (response.data.success) {
@@ -62,7 +62,7 @@ const SettingsPage = () => {
     } catch (error) {
       console.error('Failed to refresh user data:', error);
     }
-  };
+  }, [updateUser]);
 
   // Initialize settings with user data
   useEffect(() => {

@@ -13,7 +13,7 @@ import {
   ArrowDownTrayIcon,
   StarIcon,
   // AdjustmentsHorizontalIcon,
-  // ArrowUpIcon,
+  ArrowUpIcon,
   // ArrowDownIcon,
 } from '@heroicons/react/24/outline';
 
@@ -62,7 +62,7 @@ const AdminAnalyticsPage = () => {
       const response = await api.get(`/admin/analytics/export?format=${format}&period=${dateRange}`, {
         responseType: 'blob',
       });
-      
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -70,7 +70,7 @@ const AdminAnalyticsPage = () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
+
       toast.success('Report exported successfully');
     } catch (error) {
       toast.error('Failed to export report');
