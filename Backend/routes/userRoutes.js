@@ -15,27 +15,27 @@ router.get('/profile', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
 
-      res.status(200).json({
-        success: true,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          avatar: user.avatar,
-          bio: user.bio,
-          phone: user.phone,
-          location: user.location,
-          website: user.website,
-          socialLinks: user.socialLinks,
-          enrolledCourses: user.enrolledCourses,
-          notifications: user.notifications,
-          privacy: user.privacy,
-          emailVerified: user.emailVerified,
-          lastLogin: user.lastLogin,
-          createdAt: user.createdAt,
-        },
-      });
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        bio: user.bio,
+        phone: user.phone,
+        location: user.location,
+        website: user.website,
+        socialLinks: user.socialLinks,
+        enrolledCourses: user.enrolledCourses,
+        notifications: user.notifications,
+        privacy: user.privacy,
+        emailVerified: user.emailVerified,
+        lastLogin: user.lastLogin,
+        createdAt: user.createdAt,
+      },
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -271,7 +271,7 @@ router.put('/notifications', protect, async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { notifications },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     res.status(200).json({
@@ -297,7 +297,7 @@ router.put('/privacy', protect, async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { privacy },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     res.status(200).json({

@@ -6,7 +6,7 @@ async function testDatabase() {
   try {
     // Connect to MongoDB (you'll need to set your connection string)
     const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/sri-ko-lms';
-    
+
     console.log('Connecting to MongoDB...');
     await mongoose.connect(MONGODB_URI);
     console.log('✅ Connected to MongoDB successfully');
@@ -25,21 +25,21 @@ async function testDatabase() {
       socialLinks: {
         linkedin: 'https://linkedin.com/in/testuser',
         twitter: 'https://twitter.com/testuser',
-        github: 'https://github.com/testuser'
+        github: 'https://github.com/testuser',
       },
       notifications: {
         emailNotifications: true,
         courseUpdates: true,
         assignmentReminders: true,
         systemAnnouncements: true,
-        marketingEmails: false
+        marketingEmails: false,
       },
       privacy: {
         profileVisibility: 'public',
         showEmail: false,
         showCourses: true,
-        allowMessages: true
-      }
+        allowMessages: true,
+      },
     });
 
     await testUser.save();
@@ -59,7 +59,7 @@ async function testDatabase() {
       website: retrievedUser.website,
       socialLinks: retrievedUser.socialLinks,
       notifications: retrievedUser.notifications,
-      privacy: retrievedUser.privacy
+      privacy: retrievedUser.privacy,
     });
 
     // Test user update
@@ -70,16 +70,16 @@ async function testDatabase() {
         bio: 'Updated bio',
         phone: '+0987654321',
         'notifications.marketingEmails': true,
-        'privacy.profileVisibility': 'private'
+        'privacy.profileVisibility': 'private',
       },
-      { new: true }
+      { new: true },
     );
     console.log('✅ User updated successfully');
     console.log('Updated fields:', {
       bio: updatedUser.bio,
       phone: updatedUser.phone,
       marketingEmails: updatedUser.notifications.marketingEmails,
-      profileVisibility: updatedUser.privacy.profileVisibility
+      profileVisibility: updatedUser.privacy.profileVisibility,
     });
 
     // Clean up test user
@@ -88,7 +88,6 @@ async function testDatabase() {
     console.log('✅ Test user deleted successfully');
 
     console.log('\n🎉 All database tests passed!');
-    
   } catch (error) {
     console.error('❌ Database test failed:', error.message);
   } finally {

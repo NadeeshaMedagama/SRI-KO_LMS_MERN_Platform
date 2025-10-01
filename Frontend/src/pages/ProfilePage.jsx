@@ -63,7 +63,7 @@ const ProfilePage = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     if (name.startsWith('socialLinks.')) {
       const socialKey = name.split('.')[1];
       setProfileData(prev => ({

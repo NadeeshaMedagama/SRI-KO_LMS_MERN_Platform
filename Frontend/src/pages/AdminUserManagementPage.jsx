@@ -11,12 +11,12 @@ import {
   FunnelIcon,
   UserPlusIcon,
   UserMinusIcon,
-  ShieldCheckIcon,
-  AcademicCapIcon,
-  EnvelopeIcon,
-  CalendarIcon,
-  CheckIcon,
-  XMarkIcon,
+  // ShieldCheckIcon,
+  // AcademicCapIcon,
+  // EnvelopeIcon,
+  // CalendarIcon,
+  // CheckIcon,
+  // XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 const AdminUserManagementPage = () => {

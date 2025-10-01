@@ -11,9 +11,10 @@ import {
   CalendarIcon,
   EyeIcon,
   ArrowDownTrayIcon,
-  AdjustmentsHorizontalIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
+  StarIcon,
+  // AdjustmentsHorizontalIcon,
+  // ArrowUpIcon,
+  // ArrowDownIcon,
 } from '@heroicons/react/24/outline';
 
 const AdminAnalyticsPage = () => {
@@ -87,10 +88,10 @@ const AdminAnalyticsPage = () => {
     return new Intl.NumberFormat('en-US').format(num);
   };
 
-  const getPercentageChange = (current, previous) => {
-    if (previous === 0) return 0;
-    return ((current - previous) / previous) * 100;
-  };
+  // const getPercentageChange = (current, previous) => {
+  //   if (previous === 0) return 0;
+  //   return ((current - previous) / previous) * 100;
+  // };
 
   const getTrendIcon = (change) => {
     if (change > 0) return <ArrowTrendingUpIcon className="w-4 h-4 text-green-500" />;
@@ -98,11 +99,11 @@ const AdminAnalyticsPage = () => {
     return <div className="w-4 h-4 bg-gray-300 rounded-full" />;
   };
 
-  const getTrendColor = (change) => {
-    if (change > 0) return 'text-green-600';
-    if (change < 0) return 'text-red-600';
-    return 'text-gray-600';
-  };
+  // const getTrendColor = (change) => {
+  //   if (change > 0) return 'text-green-600';
+  //   if (change < 0) return 'text-red-600';
+  //   return 'text-gray-600';
+  // };
 
   if (loading) {
     return (

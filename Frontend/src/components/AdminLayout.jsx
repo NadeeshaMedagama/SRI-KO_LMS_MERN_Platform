@@ -31,7 +31,7 @@ const AdminLayout = ({ children }) => {
         navigate('/login');
         return;
       }
-      
+
       if (user && user.role !== 'admin') {
         navigate('/dashboard');
         return;

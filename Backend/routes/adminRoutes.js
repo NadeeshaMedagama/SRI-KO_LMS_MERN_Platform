@@ -18,7 +18,7 @@ router.get('/stats', protect, authorize('admin'), async (req, res) => {
     const totalUsers = await User.countDocuments();
     const totalCourses = await Course.countDocuments();
     const activeUsers = await User.countDocuments({ isActive: true });
-    const publishedCourses = await Course.countDocuments({ isPublished: true });
+    // const publishedCourses = await Course.countDocuments({ isPublished: true });
 
     // Calculate total revenue (simplified - you might want to add a Payment model)
     const courses = await Course.find({ isPublished: true });
@@ -62,19 +62,19 @@ router.get('/users', protect, authorize('admin'), async (req, res) => {
     const status = req.query.status || '';
 
     // Build query
-    let query = {};
-    
+    const query = {};
+
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
       ];
     }
-    
+
     if (role && role !== 'all') {
       query.role = role;
     }
-    
+
     if (status && status !== 'all') {
       query.isActive = status === 'active';
     }
@@ -305,19 +305,19 @@ router.get('/courses', protect, authorize('admin'), async (req, res) => {
     const status = req.query.status || '';
 
     // Build query
-    let query = {};
-    
+    const query = {};
+
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } },
       ];
     }
-    
+
     if (category && category !== 'all') {
       query.category = category;
     }
-    
+
     if (status && status !== 'all') {
       query.isPublished = status === 'published';
     }
@@ -527,7 +527,7 @@ router.put('/courses/:id/status', protect, authorize('admin'), async (req, res) 
 router.get('/analytics', protect, authorize('admin'), async (req, res) => {
   try {
     const period = req.query.period || '30';
-    const days = parseInt(period);
+    // const days = parseInt(period);
 
     // Get overview statistics
     const totalUsers = await User.countDocuments();
@@ -611,7 +611,7 @@ router.get('/analytics', protect, authorize('admin'), async (req, res) => {
 router.get('/analytics/export', protect, authorize('admin'), async (req, res) => {
   try {
     const format = req.query.format || 'pdf';
-    const period = req.query.period || '30';
+    // const period = req.query.period || '30';
 
     // This is a placeholder for export functionality
     // You would implement actual PDF/CSV generation here

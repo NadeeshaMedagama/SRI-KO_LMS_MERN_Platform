@@ -8,17 +8,17 @@ import {
   CurrencyDollarIcon,
   ChartBarIcon,
   BellIcon,
-  DocumentTextIcon,
-  CogIcon,
-  EyeIcon,
-  PencilIcon,
-  TrashIcon,
-  PlusIcon,
+  // DocumentTextIcon,
+  // CogIcon,
+  // EyeIcon,
+  // PencilIcon,
+  // TrashIcon,
+  // PlusIcon,
   UserGroupIcon,
   BookOpenIcon,
   TrophyIcon,
-  ChatBubbleLeftRightIcon,
-  ExclamationTriangleIcon,
+  // ChatBubbleLeftRightIcon,
+  // ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
 const AdminDashboardPage = () => {
@@ -42,7 +42,7 @@ const AdminDashboardPage = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch statistics
       const statsResponse = await api.get('/admin/stats');
       if (statsResponse.data.success) {
@@ -123,7 +123,7 @@ const AdminDashboardPage = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
               <p className="mt-2 text-gray-600">
-                Welcome back! Here's what's happening with your LMS.
+                Welcome back! Here&apos;s what&apos;s happening with your LMS.
               </p>
             </div>
             <div className="flex space-x-3">

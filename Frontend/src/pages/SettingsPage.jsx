@@ -3,23 +3,23 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import {
-  CogIcon,
+  // CogIcon,
   KeyIcon,
   BellIcon,
   ShieldCheckIcon,
   EyeIcon,
   EyeSlashIcon,
   CheckIcon,
-  XMarkIcon,
+  // XMarkIcon,
   ExclamationTriangleIcon,
   UserIcon,
   GlobeAltIcon,
-  DevicePhoneMobileIcon,
-  EnvelopeIcon,
+  // DevicePhoneMobileIcon,
+  // EnvelopeIcon,
 } from '@heroicons/react/24/outline';
 
 const SettingsPage = () => {
-  const { user, logout, loading: authLoading, updateUser } = useAuth();
+  const { user, loading: authLoading, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState('account');
   const [loading, setLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -57,7 +57,7 @@ const SettingsPage = () => {
       if (response.data.success) {
         // Update the user data in context
         updateUser(response.data.user);
-        console.log('Refreshed user data:', response.data.user);
+        // console.log('Refreshed user data:', response.data.user);
       }
     } catch (error) {
       console.error('Failed to refresh user data:', error);
@@ -67,7 +67,7 @@ const SettingsPage = () => {
   // Initialize settings with user data
   useEffect(() => {
     if (user) {
-      console.log('SettingsPage - User data:', user);
+      // console.log('SettingsPage - User data:', user);
       if (user.notifications) {
         setNotifications(user.notifications);
       }
@@ -78,7 +78,7 @@ const SettingsPage = () => {
       // If no user data, try to refresh
       refreshUserData();
     }
-  }, [user]);
+  }, [user, refreshUserData]);
 
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
@@ -106,7 +106,7 @@ const SettingsPage = () => {
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       toast.error('New passwords do not match');
       return;

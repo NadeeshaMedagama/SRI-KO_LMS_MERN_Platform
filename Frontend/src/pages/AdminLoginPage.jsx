@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+// import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import {
@@ -33,14 +33,14 @@ const AdminLoginPage = () => {
 
     try {
       const response = await api.post('/auth/admin-login', formData);
-      
+
       if (response.data.success) {
         const { token, user } = response.data;
-        
+
         // Store admin token separately
         localStorage.setItem('adminToken', token);
         localStorage.setItem('adminUser', JSON.stringify(user));
-        
+
         toast.success('Admin login successful!');
         navigate('/admin/dashboard');
       }

@@ -9,14 +9,14 @@ import {
   EyeIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
-  AcademicCapIcon,
-  CurrencyDollarIcon,
-  ClockIcon,
-  UsersIcon,
+  // AcademicCapIcon,
+  // CurrencyDollarIcon,
+  // ClockIcon,
+  // UsersIcon,
   CheckIcon,
   XMarkIcon,
-  StarIcon,
-  TagIcon,
+  // StarIcon,
+  // TagIcon,
 } from '@heroicons/react/24/outline';
 
 const AdminCourseManagementPage = () => {
