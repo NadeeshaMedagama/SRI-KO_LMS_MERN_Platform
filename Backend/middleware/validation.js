@@ -60,6 +60,42 @@ exports.validateProfileUpdate = [
     .trim()
     .isLength({ max: 500 })
     .withMessage('Bio cannot be more than 500 characters'),
+
+  body('phone')
+    .optional()
+    .trim()
+    .isMobilePhone()
+    .withMessage('Please provide a valid phone number'),
+
+  body('location')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Location cannot be more than 100 characters'),
+
+  body('website')
+    .optional()
+    .trim()
+    .isURL()
+    .withMessage('Please provide a valid website URL'),
+
+  body('socialLinks.linkedin')
+    .optional()
+    .trim()
+    .isURL()
+    .withMessage('Please provide a valid LinkedIn URL'),
+
+  body('socialLinks.twitter')
+    .optional()
+    .trim()
+    .isURL()
+    .withMessage('Please provide a valid Twitter URL'),
+
+  body('socialLinks.github')
+    .optional()
+    .trim()
+    .isURL()
+    .withMessage('Please provide a valid GitHub URL'),
 ];
 
 // Course validation rules

@@ -15,19 +15,27 @@ router.get('/profile', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
 
-    res.status(200).json({
-      success: true,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatar: user.avatar,
-        bio: user.bio,
-        enrolledCourses: user.enrolledCourses,
-        createdAt: user.createdAt,
-      },
-    });
+      res.status(200).json({
+        success: true,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar,
+          bio: user.bio,
+          phone: user.phone,
+          location: user.location,
+          website: user.website,
+          socialLinks: user.socialLinks,
+          enrolledCourses: user.enrolledCourses,
+          notifications: user.notifications,
+          privacy: user.privacy,
+          emailVerified: user.emailVerified,
+          lastLogin: user.lastLogin,
+          createdAt: user.createdAt,
+        },
+      });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -50,6 +58,10 @@ router.put(
         name: req.body.name,
         bio: req.body.bio,
         avatar: req.body.avatar,
+        phone: req.body.phone,
+        location: req.body.location,
+        website: req.body.website,
+        socialLinks: req.body.socialLinks,
       };
 
       // Remove undefined values
@@ -240,6 +252,79 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'User deleted successfully',
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
+// @desc    Update notification preferences
+// @route   PUT /api/users/notifications
+// @access  Private
+router.put('/notifications', protect, async (req, res) => {
+  try {
+    const { notifications } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { notifications },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Notification preferences updated successfully',
+      notifications: user.notifications,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
+// @desc    Update privacy settings
+// @route   PUT /api/users/privacy
+// @access  Private
+router.put('/privacy', protect, async (req, res) => {
+  try {
+    const { privacy } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { privacy },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Privacy settings updated successfully',
+      privacy: user.privacy,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
+// @desc    Update last login
+// @route   PUT /api/users/last-login
+// @access  Private
+router.put('/last-login', protect, async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.user.id, {
+      lastLogin: new Date(),
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Last login updated',
     });
   } catch (error) {
     res.status(500).json({
