@@ -31,7 +31,12 @@ const LoginPage = () => {
     e.preventDefault();
     const result = await login(formData.email, formData.password);
     if (result.success) {
-      navigate(from, { replace: true });
+      // Check if user is admin and redirect to admin dashboard
+      if (result.user && result.user.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
     }
   };
 

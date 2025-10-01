@@ -109,8 +109,14 @@ export const AuthProvider = ({ children }) => {
         payload: { user, token },
       });
 
+      // Check if user is admin and store admin data
+      if (user.role === 'admin') {
+        localStorage.setItem('adminToken', token);
+        localStorage.setItem('adminUser', JSON.stringify(user));
+      }
+
       toast.success('Login successful!');
-      return { success: true };
+      return { success: true, user };
     } catch (error) {
       const message = error.response?.data?.message || 'Login failed';
       dispatch({
@@ -158,6 +164,8 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
     delete api.defaults.headers.common['Authorization'];
     dispatch({ type: 'LOGOUT' });
     toast.success('Logged out successfully');

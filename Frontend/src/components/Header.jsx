@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
-import { UserIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { UserIcon, Cog6ToothIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
@@ -22,6 +22,7 @@ const Header = () => {
   const userNavigation = [
     { name: 'Profile', href: '/profile', icon: UserIcon },
     { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
+    ...(user?.role === 'admin' ? [{ name: 'Admin Panel', href: '/admin/dashboard', icon: ShieldCheckIcon }] : []),
   ];
 
   return (
