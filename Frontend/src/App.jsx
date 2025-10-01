@@ -108,20 +108,69 @@ function App() {
 
       {/* Admin Routes */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
-      <Route
-        path="/admin"
-        element={<AdminLayout />}
-      >
+      <Route path="/admin" element={<AdminLayout />}>
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="users" element={<AdminUserManagementPage />} />
         <Route path="courses" element={<AdminCourseManagementPage />} />
         <Route path="analytics" element={<AdminAnalyticsPage />} />
-        <Route path="payments" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Payment Gateway - Coming Soon</h1></div>} />
-        <Route path="certificates" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Certificates - Coming Soon</h1></div>} />
-        <Route path="notifications" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Notifications - Coming Soon</h1></div>} />
-        <Route path="announcements" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Announcements - Coming Soon</h1></div>} />
-        <Route path="forums" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Discussion Forums - Coming Soon</h1></div>} />
-        <Route path="settings" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Admin Settings - Coming Soon</h1></div>} />
+        <Route
+          path="payments"
+          element={
+            <div className="p-8 text-center">
+              <h1 className="text-2xl font-bold">
+                Payment Gateway - Coming Soon
+              </h1>
+            </div>
+          }
+        />
+        <Route
+          path="certificates"
+          element={
+            <div className="p-8 text-center">
+              <h1 className="text-2xl font-bold">Certificates - Coming Soon</h1>
+            </div>
+          }
+        />
+        <Route
+          path="notifications"
+          element={
+            <div className="p-8 text-center">
+              <h1 className="text-2xl font-bold">
+                Notifications - Coming Soon
+              </h1>
+            </div>
+          }
+        />
+        <Route
+          path="announcements"
+          element={
+            <div className="p-8 text-center">
+              <h1 className="text-2xl font-bold">
+                Announcements - Coming Soon
+              </h1>
+            </div>
+          }
+        />
+        <Route
+          path="forums"
+          element={
+            <div className="p-8 text-center">
+              <h1 className="text-2xl font-bold">
+                Discussion Forums - Coming Soon
+              </h1>
+            </div>
+          }
+        />
+        <Route
+          path="settings"
+          element={
+            <div className="p-8 text-center">
+              <h1 className="text-2xl font-bold">
+                Admin Settings - Coming Soon
+              </h1>
+            </div>
+          }
+        />
       </Route>
     </Routes>
   );

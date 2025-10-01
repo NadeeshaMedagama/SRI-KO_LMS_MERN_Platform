@@ -49,17 +49,33 @@ const AdminLayout = ({ children }) => {
   const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: HomeIcon },
     { name: 'User Management', href: '/admin/users', icon: UsersIcon },
-    { name: 'Course Management', href: '/admin/courses', icon: AcademicCapIcon },
-    { name: 'Analytics & Reports', href: '/admin/analytics', icon: ChartBarIcon },
+    {
+      name: 'Course Management',
+      href: '/admin/courses',
+      icon: AcademicCapIcon,
+    },
+    {
+      name: 'Analytics & Reports',
+      href: '/admin/analytics',
+      icon: ChartBarIcon,
+    },
     { name: 'Payment Gateway', href: '/admin/payments', icon: CreditCardIcon },
     { name: 'Certificates', href: '/admin/certificates', icon: TrophyIcon },
     { name: 'Notifications', href: '/admin/notifications', icon: BellIcon },
-    { name: 'Announcements', href: '/admin/announcements', icon: DocumentTextIcon },
-    { name: 'Discussion Forums', href: '/admin/forums', icon: ChatBubbleLeftRightIcon },
+    {
+      name: 'Announcements',
+      href: '/admin/announcements',
+      icon: DocumentTextIcon,
+    },
+    {
+      name: 'Discussion Forums',
+      href: '/admin/forums',
+      icon: ChatBubbleLeftRightIcon,
+    },
     { name: 'Settings', href: '/admin/settings', icon: CogIcon },
   ];
 
-  const isCurrentPath = (path) => {
+  const isCurrentPath = path => {
     return location.pathname === path;
   };
 
@@ -81,13 +97,20 @@ const AdminLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar */}
-      <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
+      <div
+        className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}
+      >
+        <div
+          className="fixed inset-0 bg-gray-600 bg-opacity-75"
+          onClick={() => setSidebarOpen(false)}
+        />
         <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white shadow-xl">
           <div className="flex h-16 items-center justify-between px-4">
             <div className="flex items-center">
               <ShieldCheckIcon className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">Admin Panel</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">
+                Admin Panel
+              </span>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -97,7 +120,7 @@ const AdminLayout = ({ children }) => {
             </button>
           </div>
           <nav className="flex-1 px-4 py-4 space-y-1">
-            {navigation.map((item) => {
+            {navigation.map(item => {
               const Icon = item.icon;
               return (
                 <Link
@@ -142,10 +165,12 @@ const AdminLayout = ({ children }) => {
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200 pt-5 pb-4 overflow-y-auto">
           <div className="flex items-center flex-shrink-0 px-4">
             <ShieldCheckIcon className="h-8 w-8 text-blue-600" />
-            <span className="ml-2 text-xl font-bold text-gray-900">Admin Panel</span>
+            <span className="ml-2 text-xl font-bold text-gray-900">
+              Admin Panel
+            </span>
           </div>
           <nav className="mt-8 flex-1 px-4 space-y-1">
-            {navigation.map((item) => {
+            {navigation.map(item => {
               const Icon = item.icon;
               return (
                 <Link
@@ -215,7 +240,9 @@ const AdminLayout = ({ children }) => {
               {/* Profile dropdown */}
               <div className="flex items-center gap-x-4 lg:gap-x-6">
                 <div className="hidden lg:block lg:max-w-xs lg:truncate">
-                  <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {user.name}
+                  </p>
                   <p className="text-xs text-gray-500">Administrator</p>
                 </div>
                 <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
@@ -227,9 +254,7 @@ const AdminLayout = ({ children }) => {
         </div>
 
         {/* Page content */}
-        <main className="py-8">
-          {children}
-        </main>
+        <main className="py-8">{children}</main>
       </div>
     </div>
   );
