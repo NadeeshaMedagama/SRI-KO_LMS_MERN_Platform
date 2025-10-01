@@ -20,14 +20,14 @@ const AdminLoginPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
 
@@ -60,9 +60,7 @@ const AdminLoginPage = () => {
           <div className="mx-auto h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-lg">
             <ShieldCheckIcon className="h-8 w-8 text-blue-600" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-white">
-            Admin Portal
-          </h2>
+          <h2 className="mt-6 text-3xl font-bold text-white">Admin Portal</h2>
           <p className="mt-2 text-sm text-blue-200">
             Sign in to access the administrative dashboard
           </p>
@@ -73,7 +71,10 @@ const AdminLoginPage = () => {
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Admin Email
               </label>
               <div className="relative">
@@ -96,7 +97,10 @@ const AdminLoginPage = () => {
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Password
               </label>
               <div className="relative">
@@ -163,9 +167,12 @@ const AdminLoginPage = () => {
           <div className="flex items-start">
             <ShieldCheckIcon className="h-5 w-5 text-blue-300 mt-0.5 mr-3 flex-shrink-0" />
             <div>
-              <h3 className="text-sm font-medium text-blue-200">Security Notice</h3>
+              <h3 className="text-sm font-medium text-blue-200">
+                Security Notice
+              </h3>
               <p className="text-xs text-blue-300 mt-1">
-                This is a secure admin portal. All activities are logged and monitored.
+                This is a secure admin portal. All activities are logged and
+                monitored.
               </p>
             </div>
           </div>

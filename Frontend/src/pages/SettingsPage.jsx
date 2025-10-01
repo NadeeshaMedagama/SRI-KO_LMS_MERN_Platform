@@ -80,7 +80,7 @@ const SettingsPage = () => {
     }
   }, [user, refreshUserData]);
 
-  const handlePasswordChange = (e) => {
+  const handlePasswordChange = e => {
     const { name, value } = e.target;
     setPasswordForm(prev => ({
       ...prev,
@@ -88,7 +88,7 @@ const SettingsPage = () => {
     }));
   };
 
-  const handleNotificationChange = (e) => {
+  const handleNotificationChange = e => {
     const { name, checked } = e.target;
     setNotifications(prev => ({
       ...prev,
@@ -96,7 +96,7 @@ const SettingsPage = () => {
     }));
   };
 
-  const handlePrivacyChange = (e) => {
+  const handlePrivacyChange = e => {
     const { name, value, type, checked } = e.target;
     setPrivacy(prev => ({
       ...prev,
@@ -104,7 +104,7 @@ const SettingsPage = () => {
     }));
   };
 
-  const handlePasswordSubmit = async (e) => {
+  const handlePasswordSubmit = async e => {
     e.preventDefault();
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
@@ -147,7 +147,10 @@ const SettingsPage = () => {
         toast.success('Notification preferences saved!');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to save notification preferences');
+      toast.error(
+        error.response?.data?.message ||
+          'Failed to save notification preferences',
+      );
     } finally {
       setLoading(false);
     }
@@ -161,14 +164,20 @@ const SettingsPage = () => {
         toast.success('Privacy settings saved!');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to save privacy settings');
+      toast.error(
+        error.response?.data?.message || 'Failed to save privacy settings',
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteAccount = () => {
-    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        'Are you sure you want to delete your account? This action cannot be undone.',
+      )
+    ) {
       // Implement account deletion logic
       toast.error('Account deletion not implemented yet');
     }
@@ -228,8 +237,18 @@ const SettingsPage = () => {
               onClick={refreshUserData}
               className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
               </svg>
               Refresh
             </button>
@@ -240,7 +259,7 @@ const SettingsPage = () => {
           {/* Sidebar */}
           <div className="lg:w-64">
             <nav className="space-y-1">
-              {tabs.map((tab) => {
+              {tabs.map(tab => {
                 const Icon = tab.icon;
                 return (
                   <button
@@ -266,8 +285,12 @@ const SettingsPage = () => {
             {activeTab === 'account' && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-lg font-semibold text-gray-900">Account Information</h2>
-                  <p className="text-sm text-gray-600">Manage your basic account details</p>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Account Information
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    Manage your basic account details
+                  </p>
                 </div>
                 <div className="px-6 py-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -305,15 +328,21 @@ const SettingsPage = () => {
                       Account Type
                     </label>
                     <div className="flex items-center space-x-2">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user?.role === 'admin' ? 'bg-red-100 text-red-800' :
-                        user?.role === 'instructor' ? 'bg-blue-100 text-blue-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
-                        {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)}
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user?.role === 'admin'
+                            ? 'bg-red-100 text-red-800'
+                            : user?.role === 'instructor'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-green-100 text-green-800'
+                        }`}
+                      >
+                        {user?.role?.charAt(0).toUpperCase() +
+                          user?.role?.slice(1)}
                       </span>
                       <span className="text-sm text-gray-500">
-                        Member since {new Date(user?.createdAt).toLocaleDateString()}
+                        Member since{' '}
+                        {new Date(user?.createdAt).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
@@ -327,10 +356,17 @@ const SettingsPage = () => {
                 {/* Change Password */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                   <div className="px-6 py-4 border-b border-gray-200">
-                    <h2 className="text-lg font-semibold text-gray-900">Change Password</h2>
-                    <p className="text-sm text-gray-600">Update your password to keep your account secure</p>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Change Password
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      Update your password to keep your account secure
+                    </p>
                   </div>
-                  <form onSubmit={handlePasswordSubmit} className="px-6 py-6 space-y-6">
+                  <form
+                    onSubmit={handlePasswordSubmit}
+                    className="px-6 py-6 space-y-6"
+                  >
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Current Password
@@ -346,7 +382,9 @@ const SettingsPage = () => {
                         />
                         <button
                           type="button"
-                          onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                          onClick={() =>
+                            setShowCurrentPassword(!showCurrentPassword)
+                          }
                           className="absolute inset-y-0 right-0 pr-3 flex items-center"
                         >
                           {showCurrentPassword ? (
@@ -398,7 +436,9 @@ const SettingsPage = () => {
                         />
                         <button
                           type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
                           className="absolute inset-y-0 right-0 pr-3 flex items-center"
                         >
                           {showConfirmPassword ? (
@@ -429,17 +469,24 @@ const SettingsPage = () => {
                 {/* Security Actions */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                   <div className="px-6 py-4 border-b border-gray-200">
-                    <h2 className="text-lg font-semibold text-gray-900">Security Actions</h2>
-                    <p className="text-sm text-gray-600">Manage your account security</p>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Security Actions
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      Manage your account security
+                    </p>
                   </div>
                   <div className="px-6 py-6 space-y-4">
                     <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
                       <div className="flex items-center">
                         <ExclamationTriangleIcon className="w-5 h-5 text-red-600 mr-3" />
                         <div>
-                          <h3 className="text-sm font-medium text-red-800">Delete Account</h3>
+                          <h3 className="text-sm font-medium text-red-800">
+                            Delete Account
+                          </h3>
                           <p className="text-sm text-red-600">
-                            Permanently delete your account and all associated data
+                            Permanently delete your account and all associated
+                            data
                           </p>
                         </div>
                       </div>
@@ -459,15 +506,23 @@ const SettingsPage = () => {
             {activeTab === 'notifications' && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-lg font-semibold text-gray-900">Notification Preferences</h2>
-                  <p className="text-sm text-gray-600">Choose how you want to be notified</p>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Notification Preferences
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    Choose how you want to be notified
+                  </p>
                 </div>
                 <div className="px-6 py-6 space-y-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-medium text-gray-900">Email Notifications</h3>
-                        <p className="text-sm text-gray-600">Receive notifications via email</p>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          Email Notifications
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Receive notifications via email
+                        </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -482,8 +537,12 @@ const SettingsPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-medium text-gray-900">Course Updates</h3>
-                        <p className="text-sm text-gray-600">Get notified about course updates and new content</p>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          Course Updates
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Get notified about course updates and new content
+                        </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -498,8 +557,12 @@ const SettingsPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-medium text-gray-900">Assignment Reminders</h3>
-                        <p className="text-sm text-gray-600">Receive reminders about upcoming assignments</p>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          Assignment Reminders
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Receive reminders about upcoming assignments
+                        </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -514,8 +577,12 @@ const SettingsPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-medium text-gray-900">System Announcements</h3>
-                        <p className="text-sm text-gray-600">Important updates about the platform</p>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          System Announcements
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Important updates about the platform
+                        </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -530,8 +597,12 @@ const SettingsPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-medium text-gray-900">Marketing Emails</h3>
-                        <p className="text-sm text-gray-600">Receive promotional content and offers</p>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          Marketing Emails
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Receive promotional content and offers
+                        </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -567,8 +638,12 @@ const SettingsPage = () => {
             {activeTab === 'privacy' && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-lg font-semibold text-gray-900">Privacy Settings</h2>
-                  <p className="text-sm text-gray-600">Control who can see your information</p>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Privacy Settings
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    Control who can see your information
+                  </p>
                 </div>
                 <div className="px-6 py-6 space-y-6">
                   <div className="space-y-4">
@@ -582,15 +657,25 @@ const SettingsPage = () => {
                         onChange={handlePrivacyChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       >
-                        <option value="public">Public - Anyone can see your profile</option>
-                        <option value="private">Private - Only you can see your profile</option>
-                        <option value="friends">Friends - Only your connections can see your profile</option>
+                        <option value="public">
+                          Public - Anyone can see your profile
+                        </option>
+                        <option value="private">
+                          Private - Only you can see your profile
+                        </option>
+                        <option value="friends">
+                          Friends - Only your connections can see your profile
+                        </option>
                       </select>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-medium text-gray-900">Show Email Address</h3>
-                        <p className="text-sm text-gray-600">Display your email on your public profile</p>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          Show Email Address
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Display your email on your public profile
+                        </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -605,8 +690,12 @@ const SettingsPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-medium text-gray-900">Show Enrolled Courses</h3>
-                        <p className="text-sm text-gray-600">Display your course enrollments on your profile</p>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          Show Enrolled Courses
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Display your course enrollments on your profile
+                        </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -621,8 +710,12 @@ const SettingsPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-medium text-gray-900">Allow Messages</h3>
-                        <p className="text-sm text-gray-600">Let other users send you messages</p>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          Allow Messages
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Let other users send you messages
+                        </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input

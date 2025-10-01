@@ -73,7 +73,7 @@ const AdminUserManagementPage = () => {
     }
   };
 
-  const handleCreateUser = async (e) => {
+  const handleCreateUser = async e => {
     e.preventDefault();
     try {
       const response = await api.post('/admin/users', userForm);
@@ -88,10 +88,13 @@ const AdminUserManagementPage = () => {
     }
   };
 
-  const handleUpdateUser = async (e) => {
+  const handleUpdateUser = async e => {
     e.preventDefault();
     try {
-      const response = await api.put(`/admin/users/${selectedUser._id}`, userForm);
+      const response = await api.put(
+        `/admin/users/${selectedUser._id}`,
+        userForm,
+      );
       if (response.data.success) {
         toast.success('User updated successfully');
         setShowEditModal(false);
@@ -103,7 +106,7 @@ const AdminUserManagementPage = () => {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
+  const handleDeleteUser = async userId => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         const response = await api.delete(`/admin/users/${userId}`);
@@ -123,7 +126,9 @@ const AdminUserManagementPage = () => {
         isActive: !currentStatus,
       });
       if (response.data.success) {
-        toast.success(`User ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
+        toast.success(
+          `User ${!currentStatus ? 'activated' : 'deactivated'} successfully`,
+        );
         fetchUsers();
       }
     } catch (error) {
@@ -146,7 +151,7 @@ const AdminUserManagementPage = () => {
     setSelectedUser(null);
   };
 
-  const openEditModal = (user) => {
+  const openEditModal = user => {
     setSelectedUser(user);
     setUserForm({
       name: user.name,
@@ -162,12 +167,12 @@ const AdminUserManagementPage = () => {
     setShowEditModal(true);
   };
 
-  const openViewModal = (user) => {
+  const openViewModal = user => {
     setSelectedUser(user);
     setShowUserModal(true);
   };
 
-  const getRoleBadgeColor = (role) => {
+  const getRoleBadgeColor = role => {
     switch (role) {
       case 'admin':
         return 'bg-red-100 text-red-800';
@@ -180,7 +185,7 @@ const AdminUserManagementPage = () => {
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = dateString => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -195,7 +200,9 @@ const AdminUserManagementPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                User Management
+              </h1>
               <p className="mt-2 text-gray-600">
                 Manage all users in the system
               </p>
@@ -222,7 +229,7 @@ const AdminUserManagementPage = () => {
                 type="text"
                 placeholder="Search users..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -230,7 +237,7 @@ const AdminUserManagementPage = () => {
             {/* Role Filter */}
             <select
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
+              onChange={e => setRoleFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="all">All Roles</option>
@@ -242,7 +249,7 @@ const AdminUserManagementPage = () => {
             {/* Status Filter */}
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={e => setStatusFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="all">All Status</option>
@@ -302,7 +309,7 @@ const AdminUserManagementPage = () => {
                     </td>
                   </tr>
                 ) : (
-                  users.map((user) => (
+                  users.map(user => (
                     <tr key={user._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -310,20 +317,30 @@ const AdminUserManagementPage = () => {
                             {user.name?.charAt(0)?.toUpperCase() || 'U'}
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                            <div className="text-sm text-gray-500">{user.email}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {user.name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {user.email}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}
+                        >
                           {user.role}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            user.isActive
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
                           {user.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
@@ -347,11 +364,21 @@ const AdminUserManagementPage = () => {
                             <PencilIcon className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleToggleUserStatus(user._id, user.isActive)}
+                            onClick={() =>
+                              handleToggleUserStatus(user._id, user.isActive)
+                            }
                             className={`${user.isActive ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
-                            title={user.isActive ? 'Deactivate User' : 'Activate User'}
+                            title={
+                              user.isActive
+                                ? 'Deactivate User'
+                                : 'Activate User'
+                            }
                           >
-                            {user.isActive ? <UserMinusIcon className="w-4 h-4" /> : <UserPlusIcon className="w-4 h-4" />}
+                            {user.isActive ? (
+                              <UserMinusIcon className="w-4 h-4" />
+                            ) : (
+                              <UserPlusIcon className="w-4 h-4" />
+                            )}
                           </button>
                           <button
                             onClick={() => handleDeleteUser(user._id)}
@@ -381,7 +408,9 @@ const AdminUserManagementPage = () => {
                   Previous
                 </button>
                 <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  onClick={() =>
+                    setCurrentPage(Math.min(totalPages, currentPage + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
@@ -398,14 +427,18 @@ const AdminUserManagementPage = () => {
                 <div>
                   <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                     <button
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      onClick={() =>
+                        setCurrentPage(Math.max(1, currentPage - 1))
+                      }
                       disabled={currentPage === 1}
                       className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                     >
                       Previous
                     </button>
                     <button
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      onClick={() =>
+                        setCurrentPage(Math.min(totalPages, currentPage + 1))
+                      }
                       disabled={currentPage === totalPages}
                       className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                     >
@@ -424,43 +457,61 @@ const AdminUserManagementPage = () => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Create New User</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Create New User
+              </h3>
               <form onSubmit={handleCreateUser} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name
+                  </label>
                   <input
                     type="text"
                     required
                     value={userForm.name}
-                    onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                    onChange={e =>
+                      setUserForm({ ...userForm, name: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
                   <input
                     type="email"
                     required
                     value={userForm.email}
-                    onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                    onChange={e =>
+                      setUserForm({ ...userForm, email: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Password
+                  </label>
                   <input
                     type="password"
                     required
                     value={userForm.password}
-                    onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                    onChange={e =>
+                      setUserForm({ ...userForm, password: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Role
+                  </label>
                   <select
                     value={userForm.role}
-                    onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
+                    onChange={e =>
+                      setUserForm({ ...userForm, role: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="student">Student</option>
@@ -472,10 +523,14 @@ const AdminUserManagementPage = () => {
                   <input
                     type="checkbox"
                     checked={userForm.isActive}
-                    onChange={(e) => setUserForm({ ...userForm, isActive: e.target.checked })}
+                    onChange={e =>
+                      setUserForm({ ...userForm, isActive: e.target.checked })
+                    }
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label className="ml-2 block text-sm text-gray-900">Active</label>
+                  <label className="ml-2 block text-sm text-gray-900">
+                    Active
+                  </label>
                 </div>
                 <div className="flex justify-end space-x-3">
                   <button
@@ -503,42 +558,60 @@ const AdminUserManagementPage = () => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Edit User</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Edit User
+              </h3>
               <form onSubmit={handleUpdateUser} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name
+                  </label>
                   <input
                     type="text"
                     required
                     value={userForm.name}
-                    onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                    onChange={e =>
+                      setUserForm({ ...userForm, name: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
                   <input
                     type="email"
                     required
                     value={userForm.email}
-                    onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                    onChange={e =>
+                      setUserForm({ ...userForm, email: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password (leave blank to keep current)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Password (leave blank to keep current)
+                  </label>
                   <input
                     type="password"
                     value={userForm.password}
-                    onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                    onChange={e =>
+                      setUserForm({ ...userForm, password: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Role
+                  </label>
                   <select
                     value={userForm.role}
-                    onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
+                    onChange={e =>
+                      setUserForm({ ...userForm, role: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="student">Student</option>
@@ -550,10 +623,14 @@ const AdminUserManagementPage = () => {
                   <input
                     type="checkbox"
                     checked={userForm.isActive}
-                    onChange={(e) => setUserForm({ ...userForm, isActive: e.target.checked })}
+                    onChange={e =>
+                      setUserForm({ ...userForm, isActive: e.target.checked })
+                    }
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label className="ml-2 block text-sm text-gray-900">Active</label>
+                  <label className="ml-2 block text-sm text-gray-900">
+                    Active
+                  </label>
                 </div>
                 <div className="flex justify-end space-x-3">
                   <button
@@ -581,37 +658,59 @@ const AdminUserManagementPage = () => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">User Details</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                User Details
+              </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Name
+                  </label>
                   <p className="text-sm text-gray-900">{selectedUser.name}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Email
+                  </label>
                   <p className="text-sm text-gray-900">{selectedUser.email}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Role</label>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(selectedUser.role)}`}>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Role
+                  </label>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(selectedUser.role)}`}
+                  >
                     {selectedUser.role}
                   </span>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Status</label>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    selectedUser.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Status
+                  </label>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      selectedUser.isActive
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}
+                  >
                     {selectedUser.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Joined</label>
-                  <p className="text-sm text-gray-900">{formatDate(selectedUser.createdAt)}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Joined
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {formatDate(selectedUser.createdAt)}
+                  </p>
                 </div>
                 {selectedUser.bio && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Bio</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Bio
+                    </label>
                     <p className="text-sm text-gray-900">{selectedUser.bio}</p>
                   </div>
                 )}
