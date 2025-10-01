@@ -5,7 +5,8 @@ const User = require('./models/User');
 async function testDatabase() {
   try {
     // Connect to MongoDB (you'll need to set your connection string)
-    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/sri-ko-lms';
+    const MONGODB_URI =
+      process.env.MONGODB_URI || 'mongodb://localhost:27017/sri-ko-lms';
 
     // console.log('Connecting to MongoDB...');
     await mongoose.connect(MONGODB_URI);
@@ -50,16 +51,16 @@ async function testDatabase() {
     const retrievedUser = await User.findById(testUser._id);
     // console.log('✅ User retrieved successfully');
     // console.log('User data:', {
-      name: retrievedUser.name,
-      email: retrievedUser.email,
-      role: retrievedUser.role,
-      bio: retrievedUser.bio,
-      phone: retrievedUser.phone,
-      location: retrievedUser.location,
-      website: retrievedUser.website,
-      socialLinks: retrievedUser.socialLinks,
-      notifications: retrievedUser.notifications,
-      privacy: retrievedUser.privacy,
+    //   name: retrievedUser.name,
+    //   email: retrievedUser.email,
+    //   role: retrievedUser.role,
+    //   bio: retrievedUser.bio,
+    //   phone: retrievedUser.phone,
+    //   location: retrievedUser.location,
+    //   website: retrievedUser.website,
+    //   socialLinks: retrievedUser.socialLinks,
+    //   notifications: retrievedUser.notifications,
+    //   privacy: retrievedUser.privacy,
     // });
 
     // Test user update
@@ -76,10 +77,10 @@ async function testDatabase() {
     );
     // console.log('✅ User updated successfully');
     // console.log('Updated fields:', {
-      bio: updatedUser.bio,
-      phone: updatedUser.phone,
-      marketingEmails: updatedUser.notifications.marketingEmails,
-      profileVisibility: updatedUser.privacy.profileVisibility,
+    //   bio: updatedUser.bio,
+    //   phone: updatedUser.phone,
+    //   marketingEmails: updatedUser.notifications.marketingEmails,
+    //   profileVisibility: updatedUser.privacy.profileVisibility,
     // });
 
     // Clean up test user

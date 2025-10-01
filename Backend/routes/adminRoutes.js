@@ -23,7 +23,7 @@ router.get('/stats', protect, authorize('admin'), async (req, res) => {
     // Calculate total revenue (simplified - you might want to add a Payment model)
     const courses = await Course.find({ isPublished: true });
     const totalRevenue = courses.reduce((sum, course) => {
-      return sum + (course.price * (course.enrolledStudents?.length || 0));
+      return sum + course.price * (course.enrolledStudents?.length || 0);
     }, 0);
 
     // Get completed courses count (simplified)
@@ -115,7 +115,17 @@ router.post(
   handleValidationErrors,
   async (req, res) => {
     try {
-      const { name, email, password, role, bio, phone, location, website, isActive } = req.body;
+      const {
+        name,
+        email,
+        password,
+        role,
+        bio,
+        phone,
+        location,
+        website,
+        isActive,
+      } = req.body;
 
       // Check if user already exists
       const existingUser = await User.findOne({ email });
@@ -160,7 +170,7 @@ router.post(
         success: false,
         message: 'Server error',
       });
-    },
+    }
   },
 );
 
@@ -169,7 +179,8 @@ router.post(
 // @access  Private/Admin
 router.put('/users/:id', protect, authorize('admin'), async (req, res) => {
   try {
-    const { name, email, role, bio, phone, location, website, isActive } = req.body;
+    const { name, email, role, bio, phone, location, website, isActive } =
+      req.body;
 
     const user = await User.findById(req.params.id);
 
@@ -257,40 +268,45 @@ router.delete('/users/:id', protect, authorize('admin'), async (req, res) => {
 // @desc    Toggle user status
 // @route   PUT /api/admin/users/:id/status
 // @access  Private/Admin
-router.put('/users/:id/status', protect, authorize('admin'), async (req, res) => {
-  try {
-    const { isActive } = req.body;
+router.put(
+  '/users/:id/status',
+  protect,
+  authorize('admin'),
+  async (req, res) => {
+    try {
+      const { isActive } = req.body;
 
-    const user = await User.findById(req.params.id);
+      const user = await User.findById(req.params.id);
 
-    if (!user) {
-      return res.status(404).json({
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found',
+        });
+      }
+
+      user.isActive = isActive;
+      await user.save();
+
+      res.status(200).json({
+        success: true,
+        message: `User ${isActive ? 'activated' : 'deactivated'} successfully`,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          isActive: user.isActive,
+        },
+      });
+    } catch (error) {
+      console.error('Toggle user status error:', error);
+      res.status(500).json({
         success: false,
-        message: 'User not found',
+        message: 'Server error',
       });
     }
-
-    user.isActive = isActive;
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: `User ${isActive ? 'activated' : 'deactivated'} successfully`,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        isActive: user.isActive,
-      },
-    });
-  } catch (error) {
-    console.error('Toggle user status error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-    });
-  }
-});
+  },
+);
 
 // @desc    Get all courses with pagination and filtering
 // @route   GET /api/admin/courses
@@ -396,7 +412,7 @@ router.post(
         success: false,
         message: 'Server error',
       });
-    },
+    }
   },
 );
 
@@ -435,7 +451,8 @@ router.put('/courses/:id', protect, authorize('admin'), async (req, res) => {
     course.duration = duration || course.duration;
     course.price = price !== undefined ? price : course.price;
     course.instructor = instructor || course.instructor;
-    course.isPublished = isPublished !== undefined ? isPublished : course.isPublished;
+    course.isPublished =
+      isPublished !== undefined ? isPublished : course.isPublished;
     course.thumbnail = thumbnail || course.thumbnail;
     course.curriculum = curriculum || course.curriculum;
 
@@ -487,39 +504,44 @@ router.delete('/courses/:id', protect, authorize('admin'), async (req, res) => {
 // @desc    Toggle course status
 // @route   PUT /api/admin/courses/:id/status
 // @access  Private/Admin
-router.put('/courses/:id/status', protect, authorize('admin'), async (req, res) => {
-  try {
-    const { isPublished } = req.body;
+router.put(
+  '/courses/:id/status',
+  protect,
+  authorize('admin'),
+  async (req, res) => {
+    try {
+      const { isPublished } = req.body;
 
-    const course = await Course.findById(req.params.id);
+      const course = await Course.findById(req.params.id);
 
-    if (!course) {
-      return res.status(404).json({
+      if (!course) {
+        return res.status(404).json({
+          success: false,
+          message: 'Course not found',
+        });
+      }
+
+      course.isPublished = isPublished;
+      await course.save();
+
+      res.status(200).json({
+        success: true,
+        message: `Course ${isPublished ? 'published' : 'unpublished'} successfully`,
+        course: {
+          id: course._id,
+          title: course.title,
+          isPublished: course.isPublished,
+        },
+      });
+    } catch (error) {
+      console.error('Toggle course status error:', error);
+      res.status(500).json({
         success: false,
-        message: 'Course not found',
+        message: 'Server error',
       });
     }
-
-    course.isPublished = isPublished;
-    await course.save();
-
-    res.status(200).json({
-      success: true,
-      message: `Course ${isPublished ? 'published' : 'unpublished'} successfully`,
-      course: {
-        id: course._id,
-        title: course.title,
-        isPublished: course.isPublished,
-      },
-    });
-  } catch (error) {
-    console.error('Toggle course status error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-    });
-  }
-});
+  },
+);
 
 // @desc    Get analytics data
 // @route   GET /api/admin/analytics
@@ -538,14 +560,14 @@ router.get('/analytics', protect, authorize('admin'), async (req, res) => {
     // Calculate total revenue
     const courses = await Course.find({ isPublished: true });
     const totalRevenue = courses.reduce((sum, course) => {
-      return sum + (course.price * (course.enrolledStudents?.length || 0));
+      return sum + course.price * (course.enrolledStudents?.length || 0);
     }, 0);
 
     // Get top courses
     const topCourses = await Course.find({ isPublished: true })
       .populate('instructor', 'name')
       .populate('enrolledStudents', 'name')
-      .sort({ 'enrolledStudents': -1 })
+      .sort({ enrolledStudents: -1 })
       .limit(5);
 
     // Get recent activities (simplified)
@@ -608,24 +630,29 @@ router.get('/analytics', protect, authorize('admin'), async (req, res) => {
 // @desc    Export analytics report
 // @route   GET /api/admin/analytics/export
 // @access  Private/Admin
-router.get('/analytics/export', protect, authorize('admin'), async (req, res) => {
-  try {
-    const format = req.query.format || 'pdf';
-    // const period = req.query.period || '30';
+router.get(
+  '/analytics/export',
+  protect,
+  authorize('admin'),
+  async (req, res) => {
+    try {
+      const format = req.query.format || 'pdf';
+      // const period = req.query.period || '30';
 
-    // This is a placeholder for export functionality
-    // You would implement actual PDF/CSV generation here
-    res.status(200).json({
-      success: true,
-      message: `Export functionality for ${format} format coming soon`,
-    });
-  } catch (error) {
-    console.error('Export error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-    });
-  }
-});
+      // This is a placeholder for export functionality
+      // You would implement actual PDF/CSV generation here
+      res.status(200).json({
+        success: true,
+        message: `Export functionality for ${format} format coming soon`,
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Server error',
+      });
+    }
+  },
+);
 
 module.exports = router;
