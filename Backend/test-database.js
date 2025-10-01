@@ -7,12 +7,12 @@ async function testDatabase() {
     // Connect to MongoDB (you'll need to set your connection string)
     const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/sri-ko-lms';
 
-    console.log('Connecting to MongoDB...');
+    // console.log('Connecting to MongoDB...');
     await mongoose.connect(MONGODB_URI);
-    console.log('✅ Connected to MongoDB successfully');
+    // console.log('✅ Connected to MongoDB successfully');
 
     // Test user creation with new fields
-    console.log('\nTesting user creation with new fields...');
+    // console.log('\nTesting user creation with new fields...');
     const testUser = new User({
       name: 'Test User',
       email: 'test@example.com',
@@ -43,13 +43,13 @@ async function testDatabase() {
     });
 
     await testUser.save();
-    console.log('✅ Test user created successfully');
+    // console.log('✅ Test user created successfully');
 
     // Test user retrieval
-    console.log('\nTesting user retrieval...');
+    // console.log('\nTesting user retrieval...');
     const retrievedUser = await User.findById(testUser._id);
-    console.log('✅ User retrieved successfully');
-    console.log('User data:', {
+    // console.log('✅ User retrieved successfully');
+    // console.log('User data:', {
       name: retrievedUser.name,
       email: retrievedUser.email,
       role: retrievedUser.role,
@@ -60,10 +60,10 @@ async function testDatabase() {
       socialLinks: retrievedUser.socialLinks,
       notifications: retrievedUser.notifications,
       privacy: retrievedUser.privacy,
-    });
+    // });
 
     // Test user update
-    console.log('\nTesting user update...');
+    // console.log('\nTesting user update...');
     const updatedUser = await User.findByIdAndUpdate(
       testUser._id,
       {
@@ -74,25 +74,25 @@ async function testDatabase() {
       },
       { new: true },
     );
-    console.log('✅ User updated successfully');
-    console.log('Updated fields:', {
+    // console.log('✅ User updated successfully');
+    // console.log('Updated fields:', {
       bio: updatedUser.bio,
       phone: updatedUser.phone,
       marketingEmails: updatedUser.notifications.marketingEmails,
       profileVisibility: updatedUser.privacy.profileVisibility,
-    });
+    // });
 
     // Clean up test user
-    console.log('\nCleaning up test user...');
+    // console.log('\nCleaning up test user...');
     await User.findByIdAndDelete(testUser._id);
-    console.log('✅ Test user deleted successfully');
+    // console.log('✅ Test user deleted successfully');
 
-    console.log('\n🎉 All database tests passed!');
+    // console.log('\n🎉 All database tests passed!');
   } catch (error) {
     console.error('❌ Database test failed:', error.message);
   } finally {
     await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
+    // console.log('Disconnected from MongoDB');
   }
 }
 

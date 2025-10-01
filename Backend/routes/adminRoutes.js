@@ -160,8 +160,8 @@ router.post(
         success: false,
         message: 'Server error',
       });
-    }
-  }
+    },
+  },
 );
 
 // @desc    Update user
@@ -396,8 +396,8 @@ router.post(
         success: false,
         message: 'Server error',
       });
-    }
-  }
+    },
+  },
 );
 
 // @desc    Update course
@@ -526,7 +526,7 @@ router.put('/courses/:id/status', protect, authorize('admin'), async (req, res) 
 // @access  Private/Admin
 router.get('/analytics', protect, authorize('admin'), async (req, res) => {
   try {
-    const period = req.query.period || '30';
+    // const period = req.query.period || '30';
     // const days = parseInt(period);
 
     // Get overview statistics
