@@ -9,7 +9,9 @@
     "client": "cd Frontend && npm run dev",
     "build": "cd Frontend && npm run build",
     "install-all": "npm install && cd Backend && npm install && cd ../Frontend && npm install",
-    "start": "cd Backend && npm start"
+    "start": "cd Backend && npm start",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\""
   },
   "keywords": [
     "LMS",
@@ -25,6 +27,7 @@
   "author": "Nadeesha Medagama",
   "license": "MIT",
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "prettier": "^3.0.0"
   }
 }
