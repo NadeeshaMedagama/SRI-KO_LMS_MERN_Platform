@@ -56,6 +56,71 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Notification preferences
+    notifications: {
+      emailNotifications: {
+        type: Boolean,
+        default: true,
+      },
+      courseUpdates: {
+        type: Boolean,
+        default: true,
+      },
+      assignmentReminders: {
+        type: Boolean,
+        default: true,
+      },
+      systemAnnouncements: {
+        type: Boolean,
+        default: true,
+      },
+      marketingEmails: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    // Privacy settings
+    privacy: {
+      profileVisibility: {
+        type: String,
+        enum: ['public', 'private', 'friends'],
+        default: 'public',
+      },
+      showEmail: {
+        type: Boolean,
+        default: false,
+      },
+      showCourses: {
+        type: Boolean,
+        default: true,
+      },
+      allowMessages: {
+        type: Boolean,
+        default: true,
+      },
+    },
+    // Additional profile fields
+    phone: {
+      type: String,
+      trim: true,
+    },
+    location: {
+      type: String,
+      trim: true,
+      maxlength: [100, 'Location cannot be more than 100 characters'],
+    },
+    website: {
+      type: String,
+      trim: true,
+    },
+    socialLinks: {
+      linkedin: String,
+      twitter: String,
+      github: String,
+    },
+    lastLogin: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
@@ -75,6 +140,14 @@ userSchema.pre('save', async function (next) {
 // Match user entered password to hashed password in database
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Generate JWT token
+userSchema.methods.getSignedJwtToken = function () {
+  const jwt = require('jsonwebtoken');
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET || 'fallback-secret', {
+    expiresIn: process.env.JWT_EXPIRE || '7d',
+  });
 };
 
 // Generate and hash password reset token

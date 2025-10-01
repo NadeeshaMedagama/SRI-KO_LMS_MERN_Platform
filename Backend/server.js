@@ -9,6 +9,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const courseRoutes = require('./routes/courseRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
@@ -41,13 +42,21 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.warn('📦 MongoDB connected successfully'))
+  .then(() => {
+    console.warn('📦 MongoDB connected successfully');
+    // Test database connection
+    const User = require('./models/User');
+    User.countDocuments().then(count => {
+      console.warn(`📊 Total users in database: ${count}`);
+    });
+  })
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

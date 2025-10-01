@@ -10,6 +10,7 @@ const {
 
 const router = express.Router();
 
+
 // Generate JWT Token
 const generateToken = id => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback-secret', {
@@ -150,12 +151,91 @@ router.get('/me', protect, async (req, res) => {
         role: user.role,
         avatar: user.avatar,
         bio: user.bio,
+        phone: user.phone,
+        location: user.location,
+        website: user.website,
+        socialLinks: user.socialLinks,
         enrolledCourses: user.enrolledCourses,
+        notifications: user.notifications,
+        privacy: user.privacy,
+        emailVerified: user.emailVerified,
+        lastLogin: user.lastLogin,
         createdAt: user.createdAt,
       },
     });
   } catch (error) {
     console.error('Get me error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
+// @desc    Admin login
+// @route   POST /api/auth/admin-login
+// @access  Public
+router.post('/admin-login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required',
+      });
+    }
+
+    // Check if user exists and is admin
+    const user = await User.findOne({ email }).select('+password');
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials',
+      });
+    }
+
+    // Check if user is admin
+    if (user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin privileges required.',
+      });
+    }
+
+    // Check password
+    const isMatch = await user.matchPassword(password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials',
+      });
+    }
+
+    // Generate JWT token
+    const token = user.getSignedJwtToken();
+
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Admin login successful',
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        lastLogin: user.lastLogin,
+      },
+    });
+  } catch (error) {
+    console.error('Admin login error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
