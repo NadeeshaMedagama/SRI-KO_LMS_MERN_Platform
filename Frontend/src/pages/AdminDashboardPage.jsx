@@ -66,7 +66,6 @@ const AdminDashboardPage = () => {
       if (activitiesResponse.data.success) {
         setRecentActivities(activitiesResponse.data.activities);
       }
-
     } catch (error) {
       toast.error('Failed to load dashboard data');
       console.error('Dashboard error:', error);
@@ -75,7 +74,7 @@ const AdminDashboardPage = () => {
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = dateString => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -83,14 +82,14 @@ const AdminDashboardPage = () => {
     });
   };
 
-  const formatCurrency = (amount) => {
+  const formatCurrency = amount => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(amount);
   };
 
-  const getRoleBadgeColor = (role) => {
+  const getRoleBadgeColor = role => {
     switch (role) {
       case 'admin':
         return 'bg-red-100 text-red-800';
@@ -121,7 +120,9 @@ const AdminDashboardPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Admin Dashboard
+              </h1>
               <p className="mt-2 text-gray-600">
                 Welcome back! Here&apos;s what&apos;s happening with your LMS.
               </p>
@@ -149,7 +150,9 @@ const AdminDashboardPage = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.totalUsers}
+                </p>
               </div>
             </div>
           </div>
@@ -160,8 +163,12 @@ const AdminDashboardPage = () => {
                 <AcademicCapIcon className="h-8 w-8 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Courses</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalCourses}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Total Courses
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.totalCourses}
+                </p>
               </div>
             </div>
           </div>
@@ -172,8 +179,12 @@ const AdminDashboardPage = () => {
                 <CurrencyDollarIcon className="h-8 w-8 text-yellow-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.totalRevenue)}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Total Revenue
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {formatCurrency(stats.totalRevenue)}
+                </p>
               </div>
             </div>
           </div>
@@ -184,8 +195,12 @@ const AdminDashboardPage = () => {
                 <TrophyIcon className="h-8 w-8 text-purple-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Completed Courses</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.completedCourses}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Completed Courses
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.completedCourses}
+                </p>
               </div>
             </div>
           </div>
@@ -193,7 +208,9 @@ const AdminDashboardPage = () => {
 
         {/* Quick Actions */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Quick Actions
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link
               to="/admin/users"
@@ -224,7 +241,9 @@ const AdminDashboardPage = () => {
               <ChartBarIcon className="h-6 w-6 text-purple-600 mr-3" />
               <div>
                 <p className="font-medium text-gray-900">Analytics</p>
-                <p className="text-sm text-gray-500">View reports and insights</p>
+                <p className="text-sm text-gray-500">
+                  View reports and insights
+                </p>
               </div>
             </Link>
 
@@ -246,7 +265,9 @@ const AdminDashboardPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">Recent Users</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Recent Users
+                </h2>
                 <Link
                   to="/admin/users"
                   className="text-sm text-blue-600 hover:text-blue-500"
@@ -257,19 +278,26 @@ const AdminDashboardPage = () => {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {recentUsers.map((user) => (
-                  <div key={user._id} className="flex items-center justify-between">
+                {recentUsers.map(user => (
+                  <div
+                    key={user._id}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex items-center">
                       <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
                         {user.name?.charAt(0)?.toUpperCase() || 'U'}
                       </div>
                       <div className="ml-3">
-                        <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {user.name}
+                        </p>
                         <p className="text-sm text-gray-500">{user.email}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}
+                      >
                         {user.role}
                       </span>
                       <span className="text-xs text-gray-500">
@@ -286,7 +314,9 @@ const AdminDashboardPage = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">Recent Courses</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Recent Courses
+                </h2>
                 <Link
                   to="/admin/courses"
                   className="text-sm text-blue-600 hover:text-blue-500"
@@ -297,15 +327,22 @@ const AdminDashboardPage = () => {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {recentCourses.map((course) => (
-                  <div key={course._id} className="flex items-center justify-between">
+                {recentCourses.map(course => (
+                  <div
+                    key={course._id}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex items-center">
                       <div className="h-10 w-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
                         {course.title?.charAt(0)?.toUpperCase() || 'C'}
                       </div>
                       <div className="ml-3">
-                        <p className="text-sm font-medium text-gray-900">{course.title}</p>
-                        <p className="text-sm text-gray-500">{course.category}</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {course.title}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {course.category}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -326,7 +363,9 @@ const AdminDashboardPage = () => {
         {/* Recent Activities */}
         <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Activities</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Recent Activities
+            </h2>
           </div>
           <div className="p-6">
             <div className="space-y-4">
@@ -339,8 +378,12 @@ const AdminDashboardPage = () => {
                       </div>
                     </div>
                     <div className="ml-3">
-                      <p className="text-sm text-gray-900">{activity.message}</p>
-                      <p className="text-xs text-gray-500">{formatDate(activity.createdAt)}</p>
+                      <p className="text-sm text-gray-900">
+                        {activity.message}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatDate(activity.createdAt)}
+                      </p>
                     </div>
                   </div>
                 ))

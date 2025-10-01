@@ -85,7 +85,7 @@ const AdminCourseManagementPage = () => {
     }
   };
 
-  const handleCreateCourse = async (e) => {
+  const handleCreateCourse = async e => {
     e.preventDefault();
     try {
       const response = await api.post('/admin/courses', courseForm);
@@ -100,10 +100,13 @@ const AdminCourseManagementPage = () => {
     }
   };
 
-  const handleUpdateCourse = async (e) => {
+  const handleUpdateCourse = async e => {
     e.preventDefault();
     try {
-      const response = await api.put(`/admin/courses/${selectedCourse._id}`, courseForm);
+      const response = await api.put(
+        `/admin/courses/${selectedCourse._id}`,
+        courseForm,
+      );
       if (response.data.success) {
         toast.success('Course updated successfully');
         setShowEditModal(false);
@@ -115,7 +118,7 @@ const AdminCourseManagementPage = () => {
     }
   };
 
-  const handleDeleteCourse = async (courseId) => {
+  const handleDeleteCourse = async courseId => {
     if (window.confirm('Are you sure you want to delete this course?')) {
       try {
         const response = await api.delete(`/admin/courses/${courseId}`);
@@ -135,7 +138,9 @@ const AdminCourseManagementPage = () => {
         isPublished: !currentStatus,
       });
       if (response.data.success) {
-        toast.success(`Course ${!currentStatus ? 'published' : 'unpublished'} successfully`);
+        toast.success(
+          `Course ${!currentStatus ? 'published' : 'unpublished'} successfully`,
+        );
         fetchCourses();
       }
     } catch (error) {
@@ -159,7 +164,7 @@ const AdminCourseManagementPage = () => {
     setSelectedCourse(null);
   };
 
-  const openEditModal = (course) => {
+  const openEditModal = course => {
     setSelectedCourse(course);
     setCourseForm({
       title: course.title,
@@ -176,12 +181,12 @@ const AdminCourseManagementPage = () => {
     setShowEditModal(true);
   };
 
-  const openViewModal = (course) => {
+  const openViewModal = course => {
     setSelectedCourse(course);
     setShowCourseModal(true);
   };
 
-  const getCategoryBadgeColor = (category) => {
+  const getCategoryBadgeColor = category => {
     const colors = {
       programming: 'bg-blue-100 text-blue-800',
       design: 'bg-purple-100 text-purple-800',
@@ -193,7 +198,7 @@ const AdminCourseManagementPage = () => {
     return colors[category] || colors.other;
   };
 
-  const getLevelBadgeColor = (level) => {
+  const getLevelBadgeColor = level => {
     const colors = {
       beginner: 'bg-green-100 text-green-800',
       intermediate: 'bg-yellow-100 text-yellow-800',
@@ -202,7 +207,7 @@ const AdminCourseManagementPage = () => {
     return colors[level] || colors.beginner;
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = dateString => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -210,7 +215,7 @@ const AdminCourseManagementPage = () => {
     });
   };
 
-  const formatCurrency = (amount) => {
+  const formatCurrency = amount => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -224,7 +229,9 @@ const AdminCourseManagementPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Course Management</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Course Management
+              </h1>
               <p className="mt-2 text-gray-600">
                 Manage all courses in the system
               </p>
@@ -251,7 +258,7 @@ const AdminCourseManagementPage = () => {
                 type="text"
                 placeholder="Search courses..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -259,11 +266,11 @@ const AdminCourseManagementPage = () => {
             {/* Category Filter */}
             <select
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              onChange={e => setCategoryFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="all">All Categories</option>
-              {categories.map((category) => (
+              {categories.map(category => (
                 <option key={category} value={category}>
                   {category.charAt(0).toUpperCase() + category.slice(1)}
                 </option>
@@ -273,7 +280,7 @@ const AdminCourseManagementPage = () => {
             {/* Status Filter */}
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={e => setStatusFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="all">All Status</option>
@@ -339,7 +346,7 @@ const AdminCourseManagementPage = () => {
                     </td>
                   </tr>
                 ) : (
-                  courses.map((course) => (
+                  courses.map(course => (
                     <tr key={course._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -347,18 +354,26 @@ const AdminCourseManagementPage = () => {
                             {course.title?.charAt(0)?.toUpperCase() || 'C'}
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{course.title}</div>
-                            <div className="text-sm text-gray-500">{course.instructor?.name || 'No instructor'}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {course.title}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {course.instructor?.name || 'No instructor'}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryBadgeColor(course.category)}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryBadgeColor(course.category)}`}
+                        >
                           {course.category}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLevelBadgeColor(course.level)}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLevelBadgeColor(course.level)}`}
+                        >
                           {course.level}
                         </span>
                       </td>
@@ -369,9 +384,13 @@ const AdminCourseManagementPage = () => {
                         {course.enrolledStudents?.length || 0}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          course.isPublished ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                        }`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            course.isPublished
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}
+                        >
                           {course.isPublished ? 'Published' : 'Draft'}
                         </span>
                       </td>
@@ -392,11 +411,24 @@ const AdminCourseManagementPage = () => {
                             <PencilIcon className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleToggleCourseStatus(course._id, course.isPublished)}
+                            onClick={() =>
+                              handleToggleCourseStatus(
+                                course._id,
+                                course.isPublished,
+                              )
+                            }
                             className={`${course.isPublished ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900'}`}
-                            title={course.isPublished ? 'Unpublish Course' : 'Publish Course'}
+                            title={
+                              course.isPublished
+                                ? 'Unpublish Course'
+                                : 'Publish Course'
+                            }
                           >
-                            {course.isPublished ? <XMarkIcon className="w-4 h-4" /> : <CheckIcon className="w-4 h-4" />}
+                            {course.isPublished ? (
+                              <XMarkIcon className="w-4 h-4" />
+                            ) : (
+                              <CheckIcon className="w-4 h-4" />
+                            )}
                           </button>
                           <button
                             onClick={() => handleDeleteCourse(course._id)}
@@ -426,7 +458,9 @@ const AdminCourseManagementPage = () => {
                   Previous
                 </button>
                 <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  onClick={() =>
+                    setCurrentPage(Math.min(totalPages, currentPage + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
@@ -443,14 +477,18 @@ const AdminCourseManagementPage = () => {
                 <div>
                   <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                     <button
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      onClick={() =>
+                        setCurrentPage(Math.max(1, currentPage - 1))
+                      }
                       disabled={currentPage === 1}
                       className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                     >
                       Previous
                     </button>
                     <button
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      onClick={() =>
+                        setCurrentPage(Math.min(totalPages, currentPage + 1))
+                      }
                       disabled={currentPage === totalPages}
                       className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                     >
@@ -469,36 +507,53 @@ const AdminCourseManagementPage = () => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Create New Course</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Create New Course
+              </h3>
               <form onSubmit={handleCreateCourse} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Title
+                  </label>
                   <input
                     type="text"
                     required
                     value={courseForm.title}
-                    onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
+                    onChange={e =>
+                      setCourseForm({ ...courseForm, title: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
                   <textarea
                     required
                     rows={3}
                     value={courseForm.description}
-                    onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
+                    onChange={e =>
+                      setCourseForm({
+                        ...courseForm,
+                        description: e.target.value,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Category
+                  </label>
                   <select
                     value={courseForm.category}
-                    onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
+                    onChange={e =>
+                      setCourseForm({ ...courseForm, category: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {categories.map((category) => (
+                    {categories.map(category => (
                       <option key={category} value={category}>
                         {category.charAt(0).toUpperCase() + category.slice(1)}
                       </option>
@@ -506,13 +561,17 @@ const AdminCourseManagementPage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Level
+                  </label>
                   <select
                     value={courseForm.level}
-                    onChange={(e) => setCourseForm({ ...courseForm, level: e.target.value })}
+                    onChange={e =>
+                      setCourseForm({ ...courseForm, level: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {levels.map((level) => (
+                    {levels.map(level => (
                       <option key={level} value={level}>
                         {level.charAt(0).toUpperCase() + level.slice(1)}
                       </option>
@@ -520,26 +579,40 @@ const AdminCourseManagementPage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration (weeks)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Duration (weeks)
+                  </label>
                   <input
                     type="number"
                     min="1"
                     max="52"
                     required
                     value={courseForm.duration}
-                    onChange={(e) => setCourseForm({ ...courseForm, duration: parseInt(e.target.value) })}
+                    onChange={e =>
+                      setCourseForm({
+                        ...courseForm,
+                        duration: parseInt(e.target.value),
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Price ($)
+                  </label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     required
                     value={courseForm.price}
-                    onChange={(e) => setCourseForm({ ...courseForm, price: parseFloat(e.target.value) })}
+                    onChange={e =>
+                      setCourseForm({
+                        ...courseForm,
+                        price: parseFloat(e.target.value),
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -547,10 +620,17 @@ const AdminCourseManagementPage = () => {
                   <input
                     type="checkbox"
                     checked={courseForm.isPublished}
-                    onChange={(e) => setCourseForm({ ...courseForm, isPublished: e.target.checked })}
+                    onChange={e =>
+                      setCourseForm({
+                        ...courseForm,
+                        isPublished: e.target.checked,
+                      })
+                    }
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label className="ml-2 block text-sm text-gray-900">Published</label>
+                  <label className="ml-2 block text-sm text-gray-900">
+                    Published
+                  </label>
                 </div>
                 <div className="flex justify-end space-x-3">
                   <button
@@ -578,36 +658,53 @@ const AdminCourseManagementPage = () => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Course</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Edit Course
+              </h3>
               <form onSubmit={handleUpdateCourse} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Title
+                  </label>
                   <input
                     type="text"
                     required
                     value={courseForm.title}
-                    onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
+                    onChange={e =>
+                      setCourseForm({ ...courseForm, title: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
                   <textarea
                     required
                     rows={3}
                     value={courseForm.description}
-                    onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
+                    onChange={e =>
+                      setCourseForm({
+                        ...courseForm,
+                        description: e.target.value,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Category
+                  </label>
                   <select
                     value={courseForm.category}
-                    onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
+                    onChange={e =>
+                      setCourseForm({ ...courseForm, category: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {categories.map((category) => (
+                    {categories.map(category => (
                       <option key={category} value={category}>
                         {category.charAt(0).toUpperCase() + category.slice(1)}
                       </option>
@@ -615,13 +712,17 @@ const AdminCourseManagementPage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Level
+                  </label>
                   <select
                     value={courseForm.level}
-                    onChange={(e) => setCourseForm({ ...courseForm, level: e.target.value })}
+                    onChange={e =>
+                      setCourseForm({ ...courseForm, level: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {levels.map((level) => (
+                    {levels.map(level => (
                       <option key={level} value={level}>
                         {level.charAt(0).toUpperCase() + level.slice(1)}
                       </option>
@@ -629,26 +730,40 @@ const AdminCourseManagementPage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration (weeks)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Duration (weeks)
+                  </label>
                   <input
                     type="number"
                     min="1"
                     max="52"
                     required
                     value={courseForm.duration}
-                    onChange={(e) => setCourseForm({ ...courseForm, duration: parseInt(e.target.value) })}
+                    onChange={e =>
+                      setCourseForm({
+                        ...courseForm,
+                        duration: parseInt(e.target.value),
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Price ($)
+                  </label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     required
                     value={courseForm.price}
-                    onChange={(e) => setCourseForm({ ...courseForm, price: parseFloat(e.target.value) })}
+                    onChange={e =>
+                      setCourseForm({
+                        ...courseForm,
+                        price: parseFloat(e.target.value),
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -656,10 +771,17 @@ const AdminCourseManagementPage = () => {
                   <input
                     type="checkbox"
                     checked={courseForm.isPublished}
-                    onChange={(e) => setCourseForm({ ...courseForm, isPublished: e.target.checked })}
+                    onChange={e =>
+                      setCourseForm({
+                        ...courseForm,
+                        isPublished: e.target.checked,
+                      })
+                    }
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label className="ml-2 block text-sm text-gray-900">Published</label>
+                  <label className="ml-2 block text-sm text-gray-900">
+                    Published
+                  </label>
                 </div>
                 <div className="flex justify-end space-x-3">
                   <button
@@ -687,55 +809,99 @@ const AdminCourseManagementPage = () => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Course Details</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Course Details
+              </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Title</label>
-                  <p className="text-sm text-gray-900">{selectedCourse.title}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Title
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {selectedCourse.title}
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Description</label>
-                  <p className="text-sm text-gray-900">{selectedCourse.description}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Description
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {selectedCourse.description}
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Category</label>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryBadgeColor(selectedCourse.category)}`}>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Category
+                  </label>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryBadgeColor(selectedCourse.category)}`}
+                  >
                     {selectedCourse.category}
                   </span>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Level</label>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLevelBadgeColor(selectedCourse.level)}`}>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Level
+                  </label>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLevelBadgeColor(selectedCourse.level)}`}
+                  >
                     {selectedCourse.level}
                   </span>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Duration</label>
-                  <p className="text-sm text-gray-900">{selectedCourse.duration} weeks</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Duration
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {selectedCourse.duration} weeks
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Price</label>
-                  <p className="text-sm text-gray-900">{formatCurrency(selectedCourse.price)}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Price
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {formatCurrency(selectedCourse.price)}
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Instructor</label>
-                  <p className="text-sm text-gray-900">{selectedCourse.instructor?.name || 'No instructor'}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Instructor
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {selectedCourse.instructor?.name || 'No instructor'}
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Status</label>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    selectedCourse.isPublished ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                  }`}>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Status
+                  </label>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      selectedCourse.isPublished
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}
+                  >
                     {selectedCourse.isPublished ? 'Published' : 'Draft'}
                   </span>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Students</label>
-                  <p className="text-sm text-gray-900">{selectedCourse.enrolledStudents?.length || 0}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Students
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {selectedCourse.enrolledStudents?.length || 0}
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Created</label>
-                  <p className="text-sm text-gray-900">{formatDate(selectedCourse.createdAt)}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Created
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {formatDate(selectedCourse.createdAt)}
+                  </p>
                 </div>
               </div>
               <div className="flex justify-end mt-6">
