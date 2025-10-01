@@ -9,6 +9,7 @@ A comprehensive Learning Management System built with the MERN stack (MongoDB, E
 ## 🌟 Features
 
 ### ✅ Core Features
+
 - **User Authentication & Authorization** - JWT-based auth with role-based access
 - **Course Management** - Create, edit, delete courses with curriculum
 - **Student Enrollment** - Browse and enroll in courses
@@ -17,6 +18,7 @@ A comprehensive Learning Management System built with the MERN stack (MongoDB, E
 - **Authentication System** - Secure login/logout with protected routes
 
 ### 🔄 Coming Soon
+
 - Payment Integration
 - Certificate Generation
 - Discussion Forums
@@ -28,10 +30,10 @@ A comprehensive Learning Management System built with the MERN stack (MongoDB, E
 ## 🛠 Technology Stack
 
 ### Backend
+
 - **Node.js** - JavaScript runtime
 - **Express.js** - Web framework
-- **MongoDB** - NoSQL database
--**.mongoose** - MongoDB object modeling
+- **MongoDB** - NoSQL database -**.mongoose** - MongoDB object modeling
 - **JWT** - JSON Web Tokens for authentication
 - **bcryptjs** - Password hashing
 - **express-validator** - Input validation
@@ -40,6 +42,7 @@ A comprehensive Learning Management System built with the MERN stack (MongoDB, E
 - **nodemon** - Development server
 
 ### Frontend
+
 - **React 18** - Frontend library
 - **Vite** - Build tool and dev server
 - **Tailwind CSS** - Utility-first CSS framework
@@ -86,6 +89,7 @@ SRI-KO_LMS_MERN_Platform/
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v14 or higher)
 - npm or yarn
 - MongoDB (local instance or MongoDB Atlas)
@@ -93,6 +97,7 @@ SRI-KO_LMS_MERN_Platform/
 ### Installation
 
 1. **Clone and setup**
+
    ```bash
    git clone <your-repo-url>
    cd SRI-KO_LMS_MERN_Platform
@@ -100,8 +105,9 @@ SRI-KO_LMS_MERN_Platform/
    ```
 
 2. **Environment Setup**
-   
+
    **Backend (.env):**
+
    ```bash
    cd Backend
    cp env.example .env
@@ -109,6 +115,7 @@ SRI-KO_LMS_MERN_Platform/
    ```
 
    **Frontend (.env):**
+
    ```bash
    cd Frontend
    cp env.example .env
@@ -116,22 +123,25 @@ SRI-KO_LMS_MERN_Platform/
    ```
 
 3. **Start Development Servers**
-   
+
    **Option A: Start both servers together**
+
    ```bash
    npm install concurrently
    npm run dev
    ```
-   
+
    **Option B: Start servers individually**
-   
+
    Terminal 1 (Backend):
+
    ```bash
    cd Backend
    npm run dev
    ```
-   
+
    Terminal 2 (Frontend):
+
    ```bash
    cd Frontend
    npm run dev
@@ -145,6 +155,7 @@ SRI-KO_LMS_MERN_Platform/
 ## 🔧 Environment Variables
 
 ### Backend (.env)
+
 ```env
 PORT=5000
 NODE_ENV=development
@@ -155,6 +166,7 @@ FRONTEND_URL=http://localhost:5173
 ```
 
 ### Frontend (.env)
+
 ```env
 VITE_API_URL=http://localhost:5000/api
 VITE_NODE_ENV=development
@@ -163,17 +175,20 @@ VITE_NODE_ENV=development
 ## 📚 API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User login
 - `GET /api/auth/me` - Get current user
 - `POST /api/auth/logout` - Logout (client-side)
 
 ### Users
+
 - `GET /api/users/profile` - Get user profile
 - `PUT /api/users/profile` - Update user profile
 - `PUT /api/users/password` - Change password
 
 ### Courses
+
 - `GET /api/courses` - Get all courses
 - `GET /api/courses/:id` - Get course by ID
 - `POST /api/courses` - Create course (instructor/admin only)
@@ -192,6 +207,7 @@ VITE_NODE_ENV=development
 ## 🎨 UI Components
 
 The application uses a modern design system with:
+
 - Custom Tailwind CSS configuration with brand colors
 - Responsive design (mobile-first approach)
 - Accessible components with Headless UI
@@ -210,6 +226,7 @@ The application uses a modern design system with:
 ## 📱 Responsive Design
 
 The application is fully responsive and works seamlessly across:
+
 - 📱 Mobile devices (320px+)
 - 📷 Tablets (768px+)
 - 💻 Desktop (1024px+)
@@ -220,6 +237,7 @@ The application is fully responsive and works seamlessly across:
 This project includes comprehensive GitHub Actions workflows for:
 
 ### **Main Workflows**
+
 - **`ci-cd.yml`** - Main CI/CD pipeline with testing, building, and deployment
 - **`development.yml`** - Development workflow for feature branches
 - **`security.yml`** - Security scanning and dependency updates
@@ -227,6 +245,7 @@ This project includes comprehensive GitHub Actions workflows for:
 - **`database.yml`** - Database operations and maintenance
 
 ### **Pipeline Features**
+
 - ✅ **Automated Testing** - Backend and frontend tests
 - 🔒 **Security Scanning** - Vulnerability detection and audits
 - 📊 **Code Coverage** - Test coverage reporting
@@ -235,6 +254,7 @@ This project includes comprehensive GitHub Actions workflows for:
 - 🔍 **Code Quality** - ESLint, Prettier, complexity checks
 
 ### **Deployment Options**
+
 - **Frontend**: Vercel, Netlify, GitHub Pages
 - **Backend**: Railway, Heroku, DigitalOcean
 - **Database**: MongoDB Atlas (configured)
@@ -248,6 +268,7 @@ This project includes comprehensive GitHub Actions workflows for:
 5. Open a Pull Request
 
 ### **Development Workflow**
+
 - All changes trigger automated testing
 - Code quality checks run on every PR
 - Security scans ensure no vulnerabilities
