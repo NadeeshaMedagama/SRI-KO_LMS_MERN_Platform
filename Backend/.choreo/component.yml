@@ -1,0 +1,77 @@
+schemaVersion: 1.2
+
+endpoints:
+  - name: sri-ko-lms-api
+    displayName: SRI-KO Learning Management System API
+    service:
+      basePath: /
+      port: 5000
+    type: REST
+    networkVisibilities:
+      - Public
+      - Organization
+    schemaFilePath: .choreo/openapi.yml
+
+configurations:
+  env:
+    - name: MONGODB_URI
+      valueFrom:
+        configForm:
+          displayName: MongoDB Connection String
+          required: true
+          type: secret
+
+    - name: JWT_SECRET
+      valueFrom:
+        configForm:
+          displayName: JWT Secret Key
+          required: true
+          type: secret
+
+    - name: JWT_EXPIRE
+      valueFrom:
+        configForm:
+          displayName: JWT Expiration Time
+          required: false
+          type: string
+          defaultValue: "30d"
+
+    - name: NODE_ENV
+      valueFrom:
+        configForm:
+          displayName: Node Environment
+          required: true
+          type: string
+          defaultValue: "production"
+
+    - name: PORT
+      valueFrom:
+        configForm:
+          displayName: Server Port
+          required: true
+          type: number
+          defaultValue: 5000
+
+    - name: CORS_ORIGIN
+      valueFrom:
+        configForm:
+          displayName: CORS Origin
+          required: false
+          type: string
+          defaultValue: "*"
+
+    - name: RATE_LIMIT_WINDOW
+      valueFrom:
+        configForm:
+          displayName: Rate Limit Window (ms)
+          required: false
+          type: number
+          defaultValue: 900000
+
+    - name: RATE_LIMIT_MAX
+      valueFrom:
+        configForm:
+          displayName: Rate Limit Max Requests
+          required: false
+          type: number
+          defaultValue: 100

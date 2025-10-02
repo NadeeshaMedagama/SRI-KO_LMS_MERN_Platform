@@ -1,0 +1,1133 @@
+openapi: 3.0.3
+info:
+  title: SRI-KO Learning Management System API
+  version: 1.0.0
+  description: RESTful API for managing educational services including course management, user authentication, subscription services, payment processing, and administrative features
+servers:
+  - url: https://sri-ko-lms-api.choreo.dev
+    description: Production server
+  - url: https://sri-ko-lms-api-dev.choreo.dev
+    description: Development server
+  - url: http://localhost:5000
+    description: Local development server
+
+tags:
+  - name: Health
+    description: Health check operations
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Users
+    description: User management operations
+  - name: Courses
+    description: Course management and enrollment
+  - name: Subscriptions
+    description: Subscription plans and management
+  - name: Payments
+    description: Payment processing
+  - name: Admin
+    description: Administrative operations
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      tags: [Health]
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+                  message:
+                    type: string
+                    example: "SRI-KO Learning Management System API is running"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                    example: "1.0.0"
+  /api/health:
+    get:
+      summary: API health check
+      tags: [Health]
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  environment:
+                    type: string
+                    example: "development"
+                  mongodb:
+                    type: string
+                    example: "Connected"
+
+  # Authentication endpoints
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+        '400':
+          description: Validation error
+        '409':
+          description: User already exists
+
+  /api/auth/login:
+    post:
+      summary: Login user
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+        '401':
+          description: Invalid credentials
+
+  /api/auth/me:
+    get:
+      summary: Get current user profile
+      tags: [Authentication]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized 
+    put:
+      summary: Update user profile
+      tags: [Authentication]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+
+  # Course management endpoints
+  /api/courses:
+    get:
+      summary: Get all courses
+      tags: [Courses]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: level
+          in: query
+          schema:
+            type: string
+            enum: [beginner, intermediate, advanced]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  courses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
+                  page:
+                    type: integer
+                  pages:
+                    type: integer
+                  total:
+                    type: integer
+
+    post:
+      summary: Create a new course
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCourseRequest'
+      responses:
+        '201':
+          description: Course created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Course'
+        '401':
+          description: Unauthorized
+        '400':
+          description: Validation error
+        '403':
+          description: Instructor/Admin access required
+
+  /api/courses/{id}:
+    get:
+      summary: Get a specific course
+      tags: [Courses]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Course details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Course'
+        '404':
+          description: Course not found
+
+    put:
+      summary: Update a course
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCourseRequest'
+      responses:
+        '200':
+          description: Course updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Course'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Course not found
+        '403':
+          description: Instructor/Admin access required
+    delete:
+      summary: Delete a course
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Course deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized
+        '404':
+          description: Course not found
+        '403':
+          description: Instructor/Admin access required
+
+  /api/courses/{id}/enroll:
+    post:
+      summary: Enroll in course
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully enrolled in course
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '400':
+          description: Already enrolled or course not available
+        '401':
+          description: Unauthorized
+        '404':
+          description: Course not found
+
+  # Subscription endpoints
+  /api/subscriptions/plans:
+    get:
+      summary: Get subscription plans
+      tags: [Subscriptions]
+      responses:
+        '200':
+          description: Subscription plans retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SubscriptionPlan'
+
+  /api/subscriptions/current:
+    get:
+      summary: Get current subscription
+      tags: [Subscriptions]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current subscription retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Subscription'
+        '404':
+          description: No active subscription found
+        '401':
+          description: Unauthorized
+
+  /api/subscriptions/create:
+    post:
+      summary: Create subscription
+      tags: [Subscriptions]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionRequest'
+      responses:
+        '201':
+          description: Subscription created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Subscription'
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
+
+  # Payment endpoints
+  /api/payments/process:
+    post:
+      summary: Process payment
+      tags: [Payments]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessPaymentRequest'
+      responses:
+        '200':
+          description: Payment processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Payment'
+        '400':
+          description: Payment processing failed
+        '401':
+          description: Unauthorized
+
+  # Admin endpoints
+  /api/admin/dashboard:
+    get:
+      summary: Get admin dashboard data
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Admin dashboard data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AdminDashboard'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+  /api/admin/users:
+    get:
+      summary: Get all users
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [student, instructor, admin]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  page:
+                    type: integer
+                  pages:
+                    type: integer
+                  total:
+                    type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Unique identifier for the user
+        name:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [student, instructor, admin]
+          default: student
+        phone:
+          type: string
+        avatar:
+          type: string
+          default: default-avatar.jpg
+        isActive:
+          type: boolean
+          default: true
+        emailVerified:
+          type: boolean
+          default: false
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [name, email, role]
+
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+        role:
+          type: string
+          enum: [student, instructor, admin]
+          default: student
+        phone:
+          type: string
+      required: [name, email, password, role]
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+      required: [email, password]
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        phone:
+          type: string
+        avatar:
+          type: string
+
+    Course:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Unique identifier for the course
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        category:
+          type: string
+        level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+          default: beginner
+        duration:
+          type: integer
+          minimum: 1
+        price:
+          type: number
+          format: float
+          minimum: 0
+        instructor:
+          type: string
+          description: Reference to User ID
+        enrolledStudents:
+          type: array
+          items:
+            type: string
+        curriculum:
+          type: array
+          items:
+            type: object
+            properties:
+              week:
+                type: integer
+              title:
+                type: string
+              description:
+                type: string
+              lessons:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    duration:
+                      type: integer
+                    isFreePreview:
+                      type: boolean
+        prerequisites:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        averageRating:
+          type: number
+          format: float
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              user:
+                type: string
+              rating:
+                type: integer
+                minimum: 1
+                maximum: 5
+              comment:
+                type: string
+              createdAt:
+                type: string
+                format: date-time
+        isPublished:
+          type: boolean
+          default: false
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [title, description, category, level, duration, price, instructor]
+
+    CreateCourseRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        category:
+          type: string
+        level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        duration:
+          type: integer
+          minimum: 1
+        price:
+          type: number
+          format: float
+          minimum: 0
+        curriculum:
+          type: array
+          items:
+            type: object
+            properties:
+              week:
+                type: integer
+              title:
+                type: string
+              description:
+                type: string
+              lessons:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    duration:
+                      type: integer
+                    isFreePreview:
+                      type: boolean
+        prerequisites:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+      required: [title, description, category, level, duration, price]
+
+    UpdateCourseRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        category:
+          type: string
+        level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        duration:
+          type: integer
+          minimum: 1
+        price:
+          type: number
+          format: float
+          minimum: 0
+        curriculum:
+          type: array
+          items:
+            type: object
+            properties:
+              week:
+                type: integer
+              title:
+                type: string
+              description:
+                type: string
+              lessons:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    duration:
+                      type: integer
+                    isFreePreview:
+                      type: boolean
+        prerequisites:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        isPublished:
+          type: boolean
+
+    SubscriptionPlan:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Unique identifier for the subscription plan
+        name:
+          type: string
+        plan:
+          type: string
+          enum: [starter, pro, premium]
+        description:
+          type: string
+        monthlyPrice:
+          type: number
+          format: float
+        yearlyPrice:
+          type: number
+          format: float
+        features:
+          type: object
+          properties:
+            maxCourses:
+              type: integer
+            maxStudents:
+              type: integer
+            customBranding:
+              type: boolean
+            apiAccess:
+              type: boolean
+            whiteLabel:
+              type: boolean
+            prioritySupport:
+              type: boolean
+            ssoIntegration:
+              type: boolean
+            customDomain:
+              type: boolean
+            dedicatedManager:
+              type: boolean
+        isActive:
+          type: boolean
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateSubscriptionRequest:
+      type: object
+      properties:
+        plan:
+          type: string
+          enum: [starter, pro, premium]
+        billingCycle:
+          type: string
+          enum: [monthly, yearly]
+      required: [plan, billingCycle]
+
+    Subscription:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Unique identifier for the subscription
+        user:
+          type: string
+          description: Reference to User ID
+        plan:
+          type: string
+          enum: [starter, pro, premium]
+        billingCycle:
+          type: string
+          enum: [monthly, yearly]
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [active, cancelled, expired, trial]
+          default: trial
+        autoRenew:
+          type: boolean
+          default: true
+        currentPeriodStart:
+          type: string
+          format: date-time
+        currentPeriodEnd:
+          type: string
+          format: date-time
+        features:
+          type: object
+          properties:
+            maxCourses:
+              type: integer
+            maxStudents:
+              type: integer
+            customBranding:
+              type: boolean
+            apiAccess:
+              type: boolean
+            whiteLabel:
+              type: boolean
+            prioritySupport:
+              type: boolean
+            ssoIntegration:
+              type: boolean
+            customDomain:
+              type: boolean
+            dedicatedManager:
+              type: boolean
+        usage:
+          type: object
+          properties:
+            coursesCreated:
+              type: integer
+            studentsEnrolled:
+              type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ProcessPaymentRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          format: float
+          minimum: 0
+        currency:
+          type: string
+          default: LKR
+        paymentGateway:
+          type: string
+        subscriptionId:
+          type: string
+        courseId:
+          type: string
+      required: [amount, currency, paymentGateway]
+
+    Payment:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Unique identifier for the payment
+        user:
+          type: string
+          description: Reference to User ID
+        subscription:
+          type: string
+          description: Reference to Subscription ID
+        amount:
+          type: number
+          format: float
+          minimum: 0
+        currency:
+          type: string
+          default: LKR
+        status:
+          type: string
+          enum: [pending, completed, failed, refunded]
+          default: pending
+        paymentGateway:
+          type: string
+        gatewayTransactionId:
+          type: string
+        paymentDate:
+          type: string
+          format: date-time
+        invoiceNumber:
+          type: string
+        receiptNumber:
+          type: string
+        notes:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AdminDashboard:
+      type: object
+      properties:
+        totalUsers:
+          type: number
+        totalCourses:
+          type: number
+        totalSubscriptions:
+          type: number
+        totalRevenue:
+          type: number
+          format: float
+        recentUsers:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        recentCourses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Course'
+        systemHealth:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [healthy, warning, critical]
+            uptime:
+              type: number
+            memoryUsage:
+              type: number
+            cpuUsage:
+              type: number
+        analytics:
+          type: object
+          properties:
+            userGrowth:
+              type: array
+              items:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  count:
+                    type: number
+            courseTypes:
+              type: array
+              items:
+                type: object
+                properties:
+                  category:
+                    type: string
+                  count:
+                    type: number
+            subscriptionTrends:
+              type: array
+              items:
+                type: object
+                properties:
+                  plan:
+                    type: string
+                  count:
+                    type: number
+                  revenue:
+                    type: number
+
+tags:
+  - name: Health
+    description: Health check operations
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Users
+    description: User management operations
+  - name: Courses
+    description: Course management and enrollment
+  - name: Subscriptions
+    description: Subscription plans and management
+  - name: Payments
+    description: Payment processing
+  - name: Admin
+    description: Administrative operations
