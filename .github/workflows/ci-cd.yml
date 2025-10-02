@@ -220,7 +220,7 @@ jobs:
 
     - name: Deploy to Vercel (Frontend)
       uses: amondnet/vercel-action@v25
-      if: ${{ secrets.VERCEL_TOKEN }}
+      if: secrets.VERCEL_TOKEN != ''
       with:
         vercel-token: ${{ secrets.VERCEL_TOKEN }}
         vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -229,14 +229,14 @@ jobs:
 
     - name: Deploy to Railway (Backend)
       uses: railwayapp/railway-deploy@v1
-      if: ${{ secrets.RAILWAY_TOKEN }}
+      if: secrets.RAILWAY_TOKEN != ''
       with:
         railway-token: ${{ secrets.RAILWAY_TOKEN }}
         service: backend
         working-directory: ./Backend
 
     - name: Deploy to Heroku (Alternative)
-      if: ${{ secrets.HEROKU_API_KEY }}
+      if: secrets.HEROKU_API_KEY != ''
       run: |
         # Install Heroku CLI
         curl https://cli-assets.heroku.com/install.sh | sh
