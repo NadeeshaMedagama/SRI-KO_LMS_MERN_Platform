@@ -59,7 +59,7 @@ const AdminLayout = ({ children }) => {
       href: '/admin/analytics',
       icon: ChartBarIcon,
     },
-    { name: 'Payment Gateway', href: '/admin/payments', icon: CreditCardIcon },
+    { name: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCardIcon },
     { name: 'Certificates', href: '/admin/certificates', icon: TrophyIcon },
     { name: 'Notifications', href: '/admin/notifications', icon: BellIcon },
     {
