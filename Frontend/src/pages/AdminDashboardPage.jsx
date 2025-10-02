@@ -248,6 +248,19 @@ const AdminDashboardPage = () => {
             </Link>
 
             <Link
+              to="/admin/subscriptions"
+              className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <CurrencyDollarIcon className="h-6 w-6 text-green-600 mr-3" />
+              <div>
+                <p className="font-medium text-gray-900">Subscriptions</p>
+                <p className="text-sm text-gray-500">
+                  Manage payments and revenue
+                </p>
+              </div>
+            </Link>
+
+            <Link
               to="/admin/settings"
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
