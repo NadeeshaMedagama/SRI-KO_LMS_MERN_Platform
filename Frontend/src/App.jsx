@@ -7,6 +7,8 @@ import LoadingSpinner from './components/LoadingSpinner';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import PricingPage from './pages/PricingPage';
+import PaymentPage from './pages/PaymentPage';
 
 // Protected Pages
 import DashboardPage from './pages/DashboardPage';
@@ -23,6 +25,7 @@ import AdminUserManagementPage from './pages/AdminUserManagementPage';
 import AdminCourseManagementPage from './pages/AdminCourseManagementPage';
 import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 import AdminLoginPage from './pages/AdminLoginPage';
+import AdminSubscriptionManagementPage from './pages/AdminSubscriptionManagementPage';
 import AdminLayout from './components/AdminLayout';
 
 // Protected Route Component
@@ -46,6 +49,8 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
+        <Route path="pricing" element={<PricingPage />} />
+        <Route path="payment" element={<PaymentPage />} />
         <Route path="courses" element={<CoursesPage />} />
         <Route path="courses/:id" element={<CourseDetailPage />} />
       </Route>
@@ -113,16 +118,7 @@ function App() {
         <Route path="users" element={<AdminUserManagementPage />} />
         <Route path="courses" element={<AdminCourseManagementPage />} />
         <Route path="analytics" element={<AdminAnalyticsPage />} />
-        <Route
-          path="payments"
-          element={
-            <div className="p-8 text-center">
-              <h1 className="text-2xl font-bold">
-                Payment Gateway - Coming Soon
-              </h1>
-            </div>
-          }
-        />
+        <Route path="subscriptions" element={<AdminSubscriptionManagementPage />} />
         <Route
           path="certificates"
           element={
