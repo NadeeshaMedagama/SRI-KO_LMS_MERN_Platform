@@ -1099,19 +1099,3 @@ components:
                     type: number
                   revenue:
                     type: number
-
-tags:
-  - name: Health
-    description: Health check operations
-  - name: Authentication
-    description: User authentication and authorization
-  - name: Users
-    description: User management operations
-  - name: Courses
-    description: Course management and enrollment
-  - name: Subscriptions
-    description: Subscription plans and management
-  - name: Payments
-    description: Payment processing
-  - name: Admin
-    description: Administrative operations
