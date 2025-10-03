@@ -12,6 +12,7 @@ console.log('🚀 Starting SRI-KO LMS Backend Service...');
 console.log('📋 Environment:', process.env.NODE_ENV || 'development');
 
 // Load environment variables with Choreo-specific configuration
+// Priority: Environment variables > config files
 let envFile;
 if (process.env.NODE_ENV === 'production') {
   envFile = './config.production.env';
@@ -22,6 +23,11 @@ if (process.env.NODE_ENV === 'production') {
 }
 console.log('📁 Loading environment from:', envFile);
 require('dotenv').config({ path: envFile });
+
+// Override with explicit environment variables if set
+if (process.env.PORT) {
+  console.log('🔧 Using PORT from environment:', process.env.PORT);
+}
 
 console.log('🔧 Environment variables loaded:');
 console.log('  - PORT:', process.env.PORT);
