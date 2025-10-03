@@ -557,6 +557,17 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: JWT token for API authentication
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+      description: Express session cookie authentication
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for service-to-service authentication
   schemas:
     User:
       type: object
