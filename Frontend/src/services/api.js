@@ -1,13 +1,11 @@
 import axios from 'axios';
+import { apiConfig } from '../apiConfig';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-console.log('API Base URL:', BASE_URL);
-console.log('Environment variables:', import.meta.env);
+console.log('SRI-KO LMS API Configuration:', apiConfig);
 
 const api = axios.create({
-  baseURL: BASE_URL,
-  timeout: 10000,
+  baseURL: apiConfig.apiUrl,
+  timeout: apiConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
   },
