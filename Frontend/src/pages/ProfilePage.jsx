@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
 import {
   UserIcon,
@@ -84,7 +84,7 @@ const ProfilePage = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const response = await api.put('/users/profile', {
+      const response = await apiService.put('/users/profile', {
         name: profileData.name,
         bio: profileData.bio,
         avatar: profileData.avatar,

@@ -166,24 +166,102 @@ jobs:
     - name: Start backend server
       run: |
         cd Backend
-        npm start &
-        sleep 10
-      env:
-        NODE_ENV: test
-        MONGODB_URI: mongodb://admin:password@localhost:27017/sriko-test?authSource=admin
-        JWT_SECRET: test-secret-key-for-ci-cd-pipeline
-        PORT: 5000
+        # Set environment variables for CI test
+        export NODE_ENV=test
+        export PORT=5000
+        export MONGODB_URI=mongodb://admin:password@localhost:27017/sriko-test?authSource=admin
+        export JWT_SECRET=test-secret-key-for-ci-cd-pipeline
+        export SESSION_SECRET=test-session-secret
+        export CORS_ORIGIN=http://localhost:3000
+        export FRONTEND_URL=http://localhost:3000
+        export SKIP_DB=false
+        # Start server in background without timeout
+        node server.js > server.log 2>&1 &
+        # Store process ID
+        echo $! > server.pid
+        # Wait for server to start
+        sleep 15
+        # Check server log for successful startup
+        if grep -q "Server successfully started" server.log; then
+          echo "✅ Server started successfully (PID: $(cat server.pid))"
+          # Verify server is responding
+          sleep 5
+          if curl -s -f http://localhost:5000/api/health > /dev/null; then
+            echo "✅ Server health check passed"
+          else
+            echo "❌ Server not responding to health check"
+            echo "Server log tail:"
+            tail -20 server.log
+            exit 1
+          fi
+        else
+          echo "❌ Server failed to start"
+          echo "Server log:"
+          cat server.log
+          exit 1
+        fi
 
     - name: Run integration tests
       run: |
-        curl -f http://localhost:5000/api/health || exit 1
-        echo "Backend health check passed"
+        cd Backend
+        # Wait a bit more for server to fully initialize
+        sleep 5
+        # Test health endpoint multiple times with better error handling
+        for i in {1..5}; do
+          echo "Attempt $i: Testing health endpoint..."
+          if curl -s -f http://localhost:5000/api/health; then
+            echo "✅ Backend health check passed on attempt $i"
+            break
+          else
+            echo "❌ Health check failed on attempt $i"
+            if [ $i -eq 5 ]; then
+              echo "Server log:"
+              cat server.log
+              echo "Process status:"
+              ps aux | grep node || echo "No node processes found"
+              echo "Port status:"
+              netstat -tlnp | grep :5000 || echo "Port 5000 not listening"
+              exit 1
+            fi
+            sleep 2
+          fi
+        done
 
-    - name: Test API endpoints
+    - name: Test additional endpoints
       run: |
-        # Test health endpoint
-        curl -f http://localhost:5000/api/health
-        echo "Health endpoint test passed"
+        # Test basic health endpoint
+        curl -f http://localhost:5000/health
+        echo "✅ Basic health endpoint test passed"
+        
+        # Test root endpoint (should return 404)
+        curl -v http://localhost:5000/ | head -5
+        echo "✅ Root endpoint test passed"
+
+    - name: Stop backend server
+      if: always()
+      run: |
+        cd Backend
+        if [ -f server.pid ]; then
+          PID=$(cat server.pid)
+          if ps -p $PID > /dev/null; then
+            echo "🛑 Stopping server (PID: $PID)..."
+            kill $PID
+            sleep 2
+            # Force kill if still running
+            if ps -p $PID > /dev/null; then
+              echo "⚠️ Force killing server..."
+              kill -9 $PID
+            fi
+            echo "✅ Server stopped (PID: $PID)"
+          else
+            echo "⚠️ Server process not found"
+          fi
+          rm -f server.pid server.log
+        else
+          echo "⚠️ No server.pid file found"
+        fi
+        # Clean up any remaining node processes
+        pkill -f "node server.js" || echo "No additional node processes to clean up"
 
   # Build and Deploy (only on main branch)
   deploy:

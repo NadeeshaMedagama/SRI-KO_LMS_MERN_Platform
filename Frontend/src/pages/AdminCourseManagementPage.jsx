@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../services/api';
+import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
 import {
   BookOpenIcon,
@@ -72,7 +72,7 @@ const AdminCourseManagementPage = () => {
         status: statusFilter !== 'all' ? statusFilter : '',
       });
 
-      const response = await api.get(`/admin/courses?${params}`);
+      const response = await apiService.get(`/admin/courses?${params}`);
       if (response.data.success) {
         setCourses(response.data.courses);
         setTotalPages(response.data.pages);
@@ -88,7 +88,7 @@ const AdminCourseManagementPage = () => {
   const handleCreateCourse = async e => {
     e.preventDefault();
     try {
-      const response = await api.post('/admin/courses', courseForm);
+      const response = await apiService.post('/admin/courses', courseForm);
       if (response.data.success) {
         toast.success('Course created successfully');
         setShowCreateModal(false);
@@ -103,7 +103,7 @@ const AdminCourseManagementPage = () => {
   const handleUpdateCourse = async e => {
     e.preventDefault();
     try {
-      const response = await api.put(
+      const response = await apiService.put(
         `/admin/courses/${selectedCourse._id}`,
         courseForm,
       );
@@ -121,7 +121,7 @@ const AdminCourseManagementPage = () => {
   const handleDeleteCourse = async courseId => {
     if (window.confirm('Are you sure you want to delete this course?')) {
       try {
-        const response = await api.delete(`/admin/courses/${courseId}`);
+        const response = await apiService.delete(`/admin/courses/${courseId}`);
         if (response.data.success) {
           toast.success('Course deleted successfully');
           fetchCourses();
@@ -134,7 +134,7 @@ const AdminCourseManagementPage = () => {
 
   const handleToggleCourseStatus = async (courseId, currentStatus) => {
     try {
-      const response = await api.put(`/admin/courses/${courseId}/status`, {
+      const response = await apiService.put(`/admin/courses/${courseId}/status`, {
         isPublished: !currentStatus,
       });
       if (response.data.success) {

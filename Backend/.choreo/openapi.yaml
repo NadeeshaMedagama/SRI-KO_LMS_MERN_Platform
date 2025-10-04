@@ -4,28 +4,12 @@ info:
   version: 1.0.0
   description: RESTful API for managing educational services including course management, user authentication, subscription services, payment processing, and administrative features
 servers:
-  - url: https://sri-ko-lms-api.choreo.dev
+  - url: https://sri-ko-lms-api.choreo.dev/
     description: Production server
-  - url: https://sri-ko-lms-api-dev.choreo.dev
+  - url: https://sri-ko-lms-api-dev.choreo.dev/
     description: Development server
-  - url: http://localhost:5000
+  - url: http://localhost:5000/
     description: Local development server
-
-tags:
-  - name: Health
-    description: Health check operations
-  - name: Authentication
-    description: User authentication and authorization
-  - name: Users
-    description: User management operations
-  - name: Courses
-    description: Course management and enrollment
-  - name: Subscriptions
-    description: Subscription plans and management
-  - name: Payments
-    description: Payment processing
-  - name: Admin
-    description: Administrative operations
 
 paths:
   /health:
@@ -573,6 +557,17 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: JWT token for API authentication
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+      description: Express session cookie authentication
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for service-to-service authentication
   schemas:
     User:
       type: object
@@ -1115,19 +1110,3 @@ components:
                     type: number
                   revenue:
                     type: number
-
-tags:
-  - name: Health
-    description: Health check operations
-  - name: Authentication
-    description: User authentication and authorization
-  - name: Users
-    description: User management operations
-  - name: Courses
-    description: Course management and enrollment
-  - name: Subscriptions
-    description: Subscription plans and management
-  - name: Payments
-    description: Payment processing
-  - name: Admin
-    description: Administrative operations

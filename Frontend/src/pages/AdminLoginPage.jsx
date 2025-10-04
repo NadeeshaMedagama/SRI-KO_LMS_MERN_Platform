@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 // import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
 import {
   EyeIcon,
@@ -32,7 +32,7 @@ const AdminLoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await api.post('/auth/admin-login', formData);
+      const response = await apiService.post('/auth/admin-login', formData);
 
       if (response.data.success) {
         const { token, user } = response.data;

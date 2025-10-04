@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../services/api';
+import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
 import {
   ChartBarIcon,
@@ -45,7 +45,7 @@ const AdminAnalyticsPage = () => {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/admin/analytics?period=${dateRange}`);
+      const response = await apiService.get(`/admin/analytics?period=${dateRange}`);
       if (response.data.success) {
         setAnalytics(response.data.analytics);
       }
@@ -59,7 +59,7 @@ const AdminAnalyticsPage = () => {
 
   const exportReport = async format => {
     try {
-      const response = await api.get(
+      const response = await apiService.get(
         `/admin/analytics/export?format=${format}&period=${dateRange}`,
         {
           responseType: 'blob',

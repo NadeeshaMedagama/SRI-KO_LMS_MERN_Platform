@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
 import {
   // CogIcon,
@@ -53,7 +53,7 @@ const SettingsPage = () => {
   // Function to refresh user data
   const refreshUserData = useCallback(async () => {
     try {
-      const response = await api.get('/auth/me');
+      const response = await apiService.get('/auth/me');
       if (response.data.success) {
         // Update the user data in context
         updateUser(response.data.user);
@@ -119,7 +119,7 @@ const SettingsPage = () => {
 
     setLoading(true);
     try {
-      const response = await api.put('/users/password', {
+      const response = await apiService.put('/users/password', {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword,
       });
@@ -142,7 +142,7 @@ const SettingsPage = () => {
   const handleNotificationSave = async () => {
     setLoading(true);
     try {
-      const response = await api.put('/users/notifications', { notifications });
+      const response = await apiService.put('/users/notifications', { notifications });
       if (response.data.success) {
         toast.success('Notification preferences saved!');
       }
@@ -159,7 +159,7 @@ const SettingsPage = () => {
   const handlePrivacySave = async () => {
     setLoading(true);
     try {
-      const response = await api.put('/users/privacy', { privacy });
+      const response = await apiService.put('/users/privacy', { privacy });
       if (response.data.success) {
         toast.success('Privacy settings saved!');
       }

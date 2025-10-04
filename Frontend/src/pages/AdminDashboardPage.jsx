@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../services/api';
+import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
 import {
   UsersIcon,
@@ -44,25 +44,25 @@ const AdminDashboardPage = () => {
       setLoading(true);
 
       // Fetch statistics
-      const statsResponse = await api.get('/admin/stats');
+      const statsResponse = await apiService.get('/admin/stats');
       if (statsResponse.data.success) {
         setStats(statsResponse.data.stats);
       }
 
       // Fetch recent users
-      const usersResponse = await api.get('/admin/users?limit=5');
+      const usersResponse = await apiService.get('/admin/users?limit=5');
       if (usersResponse.data.success) {
         setRecentUsers(usersResponse.data.users);
       }
 
       // Fetch recent courses
-      const coursesResponse = await api.get('/admin/courses?limit=5');
+      const coursesResponse = await apiService.get('/admin/courses?limit=5');
       if (coursesResponse.data.success) {
         setRecentCourses(coursesResponse.data.courses);
       }
 
       // Fetch recent activities
-      const activitiesResponse = await api.get('/admin/activities?limit=10');
+      const activitiesResponse = await apiService.get('/admin/activities?limit=10');
       if (activitiesResponse.data.success) {
         setRecentActivities(activitiesResponse.data.activities);
       }
