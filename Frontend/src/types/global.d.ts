@@ -3,6 +3,11 @@ declare global {
   interface Window {
     configs?: {
       apiUrl?: string;
+      apiKey?: string;
+      featureFlags?: {
+        enableNewFeature?: boolean;
+        enableExperimentalFeature?: boolean;
+      };
     };
   }
 }

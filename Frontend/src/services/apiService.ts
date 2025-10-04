@@ -37,9 +37,17 @@ class ApiService {
       },
     });
 
-    // Request interceptor to add auth token
+    // Request interceptor to add auth token and Choreo API key
     this.api.interceptors.request.use(
       (config) => {
+        // Add Choreo API key if available (for API gateway authentication)
+        const choreoApiKey = window?.configs?.apiKey;
+        if (choreoApiKey && choreoApiKey !== 'YOUR_CHOREO_API_KEY_HERE') {
+          config.headers['X-API-Key'] = choreoApiKey;
+          console.log('🔑 Added Choreo API key to request headers');
+        }
+
+        // Add JWT token for user authentication
         const token = localStorage.getItem('token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
