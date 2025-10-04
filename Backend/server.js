@@ -268,8 +268,12 @@ app.use('*', (req, res) => {
 // Start server (HTTP or HTTPS) with captured server instance
 let server;
 
-// Only start server if not in test environment
-if (process.env.NODE_ENV !== 'test') {
+// Start server unless explicitly disabled
+// Allow test environment to start server for integration tests
+if (process.env.SKIP_SERVER !== 'true') {
+  console.log('🚀 Starting server...');
+  console.log('🔧 Environment:', process.env.NODE_ENV || 'development');
+  console.log('🔧 Port:', PORT);
   if (HTTPS_ENABLE && SSL_KEY_PATH && SSL_CERT_PATH && fs.existsSync(SSL_KEY_PATH) && fs.existsSync(SSL_CERT_PATH)) {
     const key = fs.readFileSync(SSL_KEY_PATH);
     const cert = fs.readFileSync(SSL_CERT_PATH);
@@ -320,6 +324,8 @@ if (process.env.NODE_ENV !== 'test') {
 
   process.on('SIGTERM', () => shutdown('SIGTERM'));
   process.on('SIGINT', () => shutdown('SIGINT'));
+} else {
+  console.log('⚠️ Server startup skipped (SKIP_SERVER=true)');
 }
 
 module.exports = app;
