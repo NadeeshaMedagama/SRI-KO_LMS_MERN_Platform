@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import api from '../services/api';
+import { apiService } from '../services/apiService';
 
 const AuthContext = createContext();
 
@@ -73,18 +73,18 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-          const response = await api.get('/auth/me');
+          // Set token in localStorage for apiService interceptors
+          localStorage.setItem('token', token);
+          const user = await apiService.getCurrentUser();
           dispatch({
             type: 'LOGIN_SUCCESS',
             payload: {
-              user: response.data.user,
+              user,
               token,
             },
           });
         } catch (error) {
           localStorage.removeItem('token');
-          delete api.defaults.headers.common['Authorization'];
           dispatch({ type: 'LOGOUT' });
         }
       }
@@ -98,11 +98,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     dispatch({ type: 'LOGIN_START' });
     try {
-      const response = await api.post('/auth/login', { email, password });
-      const { token, user } = response.data;
+      const authResponse = await apiService.login({ email, password });
+      const { token, user } = authResponse;
 
       localStorage.setItem('token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       dispatch({
         type: 'LOGIN_SUCCESS',
@@ -132,16 +131,10 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password, role = 'student') => {
     dispatch({ type: 'LOGIN_START' });
     try {
-      const response = await api.post('/auth/register', {
-        name,
-        email,
-        password,
-        role,
-      });
-      const { token, user } = response.data;
+      const authResponse = await apiService.register({ name, email, password, role });
+      const { token, user } = authResponse;
 
       localStorage.setItem('token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       dispatch({
         type: 'LOGIN_SUCCESS',
@@ -166,7 +159,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');
-    delete api.defaults.headers.common['Authorization'];
     dispatch({ type: 'LOGOUT' });
     toast.success('Logged out successfully');
   };

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../services/api';
+import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
 import {
   UsersIcon,
@@ -60,7 +60,7 @@ const AdminUserManagementPage = () => {
         status: statusFilter !== 'all' ? statusFilter : '',
       });
 
-      const response = await api.get(`/admin/users?${params}`);
+      const response = await apiService.get(`/admin/users?${params}`);
       if (response.data.success) {
         setUsers(response.data.users);
         setTotalPages(response.data.pages);
@@ -76,7 +76,7 @@ const AdminUserManagementPage = () => {
   const handleCreateUser = async e => {
     e.preventDefault();
     try {
-      const response = await api.post('/admin/users', userForm);
+      const response = await apiService.post('/admin/users', userForm);
       if (response.data.success) {
         toast.success('User created successfully');
         setShowCreateModal(false);
@@ -91,7 +91,7 @@ const AdminUserManagementPage = () => {
   const handleUpdateUser = async e => {
     e.preventDefault();
     try {
-      const response = await api.put(
+      const response = await apiService.put(
         `/admin/users/${selectedUser._id}`,
         userForm,
       );
@@ -109,7 +109,7 @@ const AdminUserManagementPage = () => {
   const handleDeleteUser = async userId => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        const response = await api.delete(`/admin/users/${userId}`);
+        const response = await apiService.delete(`/admin/users/${userId}`);
         if (response.data.success) {
           toast.success('User deleted successfully');
           fetchUsers();
@@ -122,7 +122,7 @@ const AdminUserManagementPage = () => {
 
   const handleToggleUserStatus = async (userId, currentStatus) => {
     try {
-      const response = await api.put(`/admin/users/${userId}/status`, {
+      const response = await apiService.put(`/admin/users/${userId}/status`, {
         isActive: !currentStatus,
       });
       if (response.data.success) {
