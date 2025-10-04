@@ -121,7 +121,7 @@ const corsOptions = {
     ? [
         'https://sri-kolms-frontend.choreo.dev',
         'https://sri-kolms-api.choreo.dev',
-        'https://bfdef01f-7fc1-46ea-af69-42279e15f710-dev.e1-us-east-azure.choreoapis.dev/sri-ko-lms-platform/backend/v1.0',
+        'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/',
         process.env.FRONTEND_URL,
         process.env.CORS_ORIGIN
       ].filter(Boolean)
