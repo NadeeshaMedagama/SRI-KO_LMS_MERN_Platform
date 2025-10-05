@@ -87,7 +87,7 @@ const Footer = () => {
             <ul className="space-y-2">
               <li>
                 <Link
-                  to="/"
+                  to="/help-center"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Help Center

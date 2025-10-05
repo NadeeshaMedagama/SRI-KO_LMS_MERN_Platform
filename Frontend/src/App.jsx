@@ -7,6 +7,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import HomePage from './pages/HomePage';
 import WhyChooseSriKoPage from './pages/WhyChooseSriKoPage';
 import JoinUsPage from './pages/JoinUsPage';
+import HelpCenterPage from './pages/HelpCenterPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import PricingPage from './pages/PricingPage';
@@ -62,6 +63,7 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="why-choose-sriko" element={<WhyChooseSriKoPage />} />
         <Route path="join-us" element={<JoinUsPage />} />
+        <Route path="help-center" element={<HelpCenterPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="pricing" element={<PricingPage />} />
