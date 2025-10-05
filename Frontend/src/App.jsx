@@ -5,6 +5,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 
 // Pages
 import HomePage from './pages/HomePage';
+import WhyChooseSriKoPage from './pages/WhyChooseSriKoPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import PricingPage from './pages/PricingPage';
@@ -18,6 +19,9 @@ import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import CreateCoursePage from './pages/CreateCoursePage';
 import EditCoursePage from './pages/EditCoursePage';
+import MyCoursesPage from './pages/MyCoursesPage';
+import LearningProgressPage from './pages/LearningProgressPage';
+import PublicProfilePage from './pages/PublicProfilePage';
 
 // Admin Pages
 import AdminDashboardPage from './pages/AdminDashboardPage';
@@ -32,12 +36,20 @@ import AdminLayout from './components/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
-  const { loading } = useAuth();
+  const { loading, isAuthenticated, user } = useAuth();
+
+  // Debug logging
+  console.log('🔍 App.jsx - Current state:', { loading, isAuthenticated, user: user?.name });
 
   if (loading) {
+    console.log('🔄 App.jsx - Showing loading spinner');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
+        <div className="mt-4 text-center">
+          <p className="text-gray-600">Loading SRI-KO LMS...</p>
+          <p className="text-sm text-gray-500 mt-2">If this takes too long, try refreshing the page</p>
+        </div>
       </div>
     );
   }
@@ -47,6 +59,7 @@ function App() {
       {/* Public Routes */}
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
+        <Route path="why-choose-sriko" element={<WhyChooseSriKoPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="pricing" element={<PricingPage />} />
@@ -109,6 +122,39 @@ function App() {
         }
       >
         <Route index element={<EditCoursePage />} />
+      </Route>
+
+      <Route
+        path="/my-courses"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<MyCoursesPage />} />
+      </Route>
+
+      <Route
+        path="/learning-progress"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<LearningProgressPage />} />
+      </Route>
+
+      <Route
+        path="/public-profile"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<PublicProfilePage />} />
       </Route>
 
       {/* Admin Routes */}
