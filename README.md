@@ -1,30 +1,15 @@
-# SRI-KO LMS - Learning Management System
+# SRI-KO Learning Management System (LMS)
 
-A comprehensive Learning Management System built with MERN stack for SRI-KO Foreign Language Training Center.
-
-## 🏗️ Project Structure
-
-```
-SRI-KO_LMS_MERN/
-├── 📁 Backend/                 # Node.js/Express backend
-├── 📁 Frontend/                # React frontend application
-├── 📁 docs/                    # Documentation files
-├── 📁 testing/                 # Testing files and collections
-├── 📁 assets/                  # Images and media files
-├── 📁 scripts/                 # Utility scripts
-├── 📁 .github/                 # GitHub workflows and templates
-├── 📄 package.json             # Root package configuration
-└── 📄 README.md               # This file
-```
+A comprehensive MERN stack learning management system built with React, Node.js, Express, and MongoDB.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js (v16 or higher)
+- Node.js (v18 or higher)
 - MongoDB Atlas account
 - Git
 
-### Installation
+### Installation & Setup
 
 1. **Clone the repository**
    ```bash
@@ -32,103 +17,180 @@ SRI-KO_LMS_MERN/
    cd SRI-KO_LMS_MERN
    ```
 
-2. **Install dependencies**
+2. **Backend Setup**
    ```bash
+   cd Backend
    npm install
-   cd Backend && npm install
-   cd ../Frontend && npm install
+   cp env.example config.env
+   # Edit config.env with your MongoDB URI and other settings
+   npm run dev
    ```
 
-3. **Environment Setup**
-   - Copy `Backend/env.example` to `Backend/config.env`
-   - Update MongoDB connection string and other environment variables
-
-4. **Start the application**
+3. **Frontend Setup**
    ```bash
-   # Start backend server
-   cd Backend && npm start
-   
-   # Start frontend (in new terminal)
-   cd Frontend && npm run dev
+   cd Frontend
+   npm install
+   npm run dev
    ```
 
-## 📁 Directory Structure
+4. **Access the Application**
+   - Frontend: http://localhost:5173 (or 5174 if 5173 is busy)
+   - Backend API: http://localhost:5000
+   - API Documentation: http://localhost:5000/api/health
 
-### Backend (`/Backend`)
-- **API Routes**: Authentication, users, courses, admin, payments
-- **Models**: User, Course, Payment, Progress, Subscription
-- **Middleware**: Authentication, validation
-- **Configuration**: Environment files, database connection
+## 📁 Project Structure
 
-### Frontend (`/Frontend`)
-- **Components**: Reusable UI components
-- **Pages**: Application pages and routes
-- **Services**: API service layer
-- **Context**: Authentication and state management
-- **Assets**: Static files and images
+```
+SRI-KO_LMS_MERN/
+├── Backend/                 # Node.js/Express backend
+│   ├── controllers/         # Route controllers
+│   ├── middleware/          # Custom middleware
+│   ├── models/              # MongoDB models
+│   ├── routes/              # API routes
+│   ├── uploads/             # File uploads
+│   └── utils/               # Utility functions
+├── Frontend/                # React frontend
+│   ├── src/
+│   │   ├── components/      # Reusable components
+│   │   ├── pages/           # Page components
+│   │   ├── services/         # API services
+│   │   ├── context/         # React context
+│   │   └── utils/           # Utility functions
+│   └── public/              # Static assets
+├── docs/                    # Documentation
+├── testing/                 # Test files and tools
+│   ├── debug-tools/         # Debug HTML files
+│   ├── html-tests/          # Test HTML files
+│   └── solutions/           # Solution HTML files
+├── scripts/                 # Root package files
+└── assets/                  # Project assets
+```
 
-### Documentation (`/docs`)
-- **README files**: Detailed documentation for different features
-- **Setup guides**: Installation and configuration instructions
-- **Troubleshooting**: Common issues and solutions
+## 🛠️ Features
 
-### Testing (`/testing`)
-- **Postman Collection**: API testing collection
-- **Test files**: Automated testing scripts
+### User Features
+- User registration and authentication
+- Course browsing and enrollment
+- Learning progress tracking
+- Profile management
+- Payment integration
+- Subscription management
 
-### Assets (`/assets`)
-- **Images**: Logo, screenshots, and media files
-- **Documents**: Additional project assets
+### Admin Features
+- User management
+- Course creation and management
+- Analytics dashboard
+- Payment monitoring
+- System health monitoring
 
-### Scripts (`/scripts`)
-- **Utility scripts**: Deployment and maintenance scripts
-- **Test files**: HTML test files and utilities
+### Instructor Features
+- Course creation and editing
+- Student progress monitoring
+- Content management
 
-## 🔧 Features
+## 🔧 Development
 
-- **User Management**: Registration, authentication, profile management
-- **Course Management**: Create, edit, and manage courses
-- **Admin Panel**: Comprehensive admin dashboard
-- **Payment Integration**: Subscription and payment handling
-- **Analytics**: User engagement and course analytics
-- **Responsive Design**: Mobile-friendly interface
+### Backend Development
+```bash
+cd Backend
+npm run dev          # Start development server
+npm run build        # Build for production
+npm test            # Run tests
+```
 
-## 📚 Documentation
-
-Detailed documentation is available in the `/docs` folder:
-
-- [Main README](docs/README.md) - Complete project overview
-- [Admin Guide](docs/ADMIN_DEBUG_GUIDE.md) - Admin panel documentation
-- [Deployment Guide](docs/DEPLOYMENT_FIX_README.md) - Deployment instructions
-- [API Testing](docs/POSTMAN_TESTING_GUIDE.md) - API testing guide
-- [Database Migration](docs/MONGODB_ATLAS_MIGRATION_COMPLETE.md) - Database setup
+### Frontend Development
+```bash
+cd Frontend
+npm run dev         # Start development server
+npm run build       # Build for production
+npm run preview     # Preview production build
+```
 
 ## 🧪 Testing
 
-- **API Testing**: Use the Postman collection in `/testing`
-- **Frontend Testing**: Run `npm test` in the Frontend directory
-- **Backend Testing**: Run `npm test` in the Backend directory
+The project includes comprehensive testing tools:
 
-## 🚀 Deployment
+- **Debug Tools**: Located in `testing/debug-tools/`
+- **HTML Tests**: Located in `testing/html-tests/`
+- **Solutions**: Located in `testing/solutions/`
+- **Postman Collection**: `testing/SRI-KO_LMS_Postman_Collection.json`
 
-See [Deployment Guide](docs/DEPLOYMENT_FIX_README.md) for detailed deployment instructions.
+### Running Tests
+1. Open `testing/debug-tools/frontend-backend-test.html` in your browser
+2. Use the Postman collection for API testing
+3. Check individual HTML test files for specific functionality
+
+## 📚 Documentation
+
+Detailed documentation is available in the `docs/` folder:
+
+- `README.md` - Main project documentation
+- `ADMIN_DEBUG_GUIDE.md` - Admin panel debugging
+- `POSTMAN_TESTING_GUIDE.md` - API testing guide
+- `WORKING_SOLUTION.md` - Current working solutions
+
+## 🌐 Deployment
+
+### Backend Deployment
+1. Set up production environment variables
+2. Build the application: `npm run build`
+3. Deploy to your preferred hosting service
+
+### Frontend Deployment
+1. Update API URLs in `public/config.js`
+2. Build the application: `npm run build`
+3. Deploy the `dist/` folder to your hosting service
+
+## 🔐 Environment Variables
+
+### Backend (`Backend/config.env`)
+```
+PORT=5000
+NODE_ENV=development
+MONGODB_URI=your_mongodb_uri
+CORS_ORIGIN=http://localhost:5173
+FRONTEND_URL=http://localhost:5173
+SESSION_SECRET=your_session_secret
+```
+
+### Frontend (`Frontend/public/config.js`)
+```javascript
+window.configs = {
+    apiUrl: 'http://localhost:5000', // Local development
+    featureFlags: {
+        enableNewFeature: true,
+        enableExperimentalFeature: false,
+    },
+};
+```
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Submit a pull request
+4. Test thoroughly
+5. Submit a pull request
 
 ## 📄 License
 
-This project is proprietary software for SRI-KO Foreign Language Training Center.
+This project is licensed under the MIT License.
 
-## 📞 Support
+## 🆘 Support
 
-For support and questions, please contact the development team.
+For support and questions:
+1. Check the documentation in the `docs/` folder
+2. Use the debug tools in `testing/debug-tools/`
+3. Review the test files in `testing/html-tests/`
+
+## 🔄 Recent Updates
+
+- ✅ Fixed frontend blank page issue
+- ✅ Organized project structure
+- ✅ Added comprehensive testing tools
+- ✅ Improved documentation
+- ✅ Fixed build errors
 
 ---
 
-**SRI-KO Foreign Language Training Center**  
-Learning Management System
+**SRI-KO LMS** - Empowering education through technology
