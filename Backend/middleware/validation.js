@@ -64,8 +64,8 @@ exports.validateProfileUpdate = [
   body('phone')
     .optional()
     .trim()
-    .isMobilePhone()
-    .withMessage('Please provide a valid phone number'),
+    .isLength({ max: 20 })
+    .withMessage('Phone number cannot be more than 20 characters'),
 
   body('location')
     .optional()
@@ -76,26 +76,32 @@ exports.validateProfileUpdate = [
   body('website')
     .optional()
     .trim()
-    .isURL()
-    .withMessage('Please provide a valid website URL'),
+    .isLength({ max: 200 })
+    .withMessage('Website URL cannot be more than 200 characters'),
 
   body('socialLinks.linkedin')
     .optional()
     .trim()
-    .isURL()
-    .withMessage('Please provide a valid LinkedIn URL'),
+    .isLength({ max: 200 })
+    .withMessage('LinkedIn URL cannot be more than 200 characters'),
 
   body('socialLinks.twitter')
     .optional()
     .trim()
-    .isURL()
-    .withMessage('Please provide a valid Twitter URL'),
+    .isLength({ max: 200 })
+    .withMessage('Twitter URL cannot be more than 200 characters'),
 
   body('socialLinks.github')
     .optional()
     .trim()
-    .isURL()
-    .withMessage('Please provide a valid GitHub URL'),
+    .isLength({ max: 200 })
+    .withMessage('GitHub URL cannot be more than 200 characters'),
+
+  body('avatar')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Avatar URL cannot be more than 500 characters'),
 ];
 
 // Course validation rules
