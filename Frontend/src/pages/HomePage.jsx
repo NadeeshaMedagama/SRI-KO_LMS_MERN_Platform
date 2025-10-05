@@ -205,13 +205,6 @@ const HomePage = () => {
                     Join Us Today
                     <ArrowRightIcon className="ml-2 h-5 w-5" />
                   </Link>
-                  <button
-                    onClick={scrollToWhyChoose}
-                    className="inline-flex items-center px-8 py-4 border-2 border-white text-base font-medium rounded-lg text-white hover:bg-white hover:text-blue-600 transition-colors"
-                  >
-                    Why Choose Us
-                    <HeartIcon className="ml-2 h-5 w-5" />
-                  </button>
                   <Link
                     to="/courses"
                     className="inline-flex items-center px-8 py-4 border-2 border-white text-base font-medium rounded-lg text-white hover:bg-white hover:text-blue-600 transition-colors"
