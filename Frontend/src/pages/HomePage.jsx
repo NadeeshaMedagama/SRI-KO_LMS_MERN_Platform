@@ -104,10 +104,10 @@ const HomePage = () => {
               ) : (
                 <>
                   <Link
-                    to="/register"
+                    to="/join-us"
                     className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"
                   >
-                    Get Started Free
+                    Join Us Today
                     <ArrowRightIcon className="ml-2 h-5 w-5" />
                   </Link>
                   <Link
@@ -194,10 +194,10 @@ const HomePage = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
-                  to="/register"
+                  to="/join-us"
                   className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-blue-600 bg-white hover:bg-gray-50 transition-colors"
                 >
-                  Create Your Account
+                  Join Our Korean Program
                   <ArrowRightIcon className="ml-2 h-5 w-5" />
                 </Link>
                 <Link
