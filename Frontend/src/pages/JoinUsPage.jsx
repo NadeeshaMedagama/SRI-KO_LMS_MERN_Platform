@@ -58,23 +58,37 @@ const JoinUsPage = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate form submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
       
-      toast.success('Thank you for your interest! We will contact you soon.');
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        age: '',
-        currentLevel: '',
-        interests: [],
-        message: '',
-        preferredTime: '',
-        hearAboutUs: '',
+      const response = await fetch(`${baseUrl}/api/join-us/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toast.success(result.message || 'Thank you for your interest! We will contact you soon.');
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          age: '',
+          currentLevel: '',
+          interests: [],
+          message: '',
+          preferredTime: '',
+          hearAboutUs: '',
+        });
+      } else {
+        throw new Error(result.message || 'Something went wrong. Please try again.');
+      }
     } catch (error) {
-      toast.error('Something went wrong. Please try again.');
+      console.error('Form submission error:', error);
+      toast.error(error.message || 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
