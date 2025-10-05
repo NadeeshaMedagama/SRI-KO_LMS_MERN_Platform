@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import apiUrl from '../config/apiConfig';
 import {
   BookOpenIcon,
   CheckCircleIcon,
@@ -32,8 +33,7 @@ const DashboardPage = () => {
         return;
       }
 
-      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
-      const response = await fetch(`${baseUrl}/api/users/dashboard`, {
+      const response = await fetch(`${apiUrl}/users/dashboard`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
