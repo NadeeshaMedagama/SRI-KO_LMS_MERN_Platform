@@ -67,6 +67,50 @@ router.get('/', async (req, res) => {
   }
 });
 
+// @desc    Get enrolled courses for user
+// @route   GET /api/courses/my-courses
+// @access  Private
+router.get('/my-courses', protect, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Get user's enrolled course IDs
+    const user = await User.findById(userId).select('enrolledCourses');
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // If no enrolled courses, return empty array
+    if (!user.enrolledCourses || user.enrolledCourses.length === 0) {
+      return res.status(200).json({
+        success: true,
+        courses: [],
+      });
+    }
+
+    // Get course details for enrolled courses
+    const courses = await Course.find({
+      _id: { $in: user.enrolledCourses }
+    }).populate('instructor', 'name avatar');
+
+    res.status(200).json({
+      success: true,
+      courses: courses,
+    });
+  } catch (error) {
+    console.error('Error in my-courses endpoint:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+});
+
 // @desc    Get course by ID (public)
 // @route   GET /api/courses/:id
 // @access  Public
@@ -288,31 +332,6 @@ router.post('/:id/enroll', protect, authorize('student'), async (req, res) => {
         title: course.title,
         progress: progress.overallProgress,
       },
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-    });
-  }
-});
-
-// @desc    Get enrolled courses for user
-// @route   GET /api/courses/my-courses
-// @access  Private
-router.get('/my-courses', protect, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).populate({
-      path: 'enrolledCourses',
-      populate: {
-        path: 'instructor',
-        select: 'name avatar',
-      },
-    });
-
-    res.status(200).json({
-      success: true,
-      courses: user.enrolledCourses,
     });
   } catch (error) {
     res.status(500).json({

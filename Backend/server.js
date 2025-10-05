@@ -164,9 +164,9 @@ if (process.env.SKIP_DB === 'true') {
   console.log('⚠️ Skipping MongoDB connection (SKIP_DB=true)');
 } else {
   mongoose
-    .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/sri-ko-lms')
+    .connect(process.env.MONGODB_URI)
     .then(() => {
-      console.log('✅ MongoDB connected successfully');
+      console.log('✅ MongoDB Atlas connected successfully');
       // Test database connection
       const User = require('./models/User');
       User.countDocuments().then(count => {
