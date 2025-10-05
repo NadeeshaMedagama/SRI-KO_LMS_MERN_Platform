@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choreo API Endpoint Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #007bff;
+            background: #f8f9fa;
+        }
+        .url-test {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Choreo API Endpoint Comprehensive Tester</h1>
+    
+    <div class="container">
+        <h2>Current Configuration</h2>
+        <div id="config-info"></div>
+    </div>
+
+    <div class="container">
+        <h2>API Endpoint Tests</h2>
+        
+        <div class="test-section">
+            <h3>1. Basic Connectivity Test</h3>
+            <button onclick="testBasicConnectivity()">Test Basic Connectivity</button>
+            <div id="connectivity-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Health Check Endpoints</h3>
+            <button onclick="testHealthEndpoints()">Test All Health Endpoints</button>
+            <div id="health-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Auth Endpoints</h3>
+            <button onclick="testAuthEndpoints()">Test Auth Endpoints</button>
+            <div id="auth-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Dashboard Endpoint</h3>
+            <button onclick="testDashboardEndpoint()">Test Dashboard Endpoint</button>
+            <div id="dashboard-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Alternative URL Tests</h3>
+            <button onclick="testAlternativeUrls()">Test Alternative URLs</button>
+            <div id="alternative-result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Debug Logs</h2>
+        <div id="debug-logs"></div>
+        <button onclick="clearLogs()">Clear Logs</button>
+    </div>
+
+    <script>
+        // Configuration
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const isDevelopment = window.location.port === '5173' || window.location.port === '5174' || window.location.port === '5175' || window.location.port === '3000';
+
+        // Multiple possible API URLs to test
+        const possibleApiUrls = [
+            'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1/api',
+            'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1',
+            'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/api',
+            'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev',
+            'http://localhost:5000/api'
+        ];
+
+        const currentApiUrl = isLocalhost && isDevelopment 
+            ? 'http://localhost:5000/api'
+            : 'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1/api';
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `<span class="${type}">[${timestamp}] ${message}</span>`;
+            document.getElementById('debug-logs').appendChild(logEntry);
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('debug-logs').innerHTML = '';
+        }
+
+        function displayConfig() {
+            const configDiv = document.getElementById('config-info');
+            configDiv.innerHTML = `
+                <h3>Current Configuration:</h3>
+                <pre>
+Hostname: ${window.location.hostname}
+Port: ${window.location.port}
+Is Localhost: ${isLocalhost}
+Is Development: ${isDevelopment}
+Current API URL: ${currentApiUrl}
+                </pre>
+                <h3>Possible API URLs to Test:</h3>
+                ${possibleApiUrls.map(url => `<div class="url-test">${url}</div>`).join('')}
+            `;
+        }
+
+        async function testBasicConnectivity() {
+            log('Testing basic connectivity...', 'info');
+            const resultDiv = document.getElementById('connectivity-result');
+            resultDiv.innerHTML = '<div class="info">Testing connectivity...</div>';
+            
+            try {
+                const response = await fetch(currentApiUrl, { method: 'HEAD' });
+                resultDiv.innerHTML = `<div class="success">✅ Basic connectivity successful (${response.status})</div>`;
+                log(`Basic connectivity successful: ${response.status}`, 'success');
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Basic connectivity failed: ${error.message}</div>`;
+                log(`Basic connectivity failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testHealthEndpoints() {
+            log('Testing health endpoints...', 'info');
+            const resultDiv = document.getElementById('health-result');
+            resultDiv.innerHTML = '<div class="info">Testing health endpoints...</div>';
+            
+            const healthEndpoints = [
+                '/health',
+                '/api/health',
+                '/api/users/health',
+                '/api/auth/health'
+            ];
+            
+            let results = [];
+            
+            for (const endpoint of healthEndpoints) {
+                try {
+                    const url = `${currentApiUrl}${endpoint}`;
+                    log(`Testing: ${url}`, 'info');
+                    const response = await fetch(url);
+                    const data = await response.json().catch(() => ({ message: 'No JSON response' }));
+                    
+                    results.push({
+                        endpoint,
+                        status: response.status,
+                        success: response.ok,
+                        data: data
+                    });
+                } catch (error) {
+                    results.push({
+                        endpoint,
+                        status: 'ERROR',
+                        success: false,
+                        error: error.message
+                    });
+                }
+            }
+            
+            let html = '<h4>Health Endpoint Results:</h4>';
+            results.forEach(result => {
+                const statusClass = result.success ? 'success' : 'error';
+                html += `<div class="${statusClass}">${result.endpoint}: ${result.status}</div>`;
+                if (result.data) {
+                    html += `<pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+                }
+            });
+            
+            resultDiv.innerHTML = html;
+        }
+
+        async function testAuthEndpoints() {
+            log('Testing auth endpoints...', 'info');
+            const resultDiv = document.getElementById('auth-result');
+            resultDiv.innerHTML = '<div class="info">Testing auth endpoints...</div>';
+            
+            const authEndpoints = [
+                '/auth/me',
+                '/auth/login',
+                '/auth/admin-login'
+            ];
+            
+            let results = [];
+            
+            for (const endpoint of authEndpoints) {
+                try {
+                    const url = `${currentApiUrl}${endpoint}`;
+                    log(`Testing: ${url}`, 'info');
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer invalid-token',
+                        },
+                    });
+                    
+                    const data = await response.json().catch(() => ({ message: 'No JSON response' }));
+                    
+                    results.push({
+                        endpoint,
+                        status: response.status,
+                        success: response.ok,
+                        data: data
+                    });
+                } catch (error) {
+                    results.push({
+                        endpoint,
+                        status: 'ERROR',
+                        success: false,
+                        error: error.message
+                    });
+                }
+            }
+            
+            let html = '<h4>Auth Endpoint Results:</h4>';
+            results.forEach(result => {
+                const statusClass = result.success ? 'success' : (result.status === 401 ? 'warning' : 'error');
+                html += `<div class="${statusClass}">${result.endpoint}: ${result.status}</div>`;
+                if (result.data) {
+                    html += `<pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+                }
+            });
+            
+            resultDiv.innerHTML = html;
+        }
+
+        async function testDashboardEndpoint() {
+            log('Testing dashboard endpoint...', 'info');
+            const resultDiv = document.getElementById('dashboard-result');
+            resultDiv.innerHTML = '<div class="info">Testing dashboard endpoint...</div>';
+            
+            try {
+                const url = `${currentApiUrl}/users/dashboard`;
+                log(`Testing: ${url}`, 'info');
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer invalid-token',
+                    },
+                });
+                
+                const data = await response.json().catch(() => ({ message: 'No JSON response' }));
+                
+                let html = `<h4>Dashboard Endpoint Result:</h4>`;
+                html += `<div class="${response.ok ? 'success' : (response.status === 401 ? 'warning' : 'error')}">Status: ${response.status}</div>`;
+                html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Dashboard endpoint error: ${error.message}</div>`;
+                log(`Dashboard endpoint error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAlternativeUrls() {
+            log('Testing alternative URLs...', 'info');
+            const resultDiv = document.getElementById('alternative-result');
+            resultDiv.innerHTML = '<div class="info">Testing alternative URLs...</div>';
+            
+            let results = [];
+            
+            for (const baseUrl of possibleApiUrls) {
+                try {
+                    const url = `${baseUrl}/health`;
+                    log(`Testing: ${url}`, 'info');
+                    const response = await fetch(url);
+                    const data = await response.json().catch(() => ({ message: 'No JSON response' }));
+                    
+                    results.push({
+                        baseUrl,
+                        status: response.status,
+                        success: response.ok,
+                        data: data
+                    });
+                } catch (error) {
+                    results.push({
+                        baseUrl,
+                        status: 'ERROR',
+                        success: false,
+                        error: error.message
+                    });
+                }
+            }
+            
+            let html = '<h4>Alternative URL Results:</h4>';
+            results.forEach(result => {
+                const statusClass = result.success ? 'success' : 'error';
+                html += `<div class="${statusClass}">${result.baseUrl}: ${result.status}</div>`;
+                if (result.data) {
+                    html += `<pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+                }
+            });
+            
+            resultDiv.innerHTML = html;
+        }
+
+        // Initialize
+        displayConfig();
+        log('Comprehensive API tester initialized', 'info');
+    </script>
+</body>
+</html>

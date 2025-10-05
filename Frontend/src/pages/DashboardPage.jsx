@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import apiUrl from '../config/apiConfig';
+import apiUrl, { getWorkingApiUrl } from '../config/apiConfig';
 import {
   BookOpenIcon,
   CheckCircleIcon,
@@ -33,9 +33,13 @@ const DashboardPage = () => {
         return;
       }
 
-      const dashboardUrl = `${apiUrl}/users/dashboard`;
+      // Try to get a working API URL
+      const workingApiUrl = await getWorkingApiUrl();
+      const dashboardUrl = `${workingApiUrl}/users/dashboard`;
+      
       console.log('🔧 Dashboard API Debug:');
-      console.log('  - API URL:', apiUrl);
+      console.log('  - Default API URL:', apiUrl);
+      console.log('  - Working API URL:', workingApiUrl);
       console.log('  - Dashboard URL:', dashboardUrl);
       console.log('  - Token exists:', !!token);
 
