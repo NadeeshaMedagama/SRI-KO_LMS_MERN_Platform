@@ -8,6 +8,9 @@ import HomePage from './pages/HomePage';
 import WhyChooseSriKoPage from './pages/WhyChooseSriKoPage';
 import JoinUsPage from './pages/JoinUsPage';
 import HelpCenterPage from './pages/HelpCenterPage';
+import DocumentationPage from './pages/DocumentationPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import PricingPage from './pages/PricingPage';
@@ -64,6 +67,9 @@ function App() {
         <Route path="why-choose-sriko" element={<WhyChooseSriKoPage />} />
         <Route path="join-us" element={<JoinUsPage />} />
         <Route path="help-center" element={<HelpCenterPage />} />
+        <Route path="documentation" element={<DocumentationPage />} />
+        <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="terms-of-service" element={<TermsOfServicePage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="pricing" element={<PricingPage />} />
