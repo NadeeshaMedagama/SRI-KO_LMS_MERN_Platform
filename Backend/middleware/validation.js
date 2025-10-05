@@ -104,6 +104,76 @@ exports.validateProfileUpdate = [
     .withMessage('Avatar URL cannot be more than 500 characters'),
 ];
 
+// Join Us form validation rules
+exports.validateJoinUsSubmission = [
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Name must be between 2 and 100 characters'),
+
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email address'),
+
+  body('phone')
+    .optional()
+    .isLength({ max: 20 })
+    .withMessage('Phone number cannot exceed 20 characters'),
+
+  body('age')
+    .optional()
+    .isInt({ min: 16, max: 80 })
+    .withMessage('Age must be between 16 and 80'),
+
+  body('currentLevel')
+    .optional()
+    .isIn(['Complete Beginner', 'Beginner', 'Intermediate', 'Advanced', 'Native Level'])
+    .withMessage('Invalid Korean language level'),
+
+  body('preferredTime')
+    .optional()
+    .isIn([
+      'Morning (9:00 AM - 12:00 PM)',
+      'Afternoon (1:00 PM - 4:00 PM)',
+      'Evening (6:00 PM - 9:00 PM)',
+      'Weekend Classes',
+      'Flexible Schedule'
+    ])
+    .withMessage('Invalid preferred time option'),
+
+  body('interests')
+    .optional()
+    .isArray()
+    .withMessage('Interests must be an array'),
+
+  body('interests.*')
+    .optional()
+    .isIn([
+      'Korean Language Basics',
+      'Business Korean',
+      'Korean Culture',
+      'K-Pop & K-Drama',
+      'Korean Cuisine',
+      'Travel Korean',
+      'Academic Korean',
+      'Korean Literature'
+    ])
+    .withMessage('Invalid interest option'),
+
+  body('hearAboutUs')
+    .optional()
+    .isIn(['social-media', 'website', 'referral', 'advertisement', 'search-engine', 'other'])
+    .withMessage('Invalid "how did you hear about us" option'),
+
+  body('message')
+    .optional()
+    .isLength({ max: 1000 })
+    .withMessage('Message cannot exceed 1000 characters'),
+
+  exports.handleValidationErrors
+];
+
 // Course validation rules
 exports.validateCourseCreation = [
   body('title')
