@@ -180,6 +180,52 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Admin login function
+  const adminLogin = async (email, password) => {
+    dispatch({ type: 'LOGIN_START' });
+    try {
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      const response = await fetch(`${baseUrl}/api/auth/admin-login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const { token, user } = data;
+          localStorage.setItem('token', token);
+          localStorage.setItem('adminToken', token);
+          localStorage.setItem('adminUser', JSON.stringify(user));
+
+          dispatch({
+            type: 'LOGIN_SUCCESS',
+            payload: { user, token },
+          });
+
+          toast.success('Admin login successful!');
+          return { success: true, user };
+        } else {
+          throw new Error(data.message || 'Admin login failed');
+        }
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Admin login failed');
+      }
+    } catch (error) {
+      const message = error.message || 'Admin login failed';
+      dispatch({
+        type: 'LOGIN_FAILURE',
+        payload: message,
+      });
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
+
   // Register function
   const register = async (name, email, password, role = 'student') => {
     dispatch({ type: 'LOGIN_START' });
@@ -229,6 +275,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     ...state,
     login,
+    adminLogin,
     register,
     logout,
     updateUser,
