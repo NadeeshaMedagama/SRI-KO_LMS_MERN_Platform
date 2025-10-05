@@ -56,7 +56,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/"
+                  to="/pricing"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Pricing
@@ -64,7 +64,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/"
+                  to="/join-us"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   About Us
@@ -72,7 +72,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/"
+                  to="/join-us#get-in-touch"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Contact
