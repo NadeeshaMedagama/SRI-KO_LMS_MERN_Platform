@@ -94,45 +94,6 @@ const JoinUsPage = () => {
     }
   };
 
-  const whyJoinUs = [
-    {
-      icon: AcademicCapIcon,
-      title: 'Expert Korean Instructors',
-      description: 'Learn from native Korean speakers and certified language instructors with years of teaching experience.',
-      color: 'blue'
-    },
-    {
-      icon: BookOpenIcon,
-      title: 'Comprehensive Curriculum',
-      description: 'Structured courses from beginner to advanced levels, covering speaking, writing, reading, and listening.',
-      color: 'green'
-    },
-    {
-      icon: UserGroupIcon,
-      title: 'Small Class Sizes',
-      description: 'Personalized attention with maximum 8 students per class for better learning outcomes.',
-      color: 'purple'
-    },
-    {
-      icon: TrophyIcon,
-      title: 'Cultural Immersion',
-      description: 'Experience Korean culture through language learning, traditions, and cultural activities.',
-      color: 'orange'
-    },
-    {
-      icon: GlobeAltIcon,
-      title: 'Flexible Learning Options',
-      description: 'Choose from online, offline, or hybrid learning modes that fit your schedule.',
-      color: 'indigo'
-    },
-    {
-      icon: StarIcon,
-      title: 'Proven Results',
-      description: 'High success rate with students achieving TOPIK certification and fluency goals.',
-      color: 'yellow'
-    }
-  ];
-
   const getColorClasses = (color) => {
     const colors = {
       blue: {
@@ -239,39 +200,6 @@ const JoinUsPage = () => {
           </div>
         </div>
       </div>
-
-      {/* Why Join Us Section */}
-      <section id="why-join" className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Why Join SRI-KO Korean Language Institute?
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Experience the best Korean language education with our comprehensive approach to learning
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {whyJoinUs.map((item, index) => {
-              const colors = getColorClasses(item.color);
-              const Icon = item.icon;
-              
-              return (
-                <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                  <div className={`h-16 w-16 ${colors.light} rounded-full flex items-center justify-center mb-4`}>
-                    <Icon className={`h-8 w-8 ${colors.text}`} />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    {item.title}
-                  </h3>
-                  <p className="text-gray-600">{item.description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
       {/* Join Form Section */}
       <section id="join-form" className="py-16 bg-gray-50">

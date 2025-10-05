@@ -25,6 +25,13 @@ import {
 const HomePage = () => {
   const { isAuthenticated } = useAuth();
 
+  const scrollToWhyChoose = () => {
+    const element = document.getElementById('why-choose-sriko');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const features = [
     {
       title: 'Native Korean Instructors',
@@ -173,13 +180,22 @@ const HomePage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {isAuthenticated ? (
-                <Link
-                  to="/dashboard"
-                  className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-lg text-blue-600 bg-white hover:bg-gray-50 transition-colors"
-                >
-                  Go to Dashboard
-                  <ArrowRightIcon className="ml-2 h-5 w-5" />
-                </Link>
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-lg text-blue-600 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    Go to Dashboard
+                    <ArrowRightIcon className="ml-2 h-5 w-5" />
+                  </Link>
+                  <button
+                    onClick={scrollToWhyChoose}
+                    className="inline-flex items-center px-8 py-4 border-2 border-white text-base font-medium rounded-lg text-white hover:bg-white hover:text-blue-600 transition-colors"
+                  >
+                    Why Choose Us
+                    <HeartIcon className="ml-2 h-5 w-5" />
+                  </button>
+                </>
               ) : (
                 <>
                   <Link
@@ -189,6 +205,13 @@ const HomePage = () => {
                     Join Us Today
                     <ArrowRightIcon className="ml-2 h-5 w-5" />
                   </Link>
+                  <button
+                    onClick={scrollToWhyChoose}
+                    className="inline-flex items-center px-8 py-4 border-2 border-white text-base font-medium rounded-lg text-white hover:bg-white hover:text-blue-600 transition-colors"
+                  >
+                    Why Choose Us
+                    <HeartIcon className="ml-2 h-5 w-5" />
+                  </button>
                   <Link
                     to="/courses"
                     className="inline-flex items-center px-8 py-4 border-2 border-white text-base font-medium rounded-lg text-white hover:bg-white hover:text-blue-600 transition-colors"
@@ -345,7 +368,7 @@ const HomePage = () => {
       </div>
 
       {/* Why Choose SRI-KO Section */}
-      <div className="bg-white">
+      <div id="why-choose-sriko" className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
