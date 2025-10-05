@@ -1,6 +1,6 @@
 // Auto-detect environment and set appropriate API URL
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const isDevelopment = window.location.port === '5173' || window.location.port === '5174' || window.location.port === '3000';
+const isDevelopment = window.location.port === '5173' || window.location.port === '5174' || window.location.port === '5175' || window.location.port === '3000';
 
 window.configs = {
     // Use localhost for local development, Choreo URL for production
