@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const JoinUsSubmission = require('../models/JoinUsSubmission');
-const auth = require('../middleware/auth');
+const { protect } = require('../middleware/auth');
 const { validateJoinUsSubmission } = require('../middleware/validation');
 
 // @route   POST /api/join-us/submit
@@ -72,7 +72,7 @@ router.post('/submit', validateJoinUsSubmission, async (req, res) => {
 // @route   GET /api/join-us/submissions
 // @desc    Get all Join Us submissions (Admin only)
 // @access  Private (Admin)
-router.get('/submissions', auth, async (req, res) => {
+router.get('/submissions', protect, async (req, res) => {
   try {
     // Check if user is admin
     if (req.user.role !== 'admin') {
@@ -129,7 +129,7 @@ router.get('/submissions', auth, async (req, res) => {
 // @route   GET /api/join-us/submissions/:id
 // @desc    Get single Join Us submission (Admin only)
 // @access  Private (Admin)
-router.get('/submissions/:id', auth, async (req, res) => {
+router.get('/submissions/:id', protect, async (req, res) => {
   try {
     // Check if user is admin
     if (req.user.role !== 'admin') {
@@ -166,7 +166,7 @@ router.get('/submissions/:id', auth, async (req, res) => {
 // @route   PUT /api/join-us/submissions/:id/status
 // @desc    Update submission status (Admin only)
 // @access  Private (Admin)
-router.put('/submissions/:id/status', auth, async (req, res) => {
+router.put('/submissions/:id/status', protect, async (req, res) => {
   try {
     // Check if user is admin
     if (req.user.role !== 'admin') {
@@ -213,7 +213,7 @@ router.put('/submissions/:id/status', auth, async (req, res) => {
 // @route   GET /api/join-us/stats
 // @desc    Get Join Us submission statistics (Admin only)
 // @access  Private (Admin)
-router.get('/stats', auth, async (req, res) => {
+router.get('/stats', protect, async (req, res) => {
   try {
     // Check if user is admin
     if (req.user.role !== 'admin') {
@@ -255,7 +255,7 @@ router.get('/stats', auth, async (req, res) => {
 // @route   DELETE /api/join-us/submissions/:id
 // @desc    Delete Join Us submission (Admin only)
 // @access  Private (Admin)
-router.delete('/submissions/:id', auth, async (req, res) => {
+router.delete('/submissions/:id', protect, async (req, res) => {
   try {
     // Check if user is admin
     if (req.user.role !== 'admin') {
