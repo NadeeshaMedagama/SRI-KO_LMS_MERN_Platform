@@ -556,9 +556,6 @@ const JoinUsPage = () => {
                   <a href="/pricing" className="block text-blue-600 hover:text-blue-800 transition-colors">
                     Check Pricing
                   </a>
-                  <a href="/why-choose-sriko" className="block text-blue-600 hover:text-blue-800 transition-colors">
-                    Why Choose SRI-KO
-                  </a>
                   {!isAuthenticated && (
                     <a href="/register" className="block text-blue-600 hover:text-blue-800 transition-colors">
                       Create Account
