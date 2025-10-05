@@ -4,14 +4,20 @@ const baseUrl = window?.configs?.apiUrl
   ? window.configs.apiUrl
   : "http://localhost:5000"; // local backend
 
-// Handle Choreo API URL structure - it already includes the API path
+// Handle API URL structure
 let apiUrl;
 if (baseUrl.includes('choreoapis.dev')) {
-  // Choreo API URL already includes the full path, just return baseUrl
+  // Choreo API URL already includes the full path with /api, just return baseUrl
   apiUrl = baseUrl;
 } else {
   // Local development URL needs /api prefix
   apiUrl = `${baseUrl}/api`;
 }
+
+// Debug logging for API URL configuration
+console.log('🔧 API Configuration Debug:');
+console.log('  - Base URL:', baseUrl);
+console.log('  - Final API URL:', apiUrl);
+console.log('  - Is Choreo:', baseUrl.includes('choreoapis.dev'));
 
 export default apiUrl;

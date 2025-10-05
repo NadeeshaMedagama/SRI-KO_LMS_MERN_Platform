@@ -33,7 +33,13 @@ const DashboardPage = () => {
         return;
       }
 
-      const response = await fetch(`${apiUrl}/users/dashboard`, {
+      const dashboardUrl = `${apiUrl}/users/dashboard`;
+      console.log('🔧 Dashboard API Debug:');
+      console.log('  - API URL:', apiUrl);
+      console.log('  - Dashboard URL:', dashboardUrl);
+      console.log('  - Token exists:', !!token);
+
+      const response = await fetch(dashboardUrl, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -41,20 +47,28 @@ const DashboardPage = () => {
         },
       });
 
+      console.log('📊 Dashboard Response:');
+      console.log('  - Status:', response.status);
+      console.log('  - Status Text:', response.statusText);
+      console.log('  - Headers:', Object.fromEntries(response.headers.entries()));
+
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Dashboard Data:', data);
         if (data.success) {
           setDashboardData(data.data);
         } else {
+          console.error('❌ Dashboard API Error:', data.message);
           toast.error(data.message || 'Failed to load dashboard data');
         }
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || 'Failed to load dashboard data');
+        console.error('❌ Dashboard HTTP Error:', errorData);
+        toast.error(errorData.message || `Failed to load dashboard data (${response.status})`);
       }
     } catch (error) {
-      console.error('Dashboard error:', error);
-      toast.error('Failed to load dashboard data');
+      console.error('❌ Dashboard Network Error:', error);
+      toast.error('Failed to load dashboard data - Network error');
     } finally {
       setLoading(false);
     }
