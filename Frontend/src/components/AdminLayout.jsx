@@ -107,7 +107,11 @@ const AdminLayout = ({ children }) => {
         <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white shadow-xl">
           <div className="flex h-16 items-center justify-between px-4">
             <div className="flex items-center">
-              <ShieldCheckIcon className="h-8 w-8 text-blue-600" />
+              <img 
+                src="/sri-ko-logo.png" 
+                alt="SRI-KO Foreign Language Training Center" 
+                className="h-8 w-8 object-contain"
+              />
               <span className="ml-2 text-xl font-bold text-gray-900">
                 Admin Panel
               </span>
@@ -164,7 +168,11 @@ const AdminLayout = ({ children }) => {
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200 pt-5 pb-4 overflow-y-auto">
           <div className="flex items-center flex-shrink-0 px-4">
-            <ShieldCheckIcon className="h-8 w-8 text-blue-600" />
+            <img 
+              src="/sri-ko-logo.png" 
+              alt="SRI-KO Foreign Language Training Center" 
+              className="h-8 w-8 object-contain"
+            />
             <span className="ml-2 text-xl font-bold text-gray-900">
               Admin Panel
             </span>

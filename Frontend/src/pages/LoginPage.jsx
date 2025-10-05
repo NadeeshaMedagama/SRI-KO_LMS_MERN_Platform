@@ -45,9 +45,11 @@ const LoginPage = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="flex justify-center">
-            <div className="h-12 w-12 bg-gradient-to-r from-primary-600 to-secondary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">SK</span>
-            </div>
+            <img 
+              src="/sri-ko-logo.png" 
+              alt="SRI-KO Foreign Language Training Center" 
+              className="h-12 w-12 object-contain"
+            />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Sign in to your account

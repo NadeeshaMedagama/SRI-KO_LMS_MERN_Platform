@@ -8,9 +8,11 @@ const Footer = () => {
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center mb-4">
-              <div className="h-8 w-8 bg-gradient-to-r from-primary-600 to-secondary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SK</span>
-              </div>
+              <img 
+                src="/sri-ko-logo.png" 
+                alt="SRI-KO Foreign Language Training Center" 
+                className="h-8 w-8 object-contain"
+              />
               <span className="ml-2 text-xl font-bold">SRI-KO LMS</span>
             </div>
             <p className="text-gray-300 mb-6 max-w-md">

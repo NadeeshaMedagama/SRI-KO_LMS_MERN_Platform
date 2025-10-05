@@ -44,9 +44,11 @@ const Header = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <div className="h-8 w-8 bg-gradient-to-r from-primary-600 to-secondary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SK</span>
-              </div>
+              <img 
+                src="/sri-ko-logo.png" 
+                alt="SRI-KO Foreign Language Training Center" 
+                className="h-8 w-8 object-contain"
+              />
               <span className="ml-2 text-xl font-bold text-gray-900">
                 SRI-KO LMS
               </span>
