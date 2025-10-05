@@ -1,12 +1,156 @@
 const express = require('express');
 const User = require('../models/User');
+const Course = require('../models/Course');
+const Progress = require('../models/Progress');
 const { protect, authorize } = require('../middleware/auth');
 const {
   validateProfileUpdate,
   handleValidationErrors,
 } = require('../middleware/validation');
+const { uploadSingle, handleUploadError } = require('../middleware/upload');
+const path = require('path');
 
 const router = express.Router();
+
+// @desc    Get user dashboard data
+// @route   GET /api/users/dashboard
+// @access  Private
+router.get('/dashboard', protect, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get user with enrolled courses
+    const user = await User.findById(userId).populate({
+      path: 'enrolledCourses',
+      populate: {
+        path: 'instructor',
+        select: 'name email avatar'
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Get progress for all enrolled courses
+    const progressData = await Progress.find({ student: userId })
+      .populate('course', 'title thumbnail category level duration price')
+      .sort({ lastAccessed: -1 });
+
+    // Calculate statistics
+    const totalEnrolledCourses = user.enrolledCourses.length;
+    const totalCompletedLessons = progressData.reduce((total, progress) => {
+      return total + progress.completedLessons.length;
+    }, 0);
+    
+    const completedCourses = progressData.filter(progress => progress.isCompleted).length;
+    const certificatesEarned = progressData.filter(progress => progress.certificate).length;
+
+    // Calculate total time spent
+    const totalTimeSpent = progressData.reduce((total, progress) => {
+      return total + (progress.timeSpent || 0);
+    }, 0);
+
+    // Get recent activity (last 10 progress updates)
+    const recentActivity = progressData
+      .sort((a, b) => new Date(b.lastAccessed) - new Date(a.lastAccessed))
+      .slice(0, 10)
+      .map(progress => ({
+        courseId: progress.course._id,
+        courseTitle: progress.course.title,
+        progress: progress.overallProgress,
+        lastAccessed: progress.lastAccessed,
+        isCompleted: progress.isCompleted,
+        certificate: progress.certificate
+      }));
+
+    // Format enrolled courses with progress
+    const enrolledCoursesWithProgress = user.enrolledCourses.map(course => {
+      const progress = progressData.find(p => p.course._id.toString() === course._id.toString());
+      
+      // Calculate total lessons in course
+      const totalLessons = course.curriculum ? 
+        course.curriculum.reduce((total, week) => total + week.lessons.length, 0) : 0;
+      
+      return {
+        _id: course._id,
+        title: course.title,
+        description: course.description,
+        category: course.category,
+        level: course.level,
+        duration: course.duration,
+        price: course.price,
+        thumbnail: course.thumbnail,
+        instructor: course.instructor,
+        enrolledAt: course.enrolledAt || course.createdAt,
+        progress: progress ? {
+          overallProgress: progress.overallProgress,
+          completedLessons: progress.completedLessons.length,
+          totalLessons: totalLessons,
+          timeSpent: progress.timeSpent,
+          lastAccessed: progress.lastAccessed,
+          isCompleted: progress.isCompleted,
+          completionDate: progress.completionDate,
+          certificate: progress.certificate,
+          currentWeek: progress.currentWeek
+        } : {
+          overallProgress: 0,
+          completedLessons: 0,
+          totalLessons: totalLessons,
+          timeSpent: 0,
+          lastAccessed: null,
+          isCompleted: false,
+          completionDate: null,
+          certificate: '',
+          currentWeek: 1
+        }
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+          role: user.role
+        },
+        statistics: {
+          totalEnrolledCourses,
+          totalCompletedLessons,
+          completedCourses,
+          certificatesEarned,
+          totalTimeSpent
+        },
+        enrolledCourses: enrolledCoursesWithProgress,
+        recentActivity,
+        progressData: progressData.map(progress => ({
+          courseId: progress.course._id,
+          courseTitle: progress.course.title,
+          completedLessons: progress.completedLessons,
+          overallProgress: progress.overallProgress,
+          timeSpent: progress.timeSpent,
+          lastAccessed: progress.lastAccessed,
+          isCompleted: progress.isCompleted,
+          completionDate: progress.completionDate,
+          certificate: progress.certificate,
+          currentWeek: progress.currentWeek
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Dashboard data error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
 
 // @desc    Get user profile
 // @route   GET /api/users/profile
@@ -84,16 +228,69 @@ router.put(
           role: user.role,
           avatar: user.avatar,
           bio: user.bio,
+          phone: user.phone,
+          location: user.location,
+          website: user.website,
+          socialLinks: user.socialLinks,
         },
       });
     } catch (error) {
+      console.error('Profile update error:', error);
       res.status(500).json({
         success: false,
-        message: 'Server error',
+        message: error.message || 'Server error',
       });
     }
   },
 );
+
+// @desc    Upload user avatar
+// @route   POST /api/users/avatar
+// @access  Private
+router.post('/avatar', protect, uploadSingle, handleUploadError, async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No file uploaded'
+      });
+    }
+
+    // Generate the file URL
+    const fileUrl = `/uploads/${req.file.filename}`;
+    
+    // Update user's avatar in database
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatar: fileUrl },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Avatar uploaded successfully',
+      avatar: fileUrl,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        bio: user.bio,
+        phone: user.phone,
+        location: user.location,
+        website: user.website,
+        socialLinks: user.socialLinks,
+      }
+    });
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
 
 // @desc    Change password
 // @route   PUT /api/users/password
