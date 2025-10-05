@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import apiUrl from '../config/apiConfig';
 import {
   MapPinIcon,
   PhoneIcon,
@@ -58,9 +59,7 @@ const JoinUsPage = () => {
     setIsSubmitting(true);
 
     try {
-      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
-      
-      const response = await fetch(`${baseUrl}/api/join-us/submit`, {
+      const response = await fetch(`${apiUrl}/join-us/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
