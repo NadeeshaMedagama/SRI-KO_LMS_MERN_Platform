@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
+import apiUrl from '../config/apiConfig';
 import {
   UsersIcon,
   AcademicCapIcon,
@@ -54,13 +55,12 @@ const AdminDashboardPage = () => {
         return;
       }
 
-      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
-      console.log('🌐 API Base URL:', baseUrl);
+      console.log('🌐 API Base URL:', apiUrl);
 
       // Fetch statistics
       try {
-        console.log('📊 Fetching stats from:', `${baseUrl}/api/admin/stats`);
-        const statsResponse = await fetch(`${baseUrl}/api/admin/stats`, {
+        console.log('📊 Fetching stats from:', `${apiUrl}/admin/stats`);
+        const statsResponse = await fetch(`${apiUrl}/admin/stats`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ const AdminDashboardPage = () => {
 
       // Fetch recent users
       try {
-        const usersResponse = await fetch(`${baseUrl}/api/admin/users?limit=5`, {
+        const usersResponse = await fetch(`${apiUrl}/admin/users?limit=5`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -121,7 +121,7 @@ const AdminDashboardPage = () => {
 
       // Fetch recent courses
       try {
-        const coursesResponse = await fetch(`${baseUrl}/api/admin/courses?limit=5`, {
+        const coursesResponse = await fetch(`${apiUrl}/admin/courses?limit=5`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ const AdminDashboardPage = () => {
 
       // Note: Activities endpoint might not exist, so we'll handle it gracefully
       try {
-        const activitiesResponse = await fetch(`${baseUrl}/api/admin/activities?limit=10`, {
+        const activitiesResponse = await fetch(`${apiUrl}/admin/activities?limit=10`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

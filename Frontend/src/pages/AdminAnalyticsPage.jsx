@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
+import apiUrl from '../config/apiConfig';
 import {
   ChartBarIcon,
   UsersIcon,
@@ -52,11 +53,9 @@ const AdminAnalyticsPage = () => {
         return;
       }
 
-      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      console.log('Fetching analytics from:', `${apiUrl}/admin/analytics?period=${dateRange}`);
 
-      console.log('Fetching analytics from:', `${baseUrl}/api/admin/analytics?period=${dateRange}`);
-
-      const response = await fetch(`${baseUrl}/api/admin/analytics?period=${dateRange}`, {
+      const response = await fetch(`${apiUrl}/admin/analytics?period=${dateRange}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

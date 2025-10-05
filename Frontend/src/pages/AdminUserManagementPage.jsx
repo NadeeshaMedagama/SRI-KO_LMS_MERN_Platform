@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
+import apiUrl from '../config/apiConfig';
 import {
   UsersIcon,
   PlusIcon,
@@ -59,7 +60,6 @@ const AdminUserManagementPage = () => {
         return;
       }
 
-      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
       const params = new URLSearchParams({
         page: currentPage,
         limit: 10,
@@ -68,9 +68,9 @@ const AdminUserManagementPage = () => {
         status: statusFilter !== 'all' ? statusFilter : '',
       });
 
-      console.log('Fetching users from:', `${baseUrl}/api/admin/users?${params}`);
+      console.log('Fetching users from:', `${apiUrl}/admin/users?${params}`);
 
-      const response = await fetch(`${baseUrl}/api/admin/users?${params}`, {
+      const response = await fetch(`${apiUrl}/admin/users?${params}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

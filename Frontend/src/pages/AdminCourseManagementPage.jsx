@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
+import apiUrl from '../config/apiConfig';
 import {
   BookOpenIcon,
   PlusIcon,
@@ -71,7 +72,6 @@ const AdminCourseManagementPage = () => {
         return;
       }
 
-      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
       const params = new URLSearchParams({
         page: currentPage,
         limit: 10,
@@ -80,9 +80,9 @@ const AdminCourseManagementPage = () => {
         status: statusFilter !== 'all' ? statusFilter : '',
       });
 
-      console.log('Fetching courses from:', `${baseUrl}/api/admin/courses?${params}`);
+      console.log('Fetching courses from:', `${apiUrl}/admin/courses?${params}`);
 
-      const response = await fetch(`${baseUrl}/api/admin/courses?${params}`, {
+      const response = await fetch(`${apiUrl}/admin/courses?${params}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
