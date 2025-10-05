@@ -4,7 +4,14 @@ const baseUrl = window?.configs?.apiUrl
   ? window.configs.apiUrl
   : "http://localhost:5000"; // local backend
 
-// Always append /api prefix for Express routes
-const apiUrl = `${baseUrl}/api`;
+// Handle Choreo API URL structure - it already includes the API path
+let apiUrl;
+if (baseUrl.includes('choreoapis.dev')) {
+  // Choreo API URL already includes the full path, just return baseUrl
+  apiUrl = baseUrl;
+} else {
+  // Local development URL needs /api prefix
+  apiUrl = `${baseUrl}/api`;
+}
 
 export default apiUrl;
