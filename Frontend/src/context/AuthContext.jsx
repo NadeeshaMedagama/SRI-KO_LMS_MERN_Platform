@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { apiService } from '../services/apiService';
+import apiUrl from '../config/apiConfig';
 
 const AuthContext = createContext();
 
@@ -77,17 +78,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = localStorage.getItem('token');
         if (token) {
-          // Wait for config to be available
-          let baseUrl = 'http://localhost:5000';
-          if (window.configs?.apiUrl) {
-            baseUrl = window.configs.apiUrl;
-          } else {
-            // Wait a bit for config to load
-            await new Promise(resolve => setTimeout(resolve, 100));
-            baseUrl = window.configs?.apiUrl || 'http://localhost:5000';
-          }
-
-          const response = await fetch(`${baseUrl}/api/auth/me`, {
+          const response = await fetch(`${apiUrl}/auth/me`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -134,8 +125,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     dispatch({ type: 'LOGIN_START' });
     try {
-      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
-      const response = await fetch(`${baseUrl}/api/auth/login`, {
+      const response = await fetch(`${apiUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,8 +174,7 @@ export const AuthProvider = ({ children }) => {
   const adminLogin = async (email, password) => {
     dispatch({ type: 'LOGIN_START' });
     try {
-      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
-      const response = await fetch(`${baseUrl}/api/auth/admin-login`, {
+      const response = await fetch(`${apiUrl}/auth/admin-login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
