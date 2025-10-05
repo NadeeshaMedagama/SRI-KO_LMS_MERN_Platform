@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
+import ScrollToTop from './components/ScrollToTop';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -60,7 +61,9 @@ function App() {
   }
 
   return (
-    <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
@@ -225,6 +228,7 @@ function App() {
         />
       </Route>
     </Routes>
+    </>
   );
 }
 
