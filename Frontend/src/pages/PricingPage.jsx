@@ -388,34 +388,6 @@ const PricingPage = () => {
           ))}
         </div>
       </div>
-
-      {/* CTA Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Ready to Transform Your Institution?
-            </h2>
-            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of institutions already using SRI-KO LMS to deliver exceptional learning experiences.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/register"
-                className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-blue-600 bg-white hover:bg-gray-50 transition-colors"
-              >
-                Start Free Trial
-              </Link>
-              <a
-                href="mailto:sales@sri-ko-lms.com"
-                className="inline-flex items-center px-8 py-3 border-2 border-white text-base font-medium rounded-lg text-white hover:bg-white hover:text-blue-600 transition-colors"
-              >
-                Contact Sales
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
