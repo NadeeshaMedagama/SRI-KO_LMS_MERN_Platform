@@ -25,6 +25,7 @@ const Header = () => {
   const navigation = [
     { name: 'Home', href: '/', public: true },
     { name: 'Why Choose SRI-KO', href: '/why-choose-sriko', public: true },
+    { name: 'Join Us', href: '/join-us', public: true },
     { name: 'Courses', href: '/courses', public: true },
     { name: 'Pricing', href: '/pricing', public: true },
     { name: 'Dashboard', href: '/dashboard', public: false },
