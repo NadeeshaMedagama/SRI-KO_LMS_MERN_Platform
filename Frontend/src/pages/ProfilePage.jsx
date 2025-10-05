@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
+import apiUrl from '../config/apiConfig';
 import {
   UserIcon,
   EnvelopeIcon,
@@ -105,10 +106,9 @@ const ProfilePage = () => {
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`${baseUrl}/api/users/avatar`, {
+      const response = await fetch(`${apiUrl}/users/avatar`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
