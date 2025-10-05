@@ -146,8 +146,26 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Choreo-specific routing middleware
+// This handles the Choreo deployment URL structure
+app.use((req, res, next) => {
+  // Check if this is a Choreo deployment request
+  if (req.path.startsWith('/choreo-apis/sri-ko-lms-platform/backend/v1/api')) {
+    // Remove the Choreo-specific prefix and rewrite the path
+    const newPath = req.path.replace('/choreo-apis/sri-ko-lms-platform/backend/v1', '');
+    console.log(`🔄 Choreo route rewrite: ${req.path} -> ${newPath}`);
+    req.url = newPath;
+    req.path = newPath;
+  }
+  next();
+});
+
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Choreo-specific static file serving
+// Handle uploads with Choreo prefix
+app.use('/choreo-apis/sri-ko-lms-platform/backend/v1/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Session middleware
 app.use(session({
@@ -198,7 +216,9 @@ app.get('/health', (req, res) => {
     status: 'OK',
     message: 'SRI-KO LMS API is running',
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development',
+    choreo: 'Enabled'
   });
 });
 
@@ -209,6 +229,36 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     mongodb: process.env.MONGODB_URI ? 'Connected' : 'Not Connected',
+    choreo: 'Enabled',
+    features: {
+      subscriptions: 'Available',
+      payments: 'Available',
+      courseManagement: 'Available',
+      userManagement: 'Available'
+    }
+  });
+});
+
+// Choreo-specific health check endpoints
+app.get('/choreo-apis/sri-ko-lms-platform/backend/v1/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    message: 'SRI-KO LMS API is running (Choreo)',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development',
+    choreo: 'Enabled'
+  });
+});
+
+app.get('/choreo-apis/sri-ko-lms-platform/backend/v1/api/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'SRI-KO LMS server is running (Choreo)',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    mongodb: process.env.MONGODB_URI ? 'Connected' : 'Not Connected',
+    choreo: 'Enabled',
     features: {
       subscriptions: 'Available',
       payments: 'Available',

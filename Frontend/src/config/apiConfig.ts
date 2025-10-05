@@ -7,17 +7,13 @@ const baseUrl = window?.configs?.apiUrl
 // Handle API URL structure with multiple fallback options
 let apiUrl;
 if (baseUrl.includes('choreoapis.dev') || baseUrl.includes('choreoapps.dev')) {
-  // Choreo API URL - try multiple possible structures
-  if (baseUrl.includes('/api')) {
-    // Already has /api prefix
-    apiUrl = baseUrl;
-  } else {
-    // Try adding /api prefix
-    apiUrl = `${baseUrl}/api`;
-  }
+  // Choreo API URL - use the full path as configured
+  apiUrl = baseUrl;
+  console.log('🔧 Using Choreo API URL:', apiUrl);
 } else {
   // Local development URL needs /api prefix
   apiUrl = `${baseUrl}/api`;
+  console.log('🔧 Using Local API URL:', apiUrl);
 }
 
 // Debug logging for API URL configuration

@@ -11,6 +11,11 @@ window.configs = {
         enableNewFeature: true,
         enableExperimentalFeature: false,
     },
+    // Choreo-specific configuration
+    choreo: {
+        enabled: !isLocalhost || !isDevelopment,
+        baseUrl: 'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1'
+    }
 };
 
 // Debug logging for configuration
