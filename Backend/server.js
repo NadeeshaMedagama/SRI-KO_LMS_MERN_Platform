@@ -131,6 +131,8 @@ const corsOptions = {
     : [
         process.env.FRONTEND_URL || 'http://localhost:5173',
         'http://localhost:5174',
+        'http://localhost:5175',
+        'http://localhost:5176',
         'http://localhost:3000',
         process.env.CORS_ORIGIN
       ].filter(Boolean),
@@ -142,6 +144,9 @@ app.use(cors(corsOptions));
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Session middleware
 app.use(session({
