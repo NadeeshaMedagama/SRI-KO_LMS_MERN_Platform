@@ -32,20 +32,36 @@ const AdminLoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await apiService.post('/auth/admin-login', formData);
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      const response = await fetch(`${baseUrl}/api/auth/admin-login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-      if (response.data.success) {
-        const { token, user } = response.data;
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const { token, user } = data;
 
-        // Store admin token separately
-        localStorage.setItem('adminToken', token);
-        localStorage.setItem('adminUser', JSON.stringify(user));
+          // Store both regular token and admin token
+          localStorage.setItem('token', token);
+          localStorage.setItem('adminToken', token);
+          localStorage.setItem('adminUser', JSON.stringify(user));
 
-        toast.success('Admin login successful!');
-        navigate('/admin/dashboard');
+          toast.success('Admin login successful!');
+          navigate('/admin/dashboard');
+        } else {
+          throw new Error(data.message || 'Admin login failed');
+        }
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Admin login failed');
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Admin login failed';
+      const message = error.message || 'Admin login failed';
       toast.error(message);
     } finally {
       setLoading(false);
