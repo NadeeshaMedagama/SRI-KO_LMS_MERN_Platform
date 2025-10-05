@@ -44,6 +44,7 @@ const courseRoutes = require('./routes/courseRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const joinUsRoutes = require('./routes/joinUsRoutes');
 
 const fs = require('fs');
 const https = require('https');
@@ -231,6 +232,7 @@ app.use('/api/auth', (req, res, next) => {
 
 app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/join-us', joinUsRoutes);
 
 // Admin routes with enhanced security and audit logging
 app.use('/api/admin', (req, res, next) => {
