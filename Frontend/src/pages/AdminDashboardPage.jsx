@@ -42,17 +42,24 @@ const AdminDashboardPage = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      console.log('🔄 Starting dashboard data fetch...');
 
-      const token = localStorage.getItem('token');
+      // Try to get token from both locations
+      const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
+      console.log('🔑 Token found:', token ? 'Yes' : 'No');
       if (!token) {
+        console.error('❌ No token found');
         toast.error('Authentication required');
+        setLoading(false);
         return;
       }
 
       const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      console.log('🌐 API Base URL:', baseUrl);
 
       // Fetch statistics
       try {
+        console.log('📊 Fetching stats from:', `${baseUrl}/api/admin/stats`);
         const statsResponse = await fetch(`${baseUrl}/api/admin/stats`, {
           method: 'GET',
           headers: {
@@ -61,23 +68,24 @@ const AdminDashboardPage = () => {
           },
         });
 
+        console.log('📊 Stats response status:', statsResponse.status);
         if (statsResponse.ok) {
           const statsData = await statsResponse.json();
-          console.log('Stats response:', statsData);
+          console.log('📊 Stats response data:', statsData);
           if (statsData.success) {
             setStats(statsData.stats);
-            console.log('Stats loaded:', statsData.stats);
+            console.log('✅ Stats loaded successfully:', statsData.stats);
           } else {
-            console.error('Stats API returned error:', statsData.message);
+            console.error('❌ Stats API returned error:', statsData.message);
             toast.error(statsData.message || 'Failed to load statistics');
           }
         } else {
           const errorData = await statsResponse.json();
-          console.error('Stats API error:', errorData);
+          console.error('❌ Stats API error:', errorData);
           toast.error(errorData.message || 'Failed to load statistics');
         }
       } catch (statsError) {
-        console.error('Stats fetch error:', statsError);
+        console.error('❌ Stats fetch error:', statsError);
         toast.error('Failed to load statistics');
       }
 
@@ -162,9 +170,10 @@ const AdminDashboardPage = () => {
         setRecentActivities([]);
       }
     } catch (error) {
+      console.error('❌ Dashboard error:', error);
       toast.error('Failed to load dashboard data');
-      console.error('Dashboard error:', error);
     } finally {
+      console.log('🏁 Dashboard data fetch completed, setting loading to false');
       setLoading(false);
     }
   };
@@ -207,6 +216,9 @@ const AdminDashboardPage = () => {
             Debug: Token exists: {localStorage.getItem('token') ? 'Yes' : 'No'}
           </p>
           <p className="text-sm text-gray-500">
+            Debug: Admin Token exists: {localStorage.getItem('adminToken') ? 'Yes' : 'No'}
+          </p>
+          <p className="text-sm text-gray-500">
             Debug: API URL: {window?.configs?.apiUrl || 'http://localhost:5000'}
           </p>
         </div>
@@ -247,6 +259,7 @@ const AdminDashboardPage = () => {
           <h3 className="text-sm font-medium text-yellow-800 mb-2">Debug Information:</h3>
           <div className="text-xs text-yellow-700 space-y-1">
             <p>Token exists: {localStorage.getItem('token') ? 'Yes' : 'No'}</p>
+            <p>Admin Token exists: {localStorage.getItem('adminToken') ? 'Yes' : 'No'}</p>
             <p>Token value: {localStorage.getItem('token') ? localStorage.getItem('token').substring(0, 20) + '...' : 'None'}</p>
             <p>API URL: {window?.configs?.apiUrl || 'http://localhost:5000'}</p>
             <p>Current URL: {window.location.href}</p>
