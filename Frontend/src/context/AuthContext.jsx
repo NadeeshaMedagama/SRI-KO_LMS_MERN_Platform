@@ -41,9 +41,13 @@ const authReducer = (state, action) => {
         isAuthenticated: false,
       };
     case 'UPDATE_USER':
+      console.log('🔄 AuthReducer - UPDATE_USER action:', action.payload);
+      console.log('🔄 AuthReducer - Current user:', state.user);
+      const updatedUser = { ...state.user, ...action.payload };
+      console.log('🔄 AuthReducer - Updated user:', updatedUser);
       return {
         ...state,
-        user: { ...state.user, ...action.payload },
+        user: updatedUser,
       };
     case 'SET_LOADING':
       return {
@@ -70,11 +74,19 @@ export const AuthProvider = ({ children }) => {
   // Check for stored token on app start
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          // Use direct fetch to get user data
-          const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          // Wait for config to be available
+          let baseUrl = 'http://localhost:5000';
+          if (window.configs?.apiUrl) {
+            baseUrl = window.configs.apiUrl;
+          } else {
+            // Wait a bit for config to load
+            await new Promise(resolve => setTimeout(resolve, 100));
+            baseUrl = window.configs?.apiUrl || 'http://localhost:5000';
+          }
+
           const response = await fetch(`${baseUrl}/api/auth/me`, {
             method: 'GET',
             headers: {
@@ -101,13 +113,18 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('token');
             dispatch({ type: 'LOGOUT' });
           }
-        } catch (error) {
-          console.error('Auth check error:', error);
-          localStorage.removeItem('token');
-          dispatch({ type: 'LOGOUT' });
+        } else {
+          // No token, just set loading to false
+          dispatch({ type: 'SET_LOADING', payload: false });
         }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        localStorage.removeItem('token');
+        dispatch({ type: 'LOGOUT' });
+      } finally {
+        // Always set loading to false, even if there's an error
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
-      dispatch({ type: 'SET_LOADING', payload: false });
     };
 
     checkAuth();
@@ -201,10 +218,12 @@ export const AuthProvider = ({ children }) => {
 
   // Update user profile
   const updateUser = userData => {
+    console.log('🔄 AuthContext - Updating user with:', userData);
     dispatch({
       type: 'UPDATE_USER',
       payload: userData,
     });
+    console.log('✅ AuthContext - User updated');
   };
 
   const value = {
