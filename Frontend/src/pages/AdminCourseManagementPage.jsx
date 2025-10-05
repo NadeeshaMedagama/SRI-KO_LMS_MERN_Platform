@@ -64,6 +64,14 @@ const AdminCourseManagementPage = () => {
   const fetchCourses = async () => {
     try {
       setLoading(true);
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Authentication required');
+        return;
+      }
+
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
       const params = new URLSearchParams({
         page: currentPage,
         limit: 10,
@@ -72,10 +80,33 @@ const AdminCourseManagementPage = () => {
         status: statusFilter !== 'all' ? statusFilter : '',
       });
 
-      const response = await apiService.get(`/admin/courses?${params}`);
-      if (response.data.success) {
-        setCourses(response.data.courses);
-        setTotalPages(response.data.pages);
+      console.log('Fetching courses from:', `${baseUrl}/api/admin/courses?${params}`);
+
+      const response = await fetch(`${baseUrl}/api/admin/courses?${params}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      console.log('Courses response status:', response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Courses response data:', data);
+        if (data.success) {
+          setCourses(data.courses || []);
+          setTotalPages(data.pages || 1);
+          console.log('Courses loaded:', data.courses);
+        } else {
+          console.error('Courses API returned error:', data.message);
+          toast.error(data.message || 'Failed to fetch courses');
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('Courses API error:', errorData);
+        toast.error(errorData.message || 'Failed to fetch courses');
       }
     } catch (error) {
       toast.error('Failed to fetch courses');

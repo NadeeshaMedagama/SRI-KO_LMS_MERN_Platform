@@ -73,17 +73,36 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          // Set token in localStorage for apiService interceptors
-          localStorage.setItem('token', token);
-          const user = await apiService.getCurrentUser();
-          dispatch({
-            type: 'LOGIN_SUCCESS',
-            payload: {
-              user,
-              token,
+          // Use direct fetch to get user data
+          const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+          const response = await fetch(`${baseUrl}/api/auth/me`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
             },
           });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+              dispatch({
+                type: 'LOGIN_SUCCESS',
+                payload: {
+                  user: data.user,
+                  token,
+                },
+              });
+            } else {
+              localStorage.removeItem('token');
+              dispatch({ type: 'LOGOUT' });
+            }
+          } else {
+            localStorage.removeItem('token');
+            dispatch({ type: 'LOGOUT' });
+          }
         } catch (error) {
+          console.error('Auth check error:', error);
           localStorage.removeItem('token');
           dispatch({ type: 'LOGOUT' });
         }
@@ -98,26 +117,43 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     dispatch({ type: 'LOGIN_START' });
     try {
-      const authResponse = await apiService.login({ email, password });
-      const { token, user } = authResponse;
-
-      localStorage.setItem('token', token);
-
-      dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: { user, token },
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      const response = await fetch(`${baseUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      // Check if user is admin and store admin data
-      if (user.role === 'admin') {
-        localStorage.setItem('adminToken', token);
-        localStorage.setItem('adminUser', JSON.stringify(user));
-      }
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const { token, user } = data;
+          localStorage.setItem('token', token);
 
-      toast.success('Login successful!');
-      return { success: true, user };
+          dispatch({
+            type: 'LOGIN_SUCCESS',
+            payload: { user, token },
+          });
+
+          // Check if user is admin and store admin data
+          if (user.role === 'admin') {
+            localStorage.setItem('adminToken', token);
+            localStorage.setItem('adminUser', JSON.stringify(user));
+          }
+
+          toast.success('Login successful!');
+          return { success: true, user };
+        } else {
+          throw new Error(data.message || 'Login failed');
+        }
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed');
+      }
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
+      const message = error.message || 'Login failed';
       dispatch({
         type: 'LOGIN_FAILURE',
         payload: message,

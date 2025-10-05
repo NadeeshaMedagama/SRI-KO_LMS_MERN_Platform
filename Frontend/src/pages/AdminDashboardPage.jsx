@@ -43,28 +43,123 @@ const AdminDashboardPage = () => {
     try {
       setLoading(true);
 
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Authentication required');
+        return;
+      }
+
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+
       // Fetch statistics
-      const statsResponse = await apiService.get('/admin/stats');
-      if (statsResponse.data.success) {
-        setStats(statsResponse.data.stats);
+      try {
+        const statsResponse = await fetch(`${baseUrl}/api/admin/stats`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json();
+          console.log('Stats response:', statsData);
+          if (statsData.success) {
+            setStats(statsData.stats);
+            console.log('Stats loaded:', statsData.stats);
+          } else {
+            console.error('Stats API returned error:', statsData.message);
+            toast.error(statsData.message || 'Failed to load statistics');
+          }
+        } else {
+          const errorData = await statsResponse.json();
+          console.error('Stats API error:', errorData);
+          toast.error(errorData.message || 'Failed to load statistics');
+        }
+      } catch (statsError) {
+        console.error('Stats fetch error:', statsError);
+        toast.error('Failed to load statistics');
       }
 
       // Fetch recent users
-      const usersResponse = await apiService.get('/admin/users?limit=5');
-      if (usersResponse.data.success) {
-        setRecentUsers(usersResponse.data.users);
+      try {
+        const usersResponse = await fetch(`${baseUrl}/api/admin/users?limit=5`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (usersResponse.ok) {
+          const usersData = await usersResponse.json();
+          console.log('Users response:', usersData);
+          if (usersData.success) {
+            setRecentUsers(usersData.users || []);
+            console.log('Users loaded:', usersData.users);
+          } else {
+            console.error('Users API returned error:', usersData.message);
+            toast.error(usersData.message || 'Failed to load users');
+          }
+        } else {
+          const errorData = await usersResponse.json();
+          console.error('Users API error:', errorData);
+          toast.error(errorData.message || 'Failed to load users');
+        }
+      } catch (usersError) {
+        console.error('Users fetch error:', usersError);
+        toast.error('Failed to load users');
       }
 
       // Fetch recent courses
-      const coursesResponse = await apiService.get('/admin/courses?limit=5');
-      if (coursesResponse.data.success) {
-        setRecentCourses(coursesResponse.data.courses);
+      try {
+        const coursesResponse = await fetch(`${baseUrl}/api/admin/courses?limit=5`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (coursesResponse.ok) {
+          const coursesData = await coursesResponse.json();
+          console.log('Courses response:', coursesData);
+          if (coursesData.success) {
+            setRecentCourses(coursesData.courses || []);
+            console.log('Courses loaded:', coursesData.courses);
+          } else {
+            console.error('Courses API returned error:', coursesData.message);
+            toast.error(coursesData.message || 'Failed to load courses');
+          }
+        } else {
+          const errorData = await coursesResponse.json();
+          console.error('Courses API error:', errorData);
+          toast.error(errorData.message || 'Failed to load courses');
+        }
+      } catch (coursesError) {
+        console.error('Courses fetch error:', coursesError);
+        toast.error('Failed to load courses');
       }
 
-      // Fetch recent activities
-      const activitiesResponse = await apiService.get('/admin/activities?limit=10');
-      if (activitiesResponse.data.success) {
-        setRecentActivities(activitiesResponse.data.activities);
+      // Note: Activities endpoint might not exist, so we'll handle it gracefully
+      try {
+        const activitiesResponse = await fetch(`${baseUrl}/api/admin/activities?limit=10`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (activitiesResponse.ok) {
+          const activitiesData = await activitiesResponse.json();
+          if (activitiesData.success) {
+            setRecentActivities(activitiesData.activities || []);
+          }
+        }
+      } catch (activitiesError) {
+        console.log('Activities endpoint not available:', activitiesError);
+        setRecentActivities([]);
       }
     } catch (error) {
       toast.error('Failed to load dashboard data');
@@ -108,6 +203,12 @@ const AdminDashboardPage = () => {
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading dashboard...</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Debug: Token exists: {localStorage.getItem('token') ? 'Yes' : 'No'}
+          </p>
+          <p className="text-sm text-gray-500">
+            Debug: API URL: {window?.configs?.apiUrl || 'http://localhost:5000'}
+          </p>
         </div>
       </div>
     );
@@ -141,6 +242,28 @@ const AdminDashboardPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Debug Information */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <h3 className="text-sm font-medium text-yellow-800 mb-2">Debug Information:</h3>
+          <div className="text-xs text-yellow-700 space-y-1">
+            <p>Token exists: {localStorage.getItem('token') ? 'Yes' : 'No'}</p>
+            <p>Token value: {localStorage.getItem('token') ? localStorage.getItem('token').substring(0, 20) + '...' : 'None'}</p>
+            <p>API URL: {window?.configs?.apiUrl || 'http://localhost:5000'}</p>
+            <p>Current URL: {window.location.href}</p>
+            <p>Port: {window.location.port}</p>
+            <p>Stats loaded: {JSON.stringify(stats)}</p>
+            <p>Users count: {recentUsers.length}</p>
+            <p>Courses count: {recentCourses.length}</p>
+            <p>Loading state: {loading ? 'Yes' : 'No'}</p>
+          </div>
+          <button 
+            onClick={fetchDashboardData}
+            className="mt-2 px-3 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700"
+          >
+            Retry Fetch
+          </button>
+        </div>
+
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
