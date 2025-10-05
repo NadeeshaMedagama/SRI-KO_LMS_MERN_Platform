@@ -489,30 +489,31 @@ const JoinUsPage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to Start Your Korean Language Journey?
-          </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join hundreds of students who are already mastering Korean with our expert instructors.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="#join-form"
-              className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-blue-600 bg-white hover:bg-gray-50 transition-colors"
-            >
-              Apply Now
-              <SparklesIcon className="ml-2 h-5 w-5" />
-            </a>
-            <a
-              href="/courses"
-              className="inline-flex items-center px-8 py-3 border-2 border-white text-base font-medium rounded-lg text-white hover:bg-white hover:text-blue-600 transition-colors"
-            >
-              Explore Courses
-              <BookOpenIcon className="ml-2 h-5 w-5" />
-            </a>
+      {/* Location Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Visit Our Institute
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Located at the University of Kelaniya, Sri Lanka. Come and experience our Korean language learning environment.
+            </p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-full max-w-4xl">
+              <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4707.050571005448!2d79.91825783365468!3d6.973977156617916!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae2597c8dde7e47%3Ax341e7e820c46d3ed!2sUniversity%20of%20Kelaniya!5e0!3m2!1sen!2slk!4v1759676064848!5m2!1sen!2slk" 
+                width="100%" 
+                height="450" 
+                style={{border: 0}} 
+                allowFullScreen="" 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade"
+                title="SRI-KO Korean Language Institute Location"
+              ></iframe>
+            </div>
           </div>
         </div>
       </section>
