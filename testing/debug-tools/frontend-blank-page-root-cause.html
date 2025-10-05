@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal React Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .success-section {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .error-section {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .info-section {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .url-test {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .loading {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        #test-results {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+        .big-button {
+            background: #28a745;
+            color: white;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+            display: block;
+            width: 100%;
+        }
+        .big-button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Frontend Blank Page - Root Cause Analysis</h1>
+        <p>Let's identify exactly why the frontend is showing a blank page.</p>
+        
+        <button onclick="testAll()" class="big-button">🚀 Run Complete Diagnostic</button>
+    </div>
+
+    <div class="container">
+        <h2>🔍 Diagnostic Results</h2>
+        <div id="test-results">
+            <p>Click the diagnostic button above to run tests...</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🎯 Most Likely Causes</h2>
+        
+        <div class="info-section">
+            <h3>1. JavaScript Errors</h3>
+            <p>The most common cause of blank pages is JavaScript errors preventing React from rendering.</p>
+            <p><strong>Check:</strong> Press F12 → Console tab → Look for red error messages</p>
+        </div>
+        
+        <div class="info-section">
+            <h3>2. API Configuration Issues</h3>
+            <p>If the frontend can't connect to the backend, it might fail silently.</p>
+            <p><strong>Check:</strong> Network tab → Look for failed API requests</p>
+        </div>
+        
+        <div class="info-section">
+            <h3>3. AuthContext Loading State</h3>
+            <p>The app might be stuck in loading state waiting for authentication check.</p>
+            <p><strong>Check:</strong> Look for loading spinners or infinite loading</p>
+        </div>
+        
+        <div class="info-section">
+            <h3>4. Browser Cache Issues</h3>
+            <p>Cached corrupted files can cause blank pages.</p>
+            <p><strong>Fix:</strong> Hard refresh (Ctrl+Shift+R) or clear cache</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🛠️ Quick Fixes to Try</h2>
+        
+        <div class="success-section">
+            <h3>✅ Immediate Solutions</h3>
+            <ol>
+                <li><strong>Hard Refresh:</strong> Press Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac)</li>
+                <li><strong>Clear Cache:</strong> Go to Settings → Privacy → Clear browsing data → Select "All time"</li>
+                <li><strong>Incognito Mode:</strong> Open in private/incognito window</li>
+                <li><strong>Different Browser:</strong> Try Chrome, Firefox, or Edge</li>
+                <li><strong>Check Console:</strong> Press F12 → Console tab → Look for errors</li>
+            </ol>
+        </div>
+        
+        <div class="error-section">
+            <h3>❌ If Still Blank</h3>
+            <p>The issue is likely one of these:</p>
+            <ul>
+                <li><strong>JavaScript Error:</strong> Check browser console for red errors</li>
+                <li><strong>Network Issue:</strong> Check Network tab for failed requests</li>
+                <li><strong>React Error:</strong> Look for React-related error messages</li>
+                <li><strong>CORS Issue:</strong> Backend not allowing frontend requests</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📱 Test the Application</h2>
+        
+        <div class="info-section">
+            <h3>🎯 Direct Access</h3>
+            <p><a href="http://localhost:5173/" target="_blank">Frontend: http://localhost:5173/</a></p>
+            <p><a href="http://localhost:5000/api/health" target="_blank">Backend Health: http://localhost:5000/api/health</a></p>
+        </div>
+        
+        <div class="success-section">
+            <h3>✅ Expected Behavior</h3>
+            <p>When working correctly, you should see:</p>
+            <ul>
+                <li>SRI-KO LMS homepage with navigation</li>
+                <li>Login/Register buttons in the header</li>
+                <li>Course listings and pricing information</li>
+                <li>No JavaScript errors in console</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function testAll() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<p class="loading">🔄 Running complete diagnostic...</p>';
+            
+            let allTests = [];
+            
+            // Test 1: Frontend Response
+            try {
+                const frontendResponse = await fetch('http://localhost:5173/');
+                const frontendHtml = await frontendResponse.text();
+                allTests.push({
+                    name: 'Frontend Response',
+                    status: frontendResponse.ok ? 'success' : 'error',
+                    details: `${frontendResponse.status} ${frontendResponse.statusText} - ${frontendHtml.length} chars`
+                });
+            } catch (error) {
+                allTests.push({
+                    name: 'Frontend Response',
+                    status: 'error',
+                    details: error.message
+                });
+            }
+            
+            // Test 2: Backend Health
+            try {
+                const backendResponse = await fetch('http://localhost:5000/api/health');
+                const backendData = await backendResponse.json();
+                allTests.push({
+                    name: 'Backend Health',
+                    status: backendResponse.ok ? 'success' : 'error',
+                    details: `${backendResponse.status} - ${backendData.message}`
+                });
+            } catch (error) {
+                allTests.push({
+                    name: 'Backend Health',
+                    status: 'error',
+                    details: error.message
+                });
+            }
+            
+            // Test 3: Config Loading
+            try {
+                const configScript = document.createElement('script');
+                configScript.src = '/config.js';
+                configScript.onload = function() {
+                    allTests.push({
+                        name: 'Config Loading',
+                        status: window.configs ? 'success' : 'error',
+                        details: window.configs ? `API URL: ${window.configs.apiUrl}` : 'Config not found'
+                    });
+                    displayResults();
+                };
+                document.head.appendChild(configScript);
+            } catch (error) {
+                allTests.push({
+                    name: 'Config Loading',
+                    status: 'error',
+                    details: error.message
+                });
+            }
+            
+            function displayResults() {
+                let html = '<h3>🔍 Diagnostic Results</h3>';
+                
+                allTests.forEach(test => {
+                    const statusClass = test.status === 'success' ? 'success-section' : 'error-section';
+                    const statusIcon = test.status === 'success' ? '✅' : '❌';
+                    html += `
+                        <div class="${statusClass}">
+                            <h4>${statusIcon} ${test.name}</h4>
+                            <p>${test.details}</p>
+                        </div>
+                    `;
+                });
+                
+                // Overall assessment
+                const allPassed = allTests.every(test => test.status === 'success');
+                if (allPassed) {
+                    html += `
+                        <div class="success-section">
+                            <h3>🎉 All Tests Passed!</h3>
+                            <p>The frontend and backend are working correctly. The blank page issue is likely browser-related.</p>
+                            <p><strong>Try:</strong> Hard refresh (Ctrl+Shift+R) or incognito mode</p>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="error-section">
+                            <h3>❌ Issues Found</h3>
+                            <p>Some tests failed. Check the details above and try the suggested fixes.</p>
+                        </div>
+                    `;
+                }
+                
+                results.innerHTML = html;
+            }
+            
+            // If config test doesn't complete, show results anyway
+            setTimeout(displayResults, 3000);
+        }
+        
+        // Auto-run diagnostic on page load
+        window.onload = function() {
+            setTimeout(testAll, 1000);
+        };
+    </script>
+</body>
+</html>
+
