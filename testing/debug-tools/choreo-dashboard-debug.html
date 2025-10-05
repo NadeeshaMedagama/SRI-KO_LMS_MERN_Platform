@@ -97,7 +97,7 @@
         window.configs = {
             apiUrl: (isLocalhost && isDevelopment) 
                 ? 'http://localhost:5000'
-                : 'https://bfdef01f-7fc1-46ea-af69-42279e15f710-dev.e1-us-east-azure.choreoapis.dev/sri-ko-lms-platform/backend/v1/api',
+                : 'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1/api',
             featureFlags: {
                 enableNewFeature: true,
                 enableExperimentalFeature: false,
@@ -105,7 +105,7 @@
         };
 
         const baseUrl = window?.configs?.apiUrl || "http://localhost:5000";
-        const apiUrl = baseUrl.includes('choreoapis.dev') ? baseUrl : `${baseUrl}/api`;
+        const apiUrl = (baseUrl.includes('choreoapis.dev') || baseUrl.includes('choreoapps.dev')) ? baseUrl : `${baseUrl}/api`;
 
         function log(message, type = 'info') {
             const timestamp = new Date().toLocaleTimeString();
@@ -131,7 +131,7 @@ Is Localhost: ${isLocalhost}
 Is Development: ${isDevelopment}
 Base URL: ${baseUrl}
 Final API URL: ${apiUrl}
-Is Choreo: ${baseUrl.includes('choreoapis.dev')}
+Is Choreo: ${baseUrl.includes('choreoapis.dev') || baseUrl.includes('choreoapps.dev')}
                 </pre>
             `;
         }

@@ -6,7 +6,7 @@ const baseUrl = window?.configs?.apiUrl
 
 // Handle API URL structure
 let apiUrl;
-if (baseUrl.includes('choreoapis.dev')) {
+if (baseUrl.includes('choreoapis.dev') || baseUrl.includes('choreoapps.dev')) {
   // Choreo API URL already includes the full path with /api, just return baseUrl
   apiUrl = baseUrl;
 } else {
@@ -18,6 +18,6 @@ if (baseUrl.includes('choreoapis.dev')) {
 console.log('🔧 API Configuration Debug:');
 console.log('  - Base URL:', baseUrl);
 console.log('  - Final API URL:', apiUrl);
-console.log('  - Is Choreo:', baseUrl.includes('choreoapis.dev'));
+console.log('  - Is Choreo:', baseUrl.includes('choreoapis.dev') || baseUrl.includes('choreoapps.dev'));
 
 export default apiUrl;
