@@ -149,6 +149,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Choreo-specific routing middleware
 // This handles the Choreo deployment URL structure
 app.use((req, res, next) => {
+  // Debug logging for all incoming requests
+  console.log(`🔍 Incoming request: ${req.method} ${req.path} - Original URL: ${req.url}`);
+  
   // Check if this is a Choreo deployment request
   if (req.path.startsWith('/choreo-apis/sri-ko-lms-platform/backend/v1/api')) {
     // Remove the Choreo-specific prefix and rewrite the path
@@ -157,6 +160,9 @@ app.use((req, res, next) => {
     req.url = newPath;
     req.path = newPath;
   }
+  
+  // Log the final path that will be processed
+  console.log(`📝 Final path for processing: ${req.method} ${req.path}`);
   next();
 });
 
@@ -222,6 +228,17 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Test route to verify basic routing works
+app.get('/api/test', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'API routing is working correctly',
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    method: req.method
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -280,7 +297,11 @@ app.use('/api/auth', (req, res, next) => {
   next();
 }, authRoutes);
 
-app.use('/api/users', userRoutes);
+// Mount user routes with debugging
+app.use('/api/users', (req, res, next) => {
+  console.log(`👤 User route accessed: ${req.method} ${req.path}`);
+  next();
+}, userRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/join-us', joinUsRoutes);
 

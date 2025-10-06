@@ -12,6 +12,39 @@ const path = require('path');
 
 const router = express.Router();
 
+// @desc    Get all users (Admin only) - Root route for /api/users
+// @route   GET /api/users
+// @access  Private/Admin
+router.get('/', protect, authorize('admin'), async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const users = await User.find()
+      .select('-password')
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await User.countDocuments();
+
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      users,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
 // @desc    Get user dashboard data
 // @route   GET /api/users/dashboard
 // @access  Private
@@ -341,38 +374,6 @@ router.put('/password', protect, async (req, res) => {
   }
 });
 
-// @desc    Get all users (Admin only)
-// @route   GET /api/users
-// @access  Private/Admin
-router.get('/', protect, authorize('admin'), async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const users = await User.find()
-      .select('-password')
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
-
-    const total = await User.countDocuments();
-
-    res.status(200).json({
-      success: true,
-      count: users.length,
-      total,
-      page,
-      pages: Math.ceil(total / limit),
-      users,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-    });
-  }
-});
 
 // @desc    Get user by ID
 // @route   GET /api/users/:id
