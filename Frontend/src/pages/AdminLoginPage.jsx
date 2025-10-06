@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-// import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
 import {
@@ -19,6 +19,7 @@ const AdminLoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { adminLogin } = useAuth();
 
   const handleChange = e => {
     setFormData({
@@ -32,21 +33,12 @@ const AdminLoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await apiService.post('/auth/admin-login', formData);
-
-      if (response.data.success) {
-        const { token, user } = response.data;
-
-        // Store admin token separately
-        localStorage.setItem('adminToken', token);
-        localStorage.setItem('adminUser', JSON.stringify(user));
-
-        toast.success('Admin login successful!');
+      const result = await adminLogin(formData.email, formData.password);
+      if (result.success) {
         navigate('/admin/dashboard');
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Admin login failed';
-      toast.error(message);
+      console.error('Admin login error:', error);
     } finally {
       setLoading(false);
     }
@@ -151,7 +143,14 @@ const AdminLoginPage = () => {
             </div>
 
             {/* Back to Main Site */}
-            <div className="text-center">
+            <div className="text-center space-y-2">
+              <Link
+                to="/login"
+                className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+              >
+                ← Back to User Login
+              </Link>
+              <div className="text-xs text-blue-300">or</div>
               <Link
                 to="/"
                 className="text-sm text-blue-600 hover:text-blue-500 font-medium"

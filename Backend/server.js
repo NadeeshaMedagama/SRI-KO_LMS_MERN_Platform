@@ -44,6 +44,7 @@ const courseRoutes = require('./routes/courseRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const joinUsRoutes = require('./routes/joinUsRoutes');
 
 const fs = require('fs');
 const https = require('https');
@@ -121,13 +122,18 @@ const corsOptions = {
     ? [
         'https://sri-kolms-frontend.choreo.dev',
         'https://sri-kolms-api.choreo.dev',
+        'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev',
         'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/',
+        /^https:\/\/.*\.choreoapps\.dev$/,
+        /^https:\/\/.*\.choreo\.dev$/,
         process.env.FRONTEND_URL,
         process.env.CORS_ORIGIN
       ].filter(Boolean)
     : [
         process.env.FRONTEND_URL || 'http://localhost:5173',
         'http://localhost:5174',
+        'http://localhost:5175',
+        'http://localhost:5176',
         'http://localhost:3000',
         process.env.CORS_ORIGIN
       ].filter(Boolean),
@@ -139,6 +145,27 @@ app.use(cors(corsOptions));
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Choreo-specific routing middleware
+// This handles the Choreo deployment URL structure
+app.use((req, res, next) => {
+  // Check if this is a Choreo deployment request
+  if (req.path.startsWith('/choreo-apis/sri-ko-lms-platform/backend/v1/api')) {
+    // Remove the Choreo-specific prefix and rewrite the path
+    const newPath = req.path.replace('/choreo-apis/sri-ko-lms-platform/backend/v1', '');
+    console.log(`🔄 Choreo route rewrite: ${req.path} -> ${newPath}`);
+    req.url = newPath;
+    req.path = newPath;
+  }
+  next();
+});
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Choreo-specific static file serving
+// Handle uploads with Choreo prefix
+app.use('/choreo-apis/sri-ko-lms-platform/backend/v1/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Session middleware
 app.use(session({
@@ -161,9 +188,9 @@ if (process.env.SKIP_DB === 'true') {
   console.log('⚠️ Skipping MongoDB connection (SKIP_DB=true)');
 } else {
   mongoose
-    .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/sri-ko-lms')
+    .connect(process.env.MONGODB_URI)
     .then(() => {
-      console.log('✅ MongoDB connected successfully');
+      console.log('✅ MongoDB Atlas connected successfully');
       // Test database connection
       const User = require('./models/User');
       User.countDocuments().then(count => {
@@ -189,7 +216,9 @@ app.get('/health', (req, res) => {
     status: 'OK',
     message: 'SRI-KO LMS API is running',
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development',
+    choreo: 'Enabled'
   });
 });
 
@@ -200,6 +229,36 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     mongodb: process.env.MONGODB_URI ? 'Connected' : 'Not Connected',
+    choreo: 'Enabled',
+    features: {
+      subscriptions: 'Available',
+      payments: 'Available',
+      courseManagement: 'Available',
+      userManagement: 'Available'
+    }
+  });
+});
+
+// Choreo-specific health check endpoints
+app.get('/choreo-apis/sri-ko-lms-platform/backend/v1/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    message: 'SRI-KO LMS API is running (Choreo)',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development',
+    choreo: 'Enabled'
+  });
+});
+
+app.get('/choreo-apis/sri-ko-lms-platform/backend/v1/api/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'SRI-KO LMS server is running (Choreo)',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    mongodb: process.env.MONGODB_URI ? 'Connected' : 'Not Connected',
+    choreo: 'Enabled',
     features: {
       subscriptions: 'Available',
       payments: 'Available',
@@ -223,6 +282,7 @@ app.use('/api/auth', (req, res, next) => {
 
 app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/join-us', joinUsRoutes);
 
 // Admin routes with enhanced security and audit logging
 app.use('/api/admin', (req, res, next) => {

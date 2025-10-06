@@ -6,9 +6,45 @@ export const courseService = {
   getCourses: async (filters = {}) => {
     try {
       console.log('Fetching courses with filters:', filters);
-      const courses = await apiService.getCourses();
-      console.log('Courses response:', courses);
-      return { success: true, data: courses };
+      
+      // Build query parameters from filters
+      const queryParams = new URLSearchParams();
+      if (filters.search) queryParams.append('search', filters.search);
+      if (filters.category) queryParams.append('category', filters.category);
+      if (filters.level) queryParams.append('level', filters.level);
+      if (filters.published !== undefined) queryParams.append('published', filters.published);
+      if (filters.page) queryParams.append('page', filters.page);
+      if (filters.limit) queryParams.append('limit', filters.limit);
+      
+      const queryString = queryParams.toString();
+      const url = queryString ? `/courses?${queryString}` : '/courses';
+      
+      console.log('Making API request to:', url);
+      
+      // Make direct API call to get the correct response format
+      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5000'}/api${url}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Courses API response:', data);
+      
+      // Return the response in the format expected by CoursesPage
+      return {
+        success: data.success,
+        courses: data.courses || [],
+        page: data.page || 1,
+        pages: data.pages || 1,
+        total: data.total || 0,
+        count: data.count || 0
+      };
     } catch (error) {
       console.error('Course service error:', error);
       throw error;
@@ -18,9 +54,33 @@ export const courseService = {
   // Get course by ID
   getCourse: async (courseId) => {
     try {
-      const course = await apiService.getCourse(courseId);
-      return { success: true, data: course };
+      console.log('Fetching course with ID:', courseId);
+      
+      // Make direct API call to get the correct response format
+      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5000'}/api/courses/${courseId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          return { success: false, message: 'Course not found' };
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Course API response:', data);
+      
+      // Return the response in the format expected by CourseDetailPage
+      return {
+        success: data.success,
+        course: data.course
+      };
     } catch (error) {
+      console.error('Course service error:', error);
       throw error;
     }
   },
@@ -58,9 +118,36 @@ export const courseService = {
   // Enroll in course
   enrollInCourse: async (courseId) => {
     try {
-      const enrollment = await apiService.enrollInCourse(courseId);
-      return { success: true, data: enrollment };
+      console.log('Enrolling in course:', courseId);
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+      
+      // Make direct API call to enroll in course
+      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5000'}/api/courses/${courseId}/enroll`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Enrollment response:', data);
+      
+      return {
+        success: data.success,
+        message: data.message
+      };
     } catch (error) {
+      console.error('Enrollment error:', error);
       throw error;
     }
   },

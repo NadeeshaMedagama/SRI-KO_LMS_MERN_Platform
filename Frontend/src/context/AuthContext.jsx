@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { apiService } from '../services/apiService';
+import apiUrl from '../config/apiConfig';
 
 const AuthContext = createContext();
 
@@ -41,9 +42,13 @@ const authReducer = (state, action) => {
         isAuthenticated: false,
       };
     case 'UPDATE_USER':
+      console.log('🔄 AuthReducer - UPDATE_USER action:', action.payload);
+      console.log('🔄 AuthReducer - Current user:', state.user);
+      const updatedUser = { ...state.user, ...action.payload };
+      console.log('🔄 AuthReducer - Updated user:', updatedUser);
       return {
         ...state,
-        user: { ...state.user, ...action.payload },
+        user: updatedUser,
       };
     case 'SET_LOADING':
       return {
@@ -70,25 +75,47 @@ export const AuthProvider = ({ children }) => {
   // Check for stored token on app start
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          // Set token in localStorage for apiService interceptors
-          localStorage.setItem('token', token);
-          const user = await apiService.getCurrentUser();
-          dispatch({
-            type: 'LOGIN_SUCCESS',
-            payload: {
-              user,
-              token,
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const response = await fetch(`${apiUrl}/auth/me`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
             },
           });
-        } catch (error) {
-          localStorage.removeItem('token');
-          dispatch({ type: 'LOGOUT' });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+              dispatch({
+                type: 'LOGIN_SUCCESS',
+                payload: {
+                  user: data.user,
+                  token,
+                },
+              });
+            } else {
+              localStorage.removeItem('token');
+              dispatch({ type: 'LOGOUT' });
+            }
+          } else {
+            localStorage.removeItem('token');
+            dispatch({ type: 'LOGOUT' });
+          }
+        } else {
+          // No token, just set loading to false
+          dispatch({ type: 'SET_LOADING', payload: false });
         }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        localStorage.removeItem('token');
+        dispatch({ type: 'LOGOUT' });
+      } finally {
+        // Always set loading to false, even if there's an error
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
-      dispatch({ type: 'SET_LOADING', payload: false });
     };
 
     checkAuth();
@@ -98,26 +125,94 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     dispatch({ type: 'LOGIN_START' });
     try {
-      const authResponse = await apiService.login({ email, password });
-      const { token, user } = authResponse;
-
-      localStorage.setItem('token', token);
-
-      dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: { user, token },
+      const response = await fetch(`${apiUrl}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      // Check if user is admin and store admin data
-      if (user.role === 'admin') {
-        localStorage.setItem('adminToken', token);
-        localStorage.setItem('adminUser', JSON.stringify(user));
-      }
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const { token, user } = data;
+          localStorage.setItem('token', token);
 
-      toast.success('Login successful!');
-      return { success: true, user };
+          dispatch({
+            type: 'LOGIN_SUCCESS',
+            payload: { user, token },
+          });
+
+          // Check if user is admin and store admin data
+          if (user.role === 'admin') {
+            localStorage.setItem('adminToken', token);
+            localStorage.setItem('adminUser', JSON.stringify(user));
+          }
+
+          toast.success('Login successful!');
+          return { success: true, user };
+        } else {
+          throw new Error(data.message || 'Login failed');
+        }
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed');
+      }
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
+      const message = error.message || 'Login failed';
+      dispatch({
+        type: 'LOGIN_FAILURE',
+        payload: message,
+      });
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
+
+  // Admin login function
+  const adminLogin = async (email, password) => {
+    dispatch({ type: 'LOGIN_START' });
+    try {
+      // Use the regular login endpoint since admin-login is not available in deployment
+      const response = await fetch(`${apiUrl}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const { token, user } = data;
+          
+          // Check if the user is actually an admin
+          if (user.role !== 'admin') {
+            throw new Error('Access denied. Admin privileges required.');
+          }
+          
+          localStorage.setItem('token', token);
+          localStorage.setItem('adminToken', token);
+          localStorage.setItem('adminUser', JSON.stringify(user));
+
+          dispatch({
+            type: 'LOGIN_SUCCESS',
+            payload: { user, token },
+          });
+
+          toast.success('Admin login successful!');
+          return { success: true, user };
+        } else {
+          throw new Error(data.message || 'Admin login failed');
+        }
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Admin login failed');
+      }
+    } catch (error) {
+      const message = error.message || 'Admin login failed';
       dispatch({
         type: 'LOGIN_FAILURE',
         payload: message,
@@ -165,15 +260,18 @@ export const AuthProvider = ({ children }) => {
 
   // Update user profile
   const updateUser = userData => {
+    console.log('🔄 AuthContext - Updating user with:', userData);
     dispatch({
       type: 'UPDATE_USER',
       payload: userData,
     });
+    console.log('✅ AuthContext - User updated');
   };
 
   const value = {
     ...state,
     login,
+    adminLogin,
     register,
     logout,
     updateUser,

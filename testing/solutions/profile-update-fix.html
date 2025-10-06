@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Update Fix - SRI-KO LMS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .issue-section {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .solution-section {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .test-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .test-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .validation-rules {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Profile Update Issue Fixed - SRI-KO LMS</h1>
+        <p>The "Failed to update profile" error has been resolved. Users can now successfully update their profile information including location, phone, and other fields.</p>
+        
+        <button onclick="openProfilePage()">👤 Test Profile Page</button>
+        <button onclick="testProfileAPI()">🧪 Test Profile API</button>
+    </div>
+
+    <div class="container">
+        <h2>❌ The Problem</h2>
+        
+        <div class="issue-section">
+            <h3>Root Cause: Overly Strict Validation Rules</h3>
+            <p>The profile update was failing due to strict validation rules in the backend middleware:</p>
+            
+            <ul>
+                <li><strong>Phone Validation:</strong> <code>isMobilePhone()</code> was too strict and rejected valid phone numbers</li>
+                <li><strong>Website Validation:</strong> <code>isURL()</code> required full URLs with protocols</li>
+                <li><strong>Social Links:</strong> Same URL validation issues</li>
+                <li><strong>Missing Avatar Field:</strong> No validation rule for avatar field</li>
+            </ul>
+        </div>
+        
+        <div class="code-block">
+// OLD VALIDATION (Too Strict)
+body('phone')
+  .optional()
+  .trim()
+  .isMobilePhone()  // ❌ Too strict
+  .withMessage('Please provide a valid phone number'),
+
+body('website')
+  .optional()
+  .trim()
+  .isURL()  // ❌ Requires full URL with protocol
+  .withMessage('Please provide a valid website URL'),
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>✅ The Solution</h2>
+        
+        <div class="solution-section">
+            <h3>Updated Validation Rules</h3>
+            <p>Replaced strict validation with more flexible length-based validation:</p>
+        </div>
+        
+        <div class="code-block">
+// NEW VALIDATION (Flexible)
+body('phone')
+  .optional()
+  .trim()
+  .isLength({ max: 20 })  // ✅ Just check length
+  .withMessage('Phone number cannot be more than 20 characters'),
+
+body('website')
+  .optional()
+  .trim()
+  .isLength({ max: 200 })  // ✅ Just check length
+  .withMessage('Website URL cannot be more than 200 characters'),
+
+body('avatar')
+  .optional()
+  .trim()
+  .isLength({ max: 500 })  // ✅ Added avatar validation
+  .withMessage('Avatar URL cannot be more than 500 characters'),
+        </div>
+        
+        <div class="validation-rules">
+            <h3>Updated Validation Rules:</h3>
+            <ul>
+                <li><strong>Name:</strong> 2-50 characters (unchanged)</li>
+                <li><strong>Bio:</strong> Max 500 characters (unchanged)</li>
+                <li><strong>Phone:</strong> Max 20 characters (flexible)</li>
+                <li><strong>Location:</strong> Max 100 characters (unchanged)</li>
+                <li><strong>Website:</strong> Max 200 characters (flexible)</li>
+                <li><strong>Social Links:</strong> Max 200 characters each (flexible)</li>
+                <li><strong>Avatar:</strong> Max 500 characters (new)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🧪 Test Results</h2>
+        
+        <div class="test-results">
+            <div class="test-card">
+                <h3>✅ Profile Update Test</h3>
+                <p><strong>Request:</strong> Update name, location, phone</p>
+                <p><strong>Result:</strong> <span class="success">SUCCESS</span></p>
+                <p><strong>Response:</strong> Profile updated successfully</p>
+            </div>
+            
+            <div class="test-card">
+                <h3>✅ Empty Fields Test</h3>
+                <p><strong>Request:</strong> Update with empty location and phone</p>
+                <p><strong>Result:</strong> <span class="success">SUCCESS</span></p>
+                <p><strong>Response:</strong> Handles empty optional fields correctly</p>
+            </div>
+            
+            <div class="test-card">
+                <h3>✅ Image Upload Test</h3>
+                <p><strong>Request:</strong> Upload profile image</p>
+                <p><strong>Result:</strong> <span class="success">SUCCESS</span></p>
+                <p><strong>Response:</strong> Avatar uploaded and stored</p>
+            </div>
+            
+            <div class="test-card">
+                <h3>✅ Error Handling Test</h3>
+                <p><strong>Request:</strong> Invalid data (too long)</p>
+                <p><strong>Result:</strong> <span class="success">PROPER ERROR</span></p>
+                <p><strong>Response:</strong> Clear validation error messages</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🔧 Additional Improvements</h2>
+        
+        <h3>Enhanced Error Handling:</h3>
+        <div class="code-block">
+// Backend - Better error logging
+} catch (error) {
+  console.error('Profile update error:', error);
+  res.status(500).json({
+    success: false,
+    message: error.message || 'Server error',
+  });
+}
+
+// Frontend - Detailed error messages
+} catch (error) {
+  if (error.response?.data?.errors) {
+    const errorMessages = error.response.data.errors.map(err => err.msg).join(', ');
+    toast.error(`Validation error: ${errorMessages}`);
+  } else {
+    toast.error(error.response?.data?.message || 'Failed to update profile');
+  }
+}
+        </div>
+        
+        <h3>What Users Can Now Do:</h3>
+        <ul>
+            <li>✅ Update profile name, bio, location, phone</li>
+            <li>✅ Add website and social media links</li>
+            <li>✅ Upload profile images</li>
+            <li>✅ Leave optional fields empty</li>
+            <li>✅ Get clear error messages for invalid data</li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <h2>📋 Files Modified</h2>
+        
+        <div class="code-block">
+Backend Changes:
+- /Backend/middleware/validation.js  # Updated validation rules
+- /Backend/routes/userRoutes.js     # Enhanced error handling
+
+Frontend Changes:
+- /Frontend/src/pages/ProfilePage.jsx  # Better error handling
+        </div>
+        
+        <p style="background: #d4edda; padding: 15px; border-radius: 5px; border: 1px solid #c3e6cb; color: #155724;">
+            <strong>✅ Issue Resolved!</strong> Profile updates now work correctly. Users can update all their profile information including location, phone, and upload profile images without encountering validation errors.
+        </p>
+    </div>
+
+    <script>
+        function openProfilePage() {
+            const url = 'http://localhost:5176/profile';
+            window.open(url, '_blank');
+        }
+        
+        function testProfileAPI() {
+            const url = 'http://localhost:5000/api/users/profile';
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choreo Routing Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .loading { opacity: 0.6; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .endpoint-test {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .endpoint-test input {
+            flex: 1;
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Choreo Routing Fix Test</h1>
+        <p>This tool tests the Choreo deployment routing fixes for database-related endpoints.</p>
+        
+        <div class="test-section">
+            <h2>📋 Test Configuration</h2>
+            <div class="test-result info">
+                <strong>Choreo API URL:</strong> https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1/api
+            </div>
+            <div class="test-result info">
+                <strong>Expected Behavior:</strong> All database-related endpoints should return 200 OK instead of 404 Not Found
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 Health Check Tests</h2>
+            <button onclick="testHealthChecks()">Test Health Endpoints</button>
+            <div id="health-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔐 Authentication Tests</h2>
+            <button onclick="testAuthEndpoints()">Test Auth Endpoints</button>
+            <div id="auth-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>👤 User Dashboard Test</h2>
+            <button onclick="testUserDashboard()">Test User Dashboard</button>
+            <div id="dashboard-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📝 Join Us Form Test</h2>
+            <button onclick="testJoinUsForm()">Test Join Us Form</button>
+            <div id="joinus-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🖼️ Static Files Test</h2>
+            <button onclick="testStaticFiles()">Test Static Files</button>
+            <div id="static-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 Custom Endpoint Test</h2>
+            <div class="endpoint-test">
+                <input type="text" id="custom-endpoint" placeholder="Enter endpoint (e.g., /users/profile)" value="/users/profile">
+                <button onclick="testCustomEndpoint()">Test Custom Endpoint</button>
+            </div>
+            <div id="custom-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Comprehensive Test</h2>
+            <button onclick="runComprehensiveTest()">Run All Tests</button>
+            <div id="comprehensive-results"></div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1';
+        const API_URL = `${BASE_URL}/api`;
+
+        function addResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            container.appendChild(div);
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        async function testEndpoint(url, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+                
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+
+                const response = await fetch(url, options);
+                const data = await response.text();
+                
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: data,
+                    url: url
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    status: 0,
+                    statusText: 'Network Error',
+                    data: error.message,
+                    url: url
+                };
+            }
+        }
+
+        async function testHealthChecks() {
+            clearResults('health-results');
+            addResult('health-results', '🔍 Testing health check endpoints...', 'info');
+
+            const endpoints = [
+                `${BASE_URL}/health`,
+                `${API_URL}/health`,
+                `${BASE_URL}/api/health`
+            ];
+
+            for (const endpoint of endpoints) {
+                const result = await testEndpoint(endpoint);
+                const status = result.success ? 'success' : 'error';
+                const icon = result.success ? '✅' : '❌';
+                
+                addResult('health-results', 
+                    `${icon} <strong>${endpoint}</strong><br>
+                    Status: ${result.status} ${result.statusText}<br>
+                    Response: ${result.data.substring(0, 200)}${result.data.length > 200 ? '...' : ''}`, 
+                    status
+                );
+            }
+        }
+
+        async function testAuthEndpoints() {
+            clearResults('auth-results');
+            addResult('auth-results', '🔐 Testing authentication endpoints...', 'info');
+
+            const endpoints = [
+                { url: `${API_URL}/auth/register`, method: 'POST', body: { name: 'Test User', email: 'test@example.com', password: 'password123', role: 'student' } },
+                { url: `${API_URL}/auth/login`, method: 'POST', body: { email: 'test@example.com', password: 'password123' } }
+            ];
+
+            for (const endpoint of endpoints) {
+                const result = await testEndpoint(endpoint.url, endpoint.method, endpoint.body);
+                const status = result.status === 404 ? 'error' : (result.success ? 'success' : 'warning');
+                const icon = result.status === 404 ? '❌' : (result.success ? '✅' : '⚠️');
+                
+                addResult('auth-results', 
+                    `${icon} <strong>${endpoint.method} ${endpoint.url}</strong><br>
+                    Status: ${result.status} ${result.statusText}<br>
+                    Response: ${result.data.substring(0, 200)}${result.data.length > 200 ? '...' : ''}`, 
+                    status
+                );
+            }
+        }
+
+        async function testUserDashboard() {
+            clearResults('dashboard-results');
+            addResult('dashboard-results', '👤 Testing user dashboard endpoint...', 'info');
+
+            const result = await testEndpoint(`${API_URL}/users/dashboard`);
+            const status = result.status === 404 ? 'error' : (result.status === 401 ? 'warning' : 'success');
+            const icon = result.status === 404 ? '❌' : (result.status === 401 ? '⚠️' : '✅');
+            
+            addResult('dashboard-results', 
+                `${icon} <strong>GET ${API_URL}/users/dashboard</strong><br>
+                Status: ${result.status} ${result.statusText}<br>
+                Response: ${result.data.substring(0, 200)}${result.data.length > 200 ? '...' : ''}<br>
+                <em>Note: 401 is expected without authentication token</em>`, 
+                status
+            );
+        }
+
+        async function testJoinUsForm() {
+            clearResults('joinus-results');
+            addResult('joinus-results', '📝 Testing Join Us form endpoint...', 'info');
+
+            const testData = {
+                name: 'Test User',
+                email: 'test@example.com',
+                phone: '+1234567890',
+                age: 25,
+                currentLevel: 'beginner',
+                preferredTime: 'morning',
+                interests: ['programming', 'web-development'],
+                hearAboutUs: 'google',
+                message: 'Test message'
+            };
+
+            const result = await testEndpoint(`${API_URL}/join-us/submit`, 'POST', testData);
+            const status = result.status === 404 ? 'error' : (result.success ? 'success' : 'warning');
+            const icon = result.status === 404 ? '❌' : (result.success ? '✅' : '⚠️');
+            
+            addResult('joinus-results', 
+                `${icon} <strong>POST ${API_URL}/join-us/submit</strong><br>
+                Status: ${result.status} ${result.statusText}<br>
+                Response: ${result.data.substring(0, 200)}${result.data.length > 200 ? '...' : ''}`, 
+                status
+            );
+        }
+
+        async function testStaticFiles() {
+            clearResults('static-results');
+            addResult('static-results', '🖼️ Testing static file serving...', 'info');
+
+            const testFile = 'avatar-1759658474446-704707130.jpeg';
+            const endpoints = [
+                `${BASE_URL}/uploads/${testFile}`,
+                `${API_URL}/uploads/${testFile}`
+            ];
+
+            for (const endpoint of endpoints) {
+                const result = await testEndpoint(endpoint);
+                const status = result.status === 404 ? 'error' : (result.status === 200 ? 'success' : 'warning');
+                const icon = result.status === 404 ? '❌' : (result.status === 200 ? '✅' : '⚠️');
+                
+                addResult('static-results', 
+                    `${icon} <strong>GET ${endpoint}</strong><br>
+                    Status: ${result.status} ${result.statusText}<br>
+                    Content-Type: ${result.data.includes('image') ? 'Image file' : 'Not an image'}`, 
+                    status
+                );
+            }
+        }
+
+        async function testCustomEndpoint() {
+            clearResults('custom-results');
+            const endpoint = document.getElementById('custom-endpoint').value;
+            
+            if (!endpoint) {
+                addResult('custom-results', '❌ Please enter an endpoint', 'error');
+                return;
+            }
+
+            addResult('custom-results', `🎯 Testing custom endpoint: ${endpoint}`, 'info');
+
+            const result = await testEndpoint(`${API_URL}${endpoint}`);
+            const status = result.status === 404 ? 'error' : (result.status === 401 ? 'warning' : 'success');
+            const icon = result.status === 404 ? '❌' : (result.status === 401 ? '⚠️' : '✅');
+            
+            addResult('custom-results', 
+                `${icon} <strong>GET ${API_URL}${endpoint}</strong><br>
+                Status: ${result.status} ${result.statusText}<br>
+                Response: ${result.data.substring(0, 200)}${result.data.length > 200 ? '...' : ''}`, 
+                status
+            );
+        }
+
+        async function runComprehensiveTest() {
+            clearResults('comprehensive-results');
+            addResult('comprehensive-results', '📊 Running comprehensive test suite...', 'info');
+
+            const tests = [
+                { name: 'Health Checks', fn: testHealthChecks },
+                { name: 'Authentication', fn: testAuthEndpoints },
+                { name: 'User Dashboard', fn: testUserDashboard },
+                { name: 'Join Us Form', fn: testJoinUsForm },
+                { name: 'Static Files', fn: testStaticFiles }
+            ];
+
+            for (const test of tests) {
+                addResult('comprehensive-results', `🔄 Running ${test.name} test...`, 'info');
+                await test.fn();
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second between tests
+            }
+
+            addResult('comprehensive-results', '✅ Comprehensive test completed!', 'success');
+        }
+
+        // Auto-run health checks on page load
+        window.onload = function() {
+            addResult('health-results', '🔄 Auto-testing health endpoints on page load...', 'info');
+            testHealthChecks();
+        };
+    </script>
+</body>
+</html>

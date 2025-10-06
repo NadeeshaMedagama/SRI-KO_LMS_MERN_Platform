@@ -174,7 +174,7 @@ router.get('/me', protect, async (req, res) => {
 // @desc    Admin login
 // @route   POST /api/auth/admin-login
 // @access  Public
-router.post('/admin-login', async (req, res) => {
+router.post('/admin-login', validateUserLogin, handleValidationErrors, async (req, res) => {
   try {
     const { email, password } = req.body;
 

@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const Course = require('../models/Course');
 const { protect, authorize } = require('../middleware/auth');
@@ -388,6 +389,23 @@ router.post(
         curriculum,
       } = req.body;
 
+      // Validate instructor ID
+      if (!instructor || !mongoose.Types.ObjectId.isValid(instructor)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Valid instructor ID is required',
+        });
+      }
+
+      // Check if instructor exists
+      const instructorExists = await User.findById(instructor);
+      if (!instructorExists) {
+        return res.status(400).json({
+          success: false,
+          message: 'Instructor not found',
+        });
+      }
+
       const course = await Course.create({
         title,
         description,
@@ -396,9 +414,9 @@ router.post(
         duration,
         price,
         instructor,
-        isPublished,
-        thumbnail,
-        curriculum,
+        isPublished: isPublished || false,
+        thumbnail: thumbnail || '',
+        curriculum: curriculum || [],
       });
 
       res.status(201).json({

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
+import apiUrl from '../config/apiConfig';
 import {
   UsersIcon,
   PlusIcon,
@@ -52,6 +53,13 @@ const AdminUserManagementPage = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Authentication required');
+        return;
+      }
+
       const params = new URLSearchParams({
         page: currentPage,
         limit: 10,
@@ -60,10 +68,33 @@ const AdminUserManagementPage = () => {
         status: statusFilter !== 'all' ? statusFilter : '',
       });
 
-      const response = await apiService.get(`/admin/users?${params}`);
-      if (response.data.success) {
-        setUsers(response.data.users);
-        setTotalPages(response.data.pages);
+      console.log('Fetching users from:', `${apiUrl}/admin/users?${params}`);
+
+      const response = await fetch(`${apiUrl}/admin/users?${params}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      console.log('Users response status:', response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Users response data:', data);
+        if (data.success) {
+          setUsers(data.users || []);
+          setTotalPages(data.pages || 1);
+          console.log('Users loaded:', data.users);
+        } else {
+          console.error('Users API returned error:', data.message);
+          toast.error(data.message || 'Failed to fetch users');
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('Users API error:', errorData);
+        toast.error(errorData.message || 'Failed to fetch users');
       }
     } catch (error) {
       toast.error('Failed to fetch users');

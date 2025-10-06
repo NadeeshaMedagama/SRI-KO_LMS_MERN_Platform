@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Image Test - SRI-KO LMS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .avatar-test {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .avatar-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            background: #2563eb;
+            overflow: hidden;
+            position: relative;
+        }
+        .avatar-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .debug-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Profile Image Test - SRI-KO LMS</h1>
+        <p>Testing profile image display in header icon.</p>
+        
+        <button onclick="openApp()">🚀 Open Application</button>
+        <button onclick="testImage()">🖼️ Test Image</button>
+        <button onclick="checkUserData()">👤 Check User Data</button>
+    </div>
+
+    <div class="container">
+        <h2>🖼️ Image Display Test</h2>
+        
+        <div class="avatar-test">
+            <div class="avatar-circle">
+                <img id="testAvatar" src="" alt="Profile" style="display: none;">
+                <span id="testInitials">TU</span>
+            </div>
+            <div>
+                <p><strong>Test Avatar Display:</strong></p>
+                <p id="testStatus">Click "Test Image" to load profile image</p>
+                <p id="imageUrl"></p>
+            </div>
+        </div>
+        
+        <button onclick="testImage()">Test Image Loading</button>
+    </div>
+
+    <div class="container">
+        <h2>👤 User Data Test</h2>
+        
+        <div id="userDataDisplay"></div>
+        <button onclick="checkUserData()">Check User Data</button>
+    </div>
+
+    <div class="container">
+        <h2>🔍 Debug Information</h2>
+        
+        <div class="debug-info" id="debugInfo">
+            Click "Check User Data" to see debug information
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📋 Instructions</h2>
+        
+        <ol>
+            <li><strong>Open Application:</strong> Click "Open Application" to go to the main app</li>
+            <li><strong>Login:</strong> Use credentials: <code>student@test.com</code> / <code>password123</code></li>
+            <li><strong>Go to Profile:</strong> Click on your profile in the header</li>
+            <li><strong>Upload Image:</strong> Click the camera icon to upload a profile image</li>
+            <li><strong>Check Header:</strong> Look at the header to see if the image appears</li>
+            <li><strong>Check Console:</strong> Open browser dev tools (F12) and check console for debug messages</li>
+        </ol>
+        
+        <p style="background: #fff3cd; padding: 15px; border-radius: 5px; border: 1px solid #ffc107; color: #856404;">
+            <strong>🔍 Debug Messages to Look For:</strong><br>
+            • 🔍 Header - User data: [user object]<br>
+            • 🔍 Header - User avatar: [avatar path]<br>
+            • 🖼️ Header - Image loaded successfully: [image URL]<br>
+            • ❌ Header - Image failed to load: [image URL]<br>
+            • 🔄 AuthContext - Updating user with: [user data]<br>
+            • 🔄 AuthReducer - UPDATE_USER action: [user data]
+        </p>
+    </div>
+
+    <script>
+        function openApp() {
+            window.open('http://localhost:5176', '_blank');
+        }
+        
+        async function testImage() {
+            const statusDiv = document.getElementById('testStatus');
+            const urlDiv = document.getElementById('imageUrl');
+            const imageEl = document.getElementById('testAvatar');
+            const initialsEl = document.getElementById('testInitials');
+            
+            statusDiv.innerHTML = '🔄 Loading user data...';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/me', {
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZTIyZGI2ZGMyNjNiOGYwMWRiZWZiMSIsImlhdCI6MTc1OTY1MzMxMiwiZXhwIjoxNzYwMjU4MTEyfQ.BAcZAP8KwR_6v9_vnRsuuQAr9HfWThW81tsTFCPuxi0'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.user.avatar) {
+                    const imageUrl = `http://localhost:5000${data.user.avatar}`;
+                    urlDiv.innerHTML = `<strong>Image URL:</strong> ${imageUrl}`;
+                    
+                    imageEl.src = imageUrl;
+                    imageEl.style.display = 'block';
+                    initialsEl.style.display = 'none';
+                    
+                    imageEl.onload = () => {
+                        statusDiv.innerHTML = '<span class="success">✅ Image loaded successfully!</span>';
+                    };
+                    
+                    imageEl.onerror = () => {
+                        statusDiv.innerHTML = '<span class="error">❌ Image failed to load</span>';
+                        imageEl.style.display = 'none';
+                        initialsEl.style.display = 'flex';
+                    };
+                } else {
+                    statusDiv.innerHTML = '<span class="error">❌ No avatar found in user data</span>';
+                    urlDiv.innerHTML = '';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+                urlDiv.innerHTML = '';
+            }
+        }
+        
+        async function checkUserData() {
+            const displayDiv = document.getElementById('userDataDisplay');
+            const debugDiv = document.getElementById('debugInfo');
+            
+            displayDiv.innerHTML = '🔄 Loading user data...';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/me', {
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZTIyZGI2ZGMyNjNiOGYwMWRiZWZiMSIsImlhdCI6MTc1OTY1MzMxMiwiZXhwIjoxNzYwMjU4MTEyfQ.BAcZAP8KwR_6v9_vnRsuuQAr9HfWThW81tsTFCPuxi0'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayDiv.innerHTML = `
+                        <div style="background: #d4edda; padding: 15px; border-radius: 5px; border: 1px solid #c3e6cb;">
+                            <h3 class="success">✅ User Data Retrieved Successfully</h3>
+                            <p><strong>Name:</strong> ${data.user.name}</p>
+                            <p><strong>Email:</strong> ${data.user.email}</p>
+                            <p><strong>Avatar:</strong> ${data.user.avatar || 'None'}</p>
+                            <p><strong>Role:</strong> ${data.user.role}</p>
+                            <p><strong>Bio:</strong> ${data.user.bio || 'None'}</p>
+                            <p><strong>Phone:</strong> ${data.user.phone || 'None'}</p>
+                            <p><strong>Location:</strong> ${data.user.location || 'None'}</p>
+                        </div>
+                    `;
+                    
+                    debugDiv.innerHTML = `
+                        <strong>Debug Information:</strong><br>
+                        <strong>User ID:</strong> ${data.user.id}<br>
+                        <strong>Avatar Path:</strong> ${data.user.avatar || 'null'}<br>
+                        <strong>Constructed URL:</strong> ${data.user.avatar ? `http://localhost:5000${data.user.avatar}` : 'N/A'}<br>
+                        <strong>Image Test:</strong> <a href="${data.user.avatar ? `http://localhost:5000${data.user.avatar}` : '#'}" target="_blank">Open Image</a><br>
+                        <strong>Timestamp:</strong> ${new Date().toLocaleString()}
+                    `;
+                } else {
+                    displayDiv.innerHTML = '<div class="error">❌ Failed to retrieve user data</div>';
+                    debugDiv.innerHTML = 'Failed to retrieve user data';
+                }
+            } catch (error) {
+                displayDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                debugDiv.innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        // Auto-load user data on page load
+        window.onload = function() {
+            checkUserData();
+        };
+    </script>
+</body>
+</html>
+

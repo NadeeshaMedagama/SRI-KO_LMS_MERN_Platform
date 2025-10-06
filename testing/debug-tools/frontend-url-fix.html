@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend URL Fix - SRI-KO LMS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .success-section {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .error-section {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .info-section {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .url-test {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Frontend URL Fix - SRI-KO LMS</h1>
+        <p>The frontend is working, but you're accessing the wrong port!</p>
+        
+        <button onclick="openCorrectURL()">🚀 Open Correct Frontend</button>
+        <button onclick="testPorts()">🧪 Test Ports</button>
+        <button onclick="killOldProcess()">🔄 Kill Old Process</button>
+    </div>
+
+    <div class="container">
+        <h2>❌ The Problem</h2>
+        
+        <div class="error-section">
+            <h3>Wrong Port Access</h3>
+            <p><strong>You're trying to access:</strong> <code>http://localhost:5173/</code></p>
+            <p><strong>But the frontend is running on:</strong> <code>http://localhost:5176/</code></p>
+            
+            <div class="url-test">
+                ❌ http://localhost:5173/  (Wrong port - shows blank page)
+                ✅ http://localhost:5176/  (Correct port - working frontend)
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>✅ The Solution</h2>
+        
+        <div class="success-section">
+            <h3>Use the Correct URL</h3>
+            <p>The frontend is working perfectly on port 5176. Here's what you need to do:</p>
+            
+            <div class="info-section">
+                <h4>🎯 Correct Frontend URL:</h4>
+                <div class="url-test">
+                    <strong>http://localhost:5176/</strong>
+                </div>
+                <p>This is where your SRI-KO LMS frontend is actually running.</p>
+            </div>
+            
+            <div class="info-section">
+                <h4>📋 Terminal Logs Show:</h4>
+                <div class="url-test">
+                    VITE v5.4.20  ready in 227 ms
+                    ➜  Local:   http://localhost:5176/
+                    ➜  Network: use --host to expose
+                </div>
+                <p>The Vite development server is running on port 5176.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🔍 Why This Happened</h2>
+        
+        <div class="info-section">
+            <h3>Port Conflict Resolution</h3>
+            <p>Vite automatically finds an available port when the default port (5173) is in use:</p>
+            
+            <div class="url-test">
+                Port 5173 is in use, trying another one...
+                Port 5174 is in use, trying another one...
+                Port 5175 is in use, trying another one...
+                ➜  Local:   http://localhost:5176/
+            </div>
+            
+            <p>This is normal behavior when multiple development servers are running.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🧪 Testing Results</h2>
+        
+        <div class="success-section">
+            <h3>✅ Frontend Status</h3>
+            <p><strong>Port 5176:</strong> <span class="success">WORKING</span> - Frontend is running correctly</p>
+            <p><strong>Port 5173:</strong> <span class="error">BLANK PAGE</span> - Old/stuck process</p>
+        </div>
+        
+        <div class="info-section">
+            <h3>🔧 Quick Fixes</h3>
+            <ol>
+                <li><strong>Use Correct URL:</strong> Go to <code>http://localhost:5176/</code></li>
+                <li><strong>Bookmark:</strong> Save the correct URL for future use</li>
+                <li><strong>Check Terminal:</strong> Always check the terminal output for the correct port</li>
+                <li><strong>Kill Old Process:</strong> If needed, kill the process on port 5173</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📱 All Features Working</h2>
+        
+        <div class="success-section">
+            <h3>✅ Complete System Status</h3>
+            <ul>
+                <li><strong>Frontend:</strong> Running on http://localhost:5176/</li>
+                <li><strong>Backend:</strong> Running on http://localhost:5000/</li>
+                <li><strong>Database:</strong> MongoDB Atlas connected</li>
+                <li><strong>Profile Images:</strong> Working correctly</li>
+                <li><strong>Navigation Pages:</strong> All new pages created</li>
+                <li><strong>Admin Panel:</strong> Fully functional</li>
+                <li><strong>User Dashboard:</strong> Detailed course information</li>
+            </ul>
+        </div>
+        
+        <div class="info-section">
+            <h3>🎯 Test the Application</h3>
+            <p>Once you access the correct URL, you can test:</p>
+            <ul>
+                <li>User login: <code>student@test.com</code> / <code>password123</code></li>
+                <li>Admin login: <code>admin@sriko.com</code> / <code>Admin123</code></li>
+                <li>Profile image upload</li>
+                <li>New navigation pages from profile</li>
+                <li>Course enrollment and progress</li>
+            </ul>
+        </div>
+        
+        <p style="background: #d4edda; padding: 15px; border-radius: 5px; border: 1px solid #c3e6cb; color: #155724;">
+            <strong>✅ SOLUTION:</strong> Simply use <strong>http://localhost:5176/</strong> instead of http://localhost:5173/. The frontend is working perfectly - you just need to access the correct port!
+        </p>
+    </div>
+
+    <script>
+        function openCorrectURL() {
+            window.open('http://localhost:5176/', '_blank');
+        }
+        
+        function testPorts() {
+            const ports = [
+                { port: 5173, name: 'Port 5173 (Wrong)' },
+                { port: 5176, name: 'Port 5176 (Correct)' }
+            ];
+            
+            ports.forEach((item, index) => {
+                setTimeout(() => {
+                    const url = `http://localhost:${item.port}/`;
+                    console.log(`Testing ${item.name}: ${url}`);
+                    window.open(url, '_blank');
+                }, index * 1000);
+            });
+        }
+        
+        function killOldProcess() {
+            alert('To kill the old process on port 5173, run this command in terminal:\n\nkill $(lsof -ti:5173)\n\nOr simply use the correct URL: http://localhost:5176/');
+        }
+    </script>
+</body>
+</html>
+

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
+import apiUrl from '../config/apiConfig';
 import {
   UserIcon,
   EnvelopeIcon,
@@ -19,8 +21,10 @@ import {
 
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [profileData, setProfileData] = useState({
     name: '',
     email: '',
@@ -81,9 +85,62 @@ const ProfilePage = () => {
     }
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`${apiUrl}/users/avatar`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setProfileData(prev => ({
+          ...prev,
+          avatar: data.avatar,
+        }));
+        updateUser(data.user);
+        toast.success('Profile picture updated successfully!');
+      } else {
+        throw new Error(data.message || 'Failed to upload image');
+      }
+    } catch (error) {
+      console.error('Image upload error:', error);
+      toast.error(error.message || 'Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleSave = async () => {
     setLoading(true);
     try {
+      console.log('🔄 Updating profile with data:', profileData);
+      
       const response = await apiService.put('/users/profile', {
         name: profileData.name,
         bio: profileData.bio,
@@ -94,13 +151,29 @@ const ProfilePage = () => {
         socialLinks: profileData.socialLinks,
       });
 
+      console.log('✅ Profile update response:', response);
+
       if (response.data.success) {
+        console.log('🔄 Updating user context with:', response.data.user);
         updateUser(response.data.user);
+        console.log('✅ User context updated');
         toast.success('Profile updated successfully!');
         setIsEditing(false);
+      } else {
+        throw new Error(response.data.message || 'Profile update failed');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to update profile');
+      console.error('❌ Profile update error:', error);
+      console.error('❌ Error response:', error.response);
+      console.error('❌ Error data:', error.response?.data);
+      
+      if (error.response?.data?.errors) {
+        // Handle validation errors
+        const errorMessages = error.response.data.errors.map(err => err.msg).join(', ');
+        toast.error(`Validation error: ${errorMessages}`);
+      } else {
+        toast.error(error.response?.data?.message || error.message || 'Failed to update profile');
+      }
     } finally {
       setLoading(false);
     }
@@ -158,21 +231,38 @@ const ProfilePage = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
                     {profileData.avatar ? (
                       <img
-                        src={profileData.avatar}
+                        src={profileData.avatar.startsWith('http') ? profileData.avatar : `${window?.configs?.apiUrl || 'http://localhost:5000'}${profileData.avatar}`}
                         alt="Profile"
                         className="w-20 h-20 rounded-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
                       />
-                    ) : (
-                      profileData.name?.charAt(0)?.toUpperCase() || 'U'
-                    )}
+                    ) : null}
+                    <div className={`w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold ${profileData.avatar ? 'hidden' : 'flex'}`}>
+                      {profileData.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
                   </div>
                   {isEditing && (
-                    <button className="absolute -bottom-1 -right-1 bg-blue-600 text-white p-1 rounded-full hover:bg-blue-700 transition-colors">
+                    <label className="absolute -bottom-1 -right-1 bg-blue-600 text-white p-1 rounded-full hover:bg-blue-700 transition-colors cursor-pointer">
                       <CameraIcon className="w-4 h-4" />
-                    </button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        disabled={uploadingImage}
+                      />
+                    </label>
+                  )}
+                  {uploadingImage && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
                   )}
                 </div>
                 <div>
@@ -565,15 +655,24 @@ const ProfilePage = () => {
                 </h3>
               </div>
               <div className="px-6 py-6 space-y-3">
-                <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <button 
+                  onClick={() => navigate('/my-courses')}
+                  className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
                   <AcademicCapIcon className="w-5 h-5 inline mr-3" />
                   View My Courses
                 </button>
-                <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <button 
+                  onClick={() => navigate('/learning-progress')}
+                  className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
                   <BriefcaseIcon className="w-5 h-5 inline mr-3" />
                   Learning Progress
                 </button>
-                <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <button 
+                  onClick={() => navigate('/public-profile')}
+                  className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
                   <GlobeAltIcon className="w-5 h-5 inline mr-3" />
                   Public Profile
                 </button>

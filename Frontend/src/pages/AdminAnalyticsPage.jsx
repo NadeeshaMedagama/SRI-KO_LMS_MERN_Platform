@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
+import apiUrl from '../config/apiConfig';
 import {
   ChartBarIcon,
   UsersIcon,
@@ -45,9 +46,54 @@ const AdminAnalyticsPage = () => {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await apiService.get(`/admin/analytics?period=${dateRange}`);
-      if (response.data.success) {
-        setAnalytics(response.data.analytics);
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Authentication required');
+        return;
+      }
+
+      console.log('Fetching analytics from:', `${apiUrl}/admin/analytics?period=${dateRange}`);
+
+      const response = await fetch(`${apiUrl}/admin/analytics?period=${dateRange}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      console.log('Analytics response status:', response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Analytics response data:', data);
+        if (data.success) {
+          setAnalytics(data.analytics || {
+            overview: {
+              totalUsers: 0,
+              totalCourses: 0,
+              totalRevenue: 0,
+              activeUsers: 0,
+              completedCourses: 0,
+              averageRating: 0,
+            },
+            userGrowth: [],
+            revenueData: [],
+            courseStats: [],
+            topCourses: [],
+            userEngagement: [],
+            monthlyStats: [],
+          });
+          console.log('Analytics loaded:', data.analytics);
+        } else {
+          console.error('Analytics API returned error:', data.message);
+          toast.error(data.message || 'Failed to fetch analytics data');
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('Analytics API error:', errorData);
+        toast.error(errorData.message || 'Failed to fetch analytics data');
       }
     } catch (error) {
       toast.error('Failed to fetch analytics data');
