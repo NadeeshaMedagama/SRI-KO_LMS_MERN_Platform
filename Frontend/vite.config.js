@@ -11,5 +11,13 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    // Ensure _redirects file is copied to dist
+    rollupOptions: {
+      input: {
+        main: './index.html'
+      }
+    }
   },
+  // Ensure public files (including _redirects) are copied to dist
+  publicDir: 'public',
 });
