@@ -174,7 +174,8 @@ export const AuthProvider = ({ children }) => {
   const adminLogin = async (email, password) => {
     dispatch({ type: 'LOGIN_START' });
     try {
-      const response = await fetch(`${apiUrl}/auth/admin-login`, {
+      // Use the regular login endpoint since admin-login is not available in deployment
+      const response = await fetch(`${apiUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -186,6 +187,12 @@ export const AuthProvider = ({ children }) => {
         const data = await response.json();
         if (data.success) {
           const { token, user } = data;
+          
+          // Check if the user is actually an admin
+          if (user.role !== 'admin') {
+            throw new Error('Access denied. Admin privileges required.');
+          }
+          
           localStorage.setItem('token', token);
           localStorage.setItem('adminToken', token);
           localStorage.setItem('adminUser', JSON.stringify(user));
