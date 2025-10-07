@@ -153,7 +153,7 @@ app.use((req, res, next) => {
   console.log(`🔍 Incoming request: ${req.method} ${req.path} - Original URL: ${req.url}`);
   
   // Check if this is a Choreo deployment request
-  if (req.path.startsWith('/choreo-apis/sri-ko-lms-platform/backend/v1/api')) {
+  if (req.path.startsWith('/choreo-apis/sri-ko-lms-platform/backend/v1')) {
     // Remove the Choreo-specific prefix and rewrite the path
     const newPath = req.path.replace('/choreo-apis/sri-ko-lms-platform/backend/v1', '');
     console.log(`🔄 Choreo route rewrite: ${req.path} -> ${newPath}`);
@@ -239,6 +239,31 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// Choreo-specific test route
+app.get('/choreo-apis/sri-ko-lms-platform/backend/v1/api/test', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Choreo API routing is working correctly',
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    method: req.method,
+    choreo: true
+  });
+});
+
+// Admin test route for Choreo
+app.get('/choreo-apis/sri-ko-lms-platform/backend/v1/api/admin/test', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Choreo Admin API routing is working correctly',
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    method: req.method,
+    choreo: true,
+    admin: true
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -307,11 +332,25 @@ app.use('/api/join-us', joinUsRoutes);
 
 // Admin routes with enhanced security and audit logging
 app.use('/api/admin', (req, res, next) => {
+  console.log(`🔐 Admin route accessed: ${req.method} ${req.path} - Full URL: ${req.url}`);
   res.on('finish', () => {
     if (req.method !== 'GET') {
       console.log(`🔐 Admin Action: ${req.method} ${req.path} - Status: ${res.statusCode}${req.user ? ` - User: ${req.user.name || req.user.email}` : ''}`);
     } else {
       console.log(`👁️ Admin View: ${req.method} ${req.path} - Status: ${res.statusCode}${req.user ? ` - User: ${req.user.name || req.user.email}` : ''}`);
+    }
+  });
+  next();
+}, adminRoutes);
+
+// Additional Choreo-specific admin route mounting (fallback)
+app.use('/choreo-apis/sri-ko-lms-platform/backend/v1/api/admin', (req, res, next) => {
+  console.log(`🔐 Choreo Admin route accessed: ${req.method} ${req.path} - Full URL: ${req.url}`);
+  res.on('finish', () => {
+    if (req.method !== 'GET') {
+      console.log(`🔐 Choreo Admin Action: ${req.method} ${req.path} - Status: ${res.statusCode}${req.user ? ` - User: ${req.user.name || req.user.email}` : ''}`);
+    } else {
+      console.log(`👁️ Choreo Admin View: ${req.method} ${req.path} - Status: ${res.statusCode}${req.user ? ` - User: ${req.user.name || req.user.email}` : ''}`);
     }
   });
   next();
