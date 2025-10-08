@@ -36,6 +36,7 @@ import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminSubscriptionManagementPage from './pages/AdminSubscriptionManagementPage';
 import AdminCertificateManagementPage from './pages/AdminCertificateManagementPage';
+import AdminAnnouncementManagementPage from './pages/AdminAnnouncementManagementPage';
 import AdminLayout from './components/AdminLayout';
 
 // Protected Route Component
@@ -179,6 +180,7 @@ function App() {
         <Route path="analytics" element={<AdminAnalyticsPage />} />
         <Route path="subscriptions" element={<AdminSubscriptionManagementPage />} />
         <Route path="certificates" element={<AdminCertificateManagementPage />} />
+        <Route path="announcements" element={<AdminAnnouncementManagementPage />} />
         <Route
           path="notifications"
           element={

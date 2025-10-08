@@ -399,6 +399,58 @@ class ApiService {
     const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.delete(`/certificates/${certificateId}`);
     return response.data;
   }
+
+  // Announcement endpoints
+  async getActiveAnnouncements(): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; announcements: any[] }> = await this.api.get('/announcements');
+    return response.data;
+  }
+
+  async getAllAnnouncements(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+    const params = { page, limit, ...filters };
+    const response: AxiosResponse<{ success: boolean; announcements: any[]; pagination: any }> = await this.api.get('/announcements/all', { params });
+    return response.data;
+  }
+
+  async getAnnouncementStats(): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; stats: any }> = await this.api.get('/announcements/stats');
+    return response.data;
+  }
+
+  async getAnnouncement(announcementId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; announcement: any }> = await this.api.get(`/announcements/${announcementId}`);
+    return response.data;
+  }
+
+  async createAnnouncement(announcementData: any): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; announcement: any; message: string }> = await this.api.post('/announcements', announcementData);
+    return response.data;
+  }
+
+  async updateAnnouncement(announcementId: string, announcementData: any): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; announcement: any; message: string }> = await this.api.put(`/announcements/${announcementId}`, announcementData);
+    return response.data;
+  }
+
+  async deleteAnnouncement(announcementId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.delete(`/announcements/${announcementId}`);
+    return response.data;
+  }
+
+  async togglePinAnnouncement(announcementId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; announcement: any; message: string }> = await this.api.put(`/announcements/${announcementId}/pin`);
+    return response.data;
+  }
+
+  async toggleActiveAnnouncement(announcementId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; announcement: any; message: string }> = await this.api.put(`/announcements/${announcementId}/toggle`);
+    return response.data;
+  }
+
+  async markAnnouncementAsRead(announcementId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.post(`/announcements/${announcementId}/read`);
+    return response.data;
+  }
 }
 
 export const apiService = new ApiService();
