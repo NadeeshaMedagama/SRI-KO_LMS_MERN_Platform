@@ -2,16 +2,16 @@
 // Otherwise fall back to local backend URL
 const baseUrl = window?.configs?.apiUrl
   ? window.configs.apiUrl
-  : "http://localhost:5000"; // local backend
+  : "http://localhost:5000"; // local backend without /api prefix
 
 // Handle API URL structure with multiple fallback options
 let apiUrl;
-if (baseUrl.includes('choreoapis.dev') || baseUrl.includes('choreoapps.dev')) {
-  // Choreo API URL - use the full path as configured
+if (baseUrl.includes('choreoapis.dev') || baseUrl.includes('choreoapps.dev') || baseUrl.includes('choreo.dev')) {
+  // Choreo API URL - use the full path as configured (already includes /api)
   apiUrl = baseUrl;
   console.log('🔧 Using Choreo API URL:', apiUrl);
 } else {
-  // Local development URL needs /api prefix
+  // Local development URL - add /api prefix
   apiUrl = `${baseUrl}/api`;
   console.log('🔧 Using Local API URL:', apiUrl);
 }
@@ -40,10 +40,10 @@ export const testApiConnectivity = async (testUrl: string): Promise<boolean> => 
 export const getWorkingApiUrl = async (): Promise<string> => {
   const possibleUrls = [
     apiUrl,
-    baseUrl,
     `${baseUrl}/api`,
-    baseUrl.replace('/api', ''),
-    baseUrl.replace('/api', '') + '/api'
+    baseUrl,
+    'http://localhost:5000/api',
+    'http://localhost:5000'
   ];
 
   console.log('🔍 Testing possible API URLs:', possibleUrls);

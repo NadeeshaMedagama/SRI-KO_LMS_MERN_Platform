@@ -218,6 +218,55 @@ class ApiService {
     return response.data.data || [];
   }
 
+  // Admin payment endpoints (using admin routes as fallback)
+  async getPaymentStats(startDate?: string, endDate?: string): Promise<any> {
+    const params: any = {};
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+    
+    try {
+      // Try admin payment-stats endpoint first
+      const response: AxiosResponse<{ success: boolean; stats: any; revenueByPlan: any[]; monthlyRevenue: any[] }> = await this.api.get('/admin/payment-stats', { params });
+      return response.data;
+    } catch (error) {
+      console.log('Admin payment-stats failed, trying payments/stats...');
+      // Fallback to payments/stats endpoint
+      const response: AxiosResponse<{ success: boolean; stats: any; revenueByPlan: any[]; monthlyRevenue: any[] }> = await this.api.get('/payments/stats', { params });
+      return response.data;
+    }
+  }
+
+  async getRecentPayments(limit: number = 10): Promise<any> {
+    try {
+      // Try admin recent-payments endpoint first
+      const response: AxiosResponse<{ success: boolean; payments: Payment[] }> = await this.api.get('/admin/recent-payments', {
+        params: { limit }
+      });
+      return response.data;
+    } catch (error) {
+      console.log('Admin recent-payments failed, trying payments/recent...');
+      // Fallback to payments/recent endpoint
+      const response: AxiosResponse<{ success: boolean; payments: Payment[] }> = await this.api.get('/payments/recent', {
+        params: { limit }
+      });
+      return response.data;
+    }
+  }
+
+  async getAllPayments(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+    const params = { page, limit, ...filters };
+    try {
+      // Try admin all-payments endpoint first
+      const response: AxiosResponse<{ success: boolean; payments: Payment[]; pagination: any }> = await this.api.get('/admin/all-payments', { params });
+      return response.data;
+    } catch (error) {
+      console.log('Admin all-payments failed, trying payments/all...');
+      // Fallback to payments/all endpoint
+      const response: AxiosResponse<{ success: boolean; payments: Payment[]; pagination: any }> = await this.api.get('/payments/all', { params });
+      return response.data;
+    }
+  }
+
   async verifyPayment(paymentId: string): Promise<Payment> {
     const response: AxiosResponse<{ success: boolean; data: Payment }> = await this.api.post(`/payments/${paymentId}/verify`);
     return response.data.data!;

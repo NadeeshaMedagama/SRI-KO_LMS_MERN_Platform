@@ -51,22 +51,20 @@ const AdminSubscriptionManagementPage = () => {
       const statsResponse = await paymentService.getPaymentStats();
       if (statsResponse.success) {
         setStats(statsResponse.stats);
+        setRevenueByPlan(statsResponse.revenueByPlan || []);
+        setMonthlyRevenue(statsResponse.monthlyRevenue || []);
+      } else {
+        console.warn('Failed to get payment stats:', statsResponse);
+        toast.error('Failed to load payment statistics');
       }
 
       // Fetch recent payments
       const recentResponse = await paymentService.getRecentPayments(10);
       if (recentResponse.success) {
-        setRecentPayments(recentResponse.payments);
-      }
-
-      // Fetch revenue by plan
-      if (statsResponse.success) {
-        setRevenueByPlan(statsResponse.revenueByPlan);
-      }
-
-      // Fetch monthly revenue
-      if (statsResponse.success) {
-        setMonthlyRevenue(statsResponse.monthlyRevenue);
+        setRecentPayments(recentResponse.payments || []);
+      } else {
+        console.warn('Failed to get recent payments:', recentResponse);
+        toast.error('Failed to load recent payments');
       }
 
       // Fetch all payments
@@ -74,6 +72,20 @@ const AdminSubscriptionManagementPage = () => {
     } catch (error) {
       toast.error('Failed to load subscription data');
       console.error('Dashboard error:', error);
+      
+      // Set default values to prevent UI crashes
+      setStats({
+        total: 0,
+        completed: 0,
+        pending: 0,
+        failed: 0,
+        refunded: 0,
+        totalAmount: 0,
+        completedAmount: 0,
+      });
+      setRecentPayments([]);
+      setRevenueByPlan([]);
+      setMonthlyRevenue([]);
     } finally {
       setLoading(false);
     }
@@ -83,12 +95,19 @@ const AdminSubscriptionManagementPage = () => {
     try {
       const response = await paymentService.getAllPayments(page, 20, filters);
       if (response.success) {
-        setAllPayments(response.payments);
-        setPagination(response.pagination);
+        setAllPayments(response.payments || []);
+        setPagination(response.pagination || { current: 1, pages: 1, total: 0 });
+      } else {
+        console.warn('Failed to get all payments:', response);
+        toast.error('Failed to load payments list');
+        setAllPayments([]);
+        setPagination({ current: 1, pages: 1, total: 0 });
       }
     } catch (error) {
       toast.error('Failed to load payments');
       console.error('Payments error:', error);
+      setAllPayments([]);
+      setPagination({ current: 1, pages: 1, total: 0 });
     }
   };
 

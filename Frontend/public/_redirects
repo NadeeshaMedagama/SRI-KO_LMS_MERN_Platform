@@ -1,0 +1,9 @@
+# SPA routing support for Choreo deployment
+# This file ensures all routes are handled by React Router
+# instead of returning 404 for non-existent static files
+
+# Handle all routes by serving index.html
+/*    /index.html   200
+
+# Optional: Handle specific API routes (though these should be handled by your backend)
+# /api/*  https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1/api/:splat  200

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   HomeIcon,
@@ -297,7 +297,9 @@ const AdminLayout = ({ children }) => {
         </div>
 
         {/* Page content */}
-        <main className="py-8">{children}</main>
+        <main className="py-8">
+          <Outlet />
+        </main>
       </div>
     </div>
   );

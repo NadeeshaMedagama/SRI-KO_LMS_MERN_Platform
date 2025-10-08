@@ -58,7 +58,22 @@ configurations:
           displayName: CORS Origin
           required: false
           type: string
-          defaultValue: "*"
+          defaultValue: "https://5132b0af-001d-469a-a620-441177beb2a7.e1-us-east-azure.choreoapps.dev"
+
+    - name: FRONTEND_URL
+      valueFrom:
+        configForm:
+          displayName: Frontend URL
+          required: false
+          type: string
+          defaultValue: "https://5132b0af-001d-469a-a620-441177beb2a7.e1-us-east-azure.choreoapps.dev"
+
+    - name: SESSION_SECRET
+      valueFrom:
+        configForm:
+          displayName: Session Secret
+          required: true
+          type: secret
 
     - name: RATE_LIMIT_WINDOW
       valueFrom:

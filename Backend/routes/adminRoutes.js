@@ -11,6 +11,97 @@ const {
 
 const router = express.Router();
 
+// @desc    Get payment statistics for admin dashboard
+// @route   GET /api/admin/payment-stats
+// @access  Private/Admin
+router.get('/payment-stats', protect, authorize('admin'), async (req, res) => {
+  try {
+    const Payment = require('../models/Payment');
+    const { startDate, endDate } = req.query;
+
+    const stats = await Payment.getPaymentStats(startDate, endDate);
+    const revenueByPlan = await Payment.getRevenueByPlan(startDate, endDate);
+    const monthlyRevenue = await Payment.getMonthlyRevenue(new Date().getFullYear());
+
+    res.json({
+      success: true,
+      stats,
+      revenueByPlan,
+      monthlyRevenue,
+    });
+  } catch (error) {
+    console.error('Error fetching payment stats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
+// @desc    Get recent payments for admin dashboard
+// @route   GET /api/admin/recent-payments
+// @access  Private/Admin
+router.get('/recent-payments', protect, authorize('admin'), async (req, res) => {
+  try {
+    const Payment = require('../models/Payment');
+    const limit = parseInt(req.query.limit) || 10;
+
+    const payments = await Payment.find()
+      .populate('user', 'name email')
+      .populate('subscription', 'plan billingCycle')
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    res.json({
+      success: true,
+      payments,
+    });
+  } catch (error) {
+    console.error('Error fetching recent payments:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
+// @desc    Get all payments for admin dashboard
+// @route   GET /api/admin/all-payments
+// @access  Private/Admin
+router.get('/all-payments', protect, authorize('admin'), async (req, res) => {
+  try {
+    const Payment = require('../models/Payment');
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const payments = await Payment.find()
+      .populate('user', 'name email')
+      .populate('subscription', 'plan billingCycle')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Payment.countDocuments();
+
+    res.json({
+      success: true,
+      payments,
+      pagination: {
+        current: page,
+        pages: Math.ceil(total / limit),
+        total,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching all payments:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
 // @desc    Get admin dashboard statistics
 // @route   GET /api/admin/stats
 // @access  Private/Admin

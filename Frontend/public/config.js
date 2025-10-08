@@ -5,8 +5,8 @@ const isDevelopment = window.location.port === '5173' || window.location.port ==
 window.configs = {
     // Use localhost for local development, Choreo URL for production
     apiUrl: (isLocalhost && isDevelopment) 
-        ? 'http://localhost:5000'  // Local development
-        : 'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1/api', // Choreo deployment with correct URL
+        ? 'http://localhost:5000'  // Local development without /api prefix
+        : 'https://5132b0af-001d-469a-a620-441177beb2a7.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1', // Choreo deployment with updated URL
     featureFlags: {
         enableNewFeature: true,
         enableExperimentalFeature: false,
@@ -14,7 +14,7 @@ window.configs = {
     // Choreo-specific configuration
     choreo: {
         enabled: !isLocalhost || !isDevelopment,
-        baseUrl: 'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1'
+        baseUrl: 'https://5132b0af-001d-469a-a620-441177beb2a7.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1'
     }
 };
 
