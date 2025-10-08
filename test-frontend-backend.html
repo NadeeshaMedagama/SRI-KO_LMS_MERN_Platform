@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend-Backend Connection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Frontend-Backend Connection Test</h1>
+        
+        <div class="test-section info">
+            <h3>Configuration Check</h3>
+            <div id="config-info"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>API Health Check</h3>
+            <button onclick="testHealth()">Test Health Endpoint</button>
+            <div id="health-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Admin Login Test</h3>
+            <button onclick="testAdminLogin()">Test Admin Login</button>
+            <div id="login-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Admin Stats Test</h3>
+            <button onclick="testAdminStats()">Test Admin Stats</button>
+            <div id="stats-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Full Admin Dashboard Test</h3>
+            <button onclick="testFullDashboard()">Test Full Dashboard</button>
+            <div id="dashboard-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Load configuration
+        const configs = window.configs || {};
+        const apiUrl = configs.apiUrl || 'http://localhost:5000/api';
+        
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = `test-section ${type}`;
+        }
+        
+        function showInfo(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<pre>${JSON.stringify(message, null, 2)}</pre>`;
+        }
+        
+        // Configuration check
+        document.getElementById('config-info').innerHTML = `
+            <p><strong>API URL:</strong> ${apiUrl}</p>
+            <p><strong>Hostname:</strong> ${window.location.hostname}</p>
+            <p><strong>Port:</strong> ${window.location.port}</p>
+            <p><strong>Protocol:</strong> ${window.location.protocol}</p>
+            <p><strong>Full URL:</strong> ${window.location.href}</p>
+        `;
+        
+        async function testHealth() {
+            try {
+                showResult('health-result', 'Testing health endpoint...', 'info');
+                
+                const response = await fetch(`${apiUrl}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('health-result', `✅ Health check successful!<br><pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                } else {
+                    showResult('health-result', `❌ Health check failed: ${response.status}<br><pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                showResult('health-result', `❌ Health check error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAdminLogin() {
+            try {
+                showResult('login-result', 'Testing admin login...', 'info');
+                
+                const response = await fetch(`${apiUrl}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@sriko.com',
+                        password: 'Admin123'
+                    }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Store token for next tests
+                    window.testToken = data.token;
+                    showResult('login-result', `✅ Admin login successful!<br>
+                        User: ${data.user.name} (${data.user.role})<br>
+                        Token: ${data.token.substring(0, 20)}...`, 'success');
+                } else {
+                    showResult('login-result', `❌ Admin login failed: ${data.message || 'Unknown error'}<br><pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                showResult('login-result', `❌ Admin login error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAdminStats() {
+            try {
+                if (!window.testToken) {
+                    showResult('stats-result', '❌ No token available. Please run admin login test first.', 'error');
+                    return;
+                }
+                
+                showResult('stats-result', 'Testing admin stats...', 'info');
+                
+                const response = await fetch(`${apiUrl}/admin/stats`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${window.testToken}`,
+                    },
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showResult('stats-result', `✅ Admin stats loaded successfully!<br>
+                        Total Users: ${data.stats.totalUsers}<br>
+                        Total Courses: ${data.stats.totalCourses}<br>
+                        Total Revenue: $${data.stats.totalRevenue}<br>
+                        Active Users: ${data.stats.activeUsers}<br>
+                        Completed Courses: ${data.stats.completedCourses}`, 'success');
+                } else {
+                    showResult('stats-result', `❌ Admin stats failed: ${data.message || 'Unknown error'}<br><pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                showResult('stats-result', `❌ Admin stats error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFullDashboard() {
+            try {
+                if (!window.testToken) {
+                    showResult('dashboard-result', '❌ No token available. Please run admin login test first.', 'error');
+                    return;
+                }
+                
+                showResult('dashboard-result', 'Testing full admin dashboard...', 'info');
+                
+                // Test all admin endpoints
+                const endpoints = [
+                    { name: 'Stats', url: '/admin/stats' },
+                    { name: 'Users', url: '/admin/users?limit=3' },
+                    { name: 'Courses', url: '/admin/courses?limit=3' },
+                    { name: 'Analytics', url: '/admin/analytics' }
+                ];
+                
+                const results = [];
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(`${apiUrl}${endpoint.url}`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${window.testToken}`,
+                            },
+                        });
+                        
+                        const data = await response.json();
+                        
+                        results.push({
+                            endpoint: endpoint.name,
+                            status: response.status,
+                            success: response.ok && data.success,
+                            data: data
+                        });
+                    } catch (error) {
+                        results.push({
+                            endpoint: endpoint.name,
+                            status: 'error',
+                            success: false,
+                            error: error.message
+                        });
+                    }
+                }
+                
+                const successCount = results.filter(r => r.success).length;
+                const totalCount = results.length;
+                
+                if (successCount === totalCount) {
+                    showResult('dashboard-result', `✅ All admin dashboard endpoints working! (${successCount}/${totalCount})<br><pre>${JSON.stringify(results, null, 2)}</pre>`, 'success');
+                } else {
+                    showResult('dashboard-result', `⚠️ Some admin dashboard endpoints failed (${successCount}/${totalCount})<br><pre>${JSON.stringify(results, null, 2)}</pre>`, 'error');
+                }
+                
+            } catch (error) {
+                showResult('dashboard-result', `❌ Full dashboard test error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run health check on page load
+        window.addEventListener('load', () => {
+            setTimeout(testHealth, 500);
+        });
+    </script>
+</body>
+</html>
+
+
