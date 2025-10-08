@@ -202,8 +202,7 @@ if (process.env.SKIP_DB === 'true') {
     useUnifiedTopology: true,
     serverSelectionTimeoutMS: 30000, // 30 seconds
     socketTimeoutMS: 45000, // 45 seconds
-    bufferCommands: false,
-    bufferMaxEntries: 0
+    bufferCommands: false
   };
 
   mongoose
