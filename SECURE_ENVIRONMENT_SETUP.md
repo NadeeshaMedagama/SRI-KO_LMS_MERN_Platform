@@ -13,7 +13,7 @@ Create a file called `.env` in the `Backend/` directory with your actual secrets
 ```bash
 # Backend/.env (this file is ignored by Git)
 MONGODB_URI=mongodb+srv://nadeeshamedagama:Nadeesha2001@cluster0.aairnvz.mongodb.net/SriKo?retryWrites=true&w=majority&appName=Cluster0
-SESSION_SECRET=3a5d6b0c09c8cc93c15ce3c1c16e3faa0e11977b99c32d353c5c83d0fc408fd6
+SESSION_SECRET=2a5e77a6f7e374c556d0b6dff811c59a5df9674cf13d1ba968be444a7c22f9fd
 JWT_SECRET=your-jwt-secret-key-for-development
 NODE_ENV=development
 PORT=5000
@@ -59,7 +59,7 @@ cp config.env .env
 Replace the placeholder values with your actual secrets:
 ```bash
 # Edit Backend/.env
-SESSION_SECRET=3a5d6b0c09c8cc93c15ce3c1c16e3faa0e11977b99c32d353c5c83d0fc408fd6
+SESSION_SECRET=2a5e77a6f7e374c556d0b6dff811c59a5df9674cf13d1ba968be444a7c22f9fd
 MONGODB_URI=your-actual-mongodb-uri
 JWT_SECRET=your-actual-jwt-secret
 ```
