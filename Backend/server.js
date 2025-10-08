@@ -417,7 +417,7 @@ app.use('/choreo-apis/sri-ko-lms-platform/backend/v1/api/admin', (req, res, next
 }, checkDatabase, adminRoutes);
 
 app.use('/api/subscriptions', checkDatabase, subscriptionRoutes);
-app.use('/api/payments', checkDatabase, paymentRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Static assets in production
 if ((process.env.NODE_ENV || 'development') === 'production') {
