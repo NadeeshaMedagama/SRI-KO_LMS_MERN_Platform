@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import certificateService from '../services/certificateService';
 import courseService from '../services/courseService';
 
