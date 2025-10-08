@@ -139,9 +139,13 @@ export const paymentService = {
   // Admin: Get payment statistics
   getPaymentStats: async (startDate, endDate) => {
     try {
-      // This would need to be added to apiService if not already present
-      throw new Error('Get payment stats functionality needs to be implemented in apiService');
+      console.log('🔍 Getting payment stats...');
+      const response = await apiService.getPaymentStats(startDate, endDate);
+      console.log('📊 Payment stats received:', response);
+      
+      return response;
     } catch (error) {
+      console.error('Error getting payment stats:', error);
       throw error;
     }
   },
@@ -149,9 +153,13 @@ export const paymentService = {
   // Admin: Get recent payments
   getRecentPayments: async (limit = 10) => {
     try {
-      const payments = await apiService.getPayments();
-      return { success: true, data: payments.slice(0, limit) };
+      console.log('🔍 Getting recent payments...');
+      const response = await apiService.getRecentPayments(limit);
+      console.log('📊 Recent payments received:', response);
+      
+      return response;
     } catch (error) {
+      console.error('Error getting recent payments:', error);
       throw error;
     }
   },
@@ -159,9 +167,13 @@ export const paymentService = {
   // Admin: Get all payments
   getAllPayments: async (page = 1, limit = 20, filters = {}) => {
     try {
-      const payments = await apiService.getPayments();
-      return { success: true, data: payments };
+      console.log('🔍 Getting all payments...', { page, limit, filters });
+      const response = await apiService.getAllPayments(page, limit, filters);
+      console.log('📊 All payments received:', response);
+      
+      return response;
     } catch (error) {
+      console.error('Error getting all payments:', error);
       throw error;
     }
   },
