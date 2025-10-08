@@ -356,6 +356,49 @@ class ApiService {
   async moderateCourse(courseId: string, action: 'approve' | 'reject' | 'suspend'): Promise<void> {
     await this.api.put(`/admin/courses/${courseId}/moderate`, { action });
   }
+
+  // Certificate endpoints
+  async getAllCertificates(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+    const params = { page, limit, ...filters };
+    const response: AxiosResponse<{ success: boolean; certificates: any[]; pagination: any }> = await this.api.get('/certificates', { params });
+    return response.data;
+  }
+
+  async getCertificateStats(): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; stats: any }> = await this.api.get('/certificates/stats');
+    return response.data;
+  }
+
+  async getEligibleStudents(courseId?: string): Promise<any> {
+    const params = courseId ? { courseId } : {};
+    const response: AxiosResponse<{ success: boolean; eligibleStudents: any[] }> = await this.api.get('/certificates/eligible-students', { params });
+    return response.data;
+  }
+
+  async createCertificate(certificateData: any): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; certificate: any; message: string }> = await this.api.post('/certificates', certificateData);
+    return response.data;
+  }
+
+  async updateCertificateStatus(certificateId: string, status: string, certificateUrl?: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; certificate: any; message: string }> = await this.api.put(`/certificates/${certificateId}/status`, { status, certificateUrl });
+    return response.data;
+  }
+
+  async sendCertificate(certificateId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; certificate: any; message: string }> = await this.api.post(`/certificates/${certificateId}/send`);
+    return response.data;
+  }
+
+  async getCertificate(certificateId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; certificate: any }> = await this.api.get(`/certificates/${certificateId}`);
+    return response.data;
+  }
+
+  async deleteCertificate(certificateId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.delete(`/certificates/${certificateId}`);
+    return response.data;
+  }
 }
 
 export const apiService = new ApiService();

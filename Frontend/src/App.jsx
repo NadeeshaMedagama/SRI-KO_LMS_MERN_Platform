@@ -35,6 +35,7 @@ import AdminCourseManagementPage from './pages/AdminCourseManagementPage';
 import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminSubscriptionManagementPage from './pages/AdminSubscriptionManagementPage';
+import AdminCertificateManagementPage from './pages/AdminCertificateManagementPage';
 import AdminLayout from './components/AdminLayout';
 
 // Protected Route Component
@@ -177,14 +178,7 @@ function App() {
         <Route path="courses" element={<AdminCourseManagementPage />} />
         <Route path="analytics" element={<AdminAnalyticsPage />} />
         <Route path="subscriptions" element={<AdminSubscriptionManagementPage />} />
-        <Route
-          path="certificates"
-          element={
-            <div className="p-8 text-center">
-              <h1 className="text-2xl font-bold">Certificates - Coming Soon</h1>
-            </div>
-          }
-        />
+        <Route path="certificates" element={<AdminCertificateManagementPage />} />
         <Route
           path="notifications"
           element={

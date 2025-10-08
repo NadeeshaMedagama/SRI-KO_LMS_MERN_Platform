@@ -45,6 +45,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const joinUsRoutes = require('./routes/joinUsRoutes');
+const certificateRoutes = require('./routes/certificateRoutes');
 
 const fs = require('fs');
 const https = require('https');
@@ -417,6 +418,7 @@ app.use('/choreo-apis/sri-ko-lms-platform/backend/v1/api/admin', (req, res, next
 
 app.use('/api/subscriptions', checkDatabase, subscriptionRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/certificates', checkDatabase, certificateRoutes);
 
 // Static assets in production
 if ((process.env.NODE_ENV || 'development') === 'production') {
