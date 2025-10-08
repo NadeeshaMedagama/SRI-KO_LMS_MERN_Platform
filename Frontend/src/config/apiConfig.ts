@@ -6,8 +6,8 @@ const baseUrl = window?.configs?.apiUrl
 
 // Handle API URL structure with multiple fallback options
 let apiUrl;
-if (baseUrl.includes('choreoapis.dev') || baseUrl.includes('choreoapps.dev')) {
-  // Choreo API URL - use the full path as configured
+if (baseUrl.includes('choreoapis.dev') || baseUrl.includes('choreoapps.dev') || baseUrl.includes('choreo.dev')) {
+  // Choreo API URL - use the full path as configured (already includes /api)
   apiUrl = baseUrl;
   console.log('🔧 Using Choreo API URL:', apiUrl);
 } else {

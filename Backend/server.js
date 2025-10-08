@@ -152,11 +152,11 @@ app.use((req, res, next) => {
   // Debug logging for all incoming requests
   console.log(`🔍 Incoming request: ${req.method} ${req.path} - Original URL: ${req.url}`);
   
-  // Check if this is a Choreo deployment request
+  // Check if this is a Choreo deployment request with the old format
   if (req.path.startsWith('/choreo-apis/sri-ko-lms-platform/backend/v1')) {
     // Remove the Choreo-specific prefix and rewrite the path
     const newPath = req.path.replace('/choreo-apis/sri-ko-lms-platform/backend/v1', '');
-    console.log(`🔄 Choreo route rewrite: ${req.path} -> ${newPath}`);
+    console.log(`🔄 Choreo route rewrite (old format): ${req.path} -> ${newPath}`);
     req.url = newPath;
     req.path = newPath;
   }
@@ -188,15 +188,30 @@ app.use(session({
 // Logging middleware
 app.use(morgan('combined'));
 
-// Database connection with enhanced logging
+// Database connection with enhanced logging and error handling
 console.log('🔌 Connecting to database...');
+console.log('🔧 MongoDB URI configured:', process.env.MONGODB_URI ? 'Yes' : 'No');
+console.log('🔧 NODE_ENV:', process.env.NODE_ENV);
+
 if (process.env.SKIP_DB === 'true') {
   console.log('⚠️ Skipping MongoDB connection (SKIP_DB=true)');
 } else {
+  // Set mongoose options for better connection handling
+  const mongooseOptions = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 30000, // 30 seconds
+    socketTimeoutMS: 45000, // 45 seconds
+    bufferCommands: false,
+    bufferMaxEntries: 0
+  };
+
   mongoose
-    .connect(process.env.MONGODB_URI)
+    .connect(process.env.MONGODB_URI, mongooseOptions)
     .then(() => {
       console.log('✅ MongoDB Atlas connected successfully');
+      console.log('🔧 Connection state:', mongoose.connection.readyState);
+      
       // Test database connection
       const User = require('./models/User');
       User.countDocuments().then(count => {
@@ -207,24 +222,41 @@ if (process.env.SKIP_DB === 'true') {
     })
     .catch(err => {
       console.error('❌ MongoDB connection error:', err);
-      // Only exit in production, allow CI to continue
-      if (process.env.NODE_ENV === 'production') {
-        process.exit(1);
-      } else {
-        console.log('⚠️ Continuing without database connection in non-production environment');
-      }
+      console.error('❌ Error details:', {
+        name: err.name,
+        message: err.message,
+        code: err.code
+      });
+      
+      // In production, try to continue without database for basic functionality
+      console.log('⚠️ Continuing without database connection - some features may not work');
     });
 }
 
-// Health check endpoints
+// Health check endpoints with detailed status
 app.get('/health', (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
+  const dbState = mongoose.connection.readyState;
+  
   res.status(200).json({
     status: 'OK',
     message: 'SRI-KO LMS API is running',
     timestamp: new Date().toISOString(),
     version: '1.0.0',
     environment: process.env.NODE_ENV || 'development',
-    choreo: 'Enabled'
+    choreo: 'Enabled',
+    database: {
+      status: dbStatus,
+      state: dbState,
+      uri: process.env.MONGODB_URI ? 'Configured' : 'Not configured'
+    },
+    environment_vars: {
+      NODE_ENV: process.env.NODE_ENV || 'not set',
+      PORT: process.env.PORT || 'not set',
+      MONGODB_URI: process.env.MONGODB_URI ? 'set' : 'not set',
+      CORS_ORIGIN: process.env.CORS_ORIGIN || 'not set',
+      FRONTEND_URL: process.env.FRONTEND_URL || 'not set'
+    }
   });
 });
 
@@ -265,18 +297,33 @@ app.get('/choreo-apis/sri-ko-lms-platform/backend/v1/api/admin/test', (req, res)
 });
 
 app.get('/api/health', (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
+  const dbState = mongoose.connection.readyState;
+  
   res.status(200).json({
     success: true,
     message: 'SRI-KO LMS server is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    mongodb: process.env.MONGODB_URI ? 'Connected' : 'Not Connected',
+    mongodb: dbStatus,
     choreo: 'Enabled',
     features: {
       subscriptions: 'Available',
       payments: 'Available',
       courseManagement: 'Available',
       userManagement: 'Available'
+    },
+    database: {
+      status: dbStatus,
+      state: dbState,
+      uri: process.env.MONGODB_URI ? 'Configured' : 'Not configured'
+    },
+    environment_vars: {
+      NODE_ENV: process.env.NODE_ENV || 'not set',
+      PORT: process.env.PORT || 'not set',
+      MONGODB_URI: process.env.MONGODB_URI ? 'set' : 'not set',
+      CORS_ORIGIN: process.env.CORS_ORIGIN || 'not set',
+      FRONTEND_URL: process.env.FRONTEND_URL || 'not set'
     }
   });
 });
@@ -310,6 +357,19 @@ app.get('/choreo-apis/sri-ko-lms-platform/backend/v1/api/health', (req, res) => 
   });
 });
 
+// Database availability middleware
+const checkDatabase = (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    console.log(`⚠️ Database not available for ${req.method} ${req.path}`);
+    return res.status(503).json({
+      success: false,
+      message: 'Database service temporarily unavailable',
+      error: 'DATABASE_CONNECTION_ERROR'
+    });
+  }
+  next();
+};
+
 // Routes with audit logging and enhanced security
 app.use('/api/auth', (req, res, next) => {
   res.on('finish', () => {
@@ -320,15 +380,15 @@ app.use('/api/auth', (req, res, next) => {
     }
   });
   next();
-}, authRoutes);
+}, checkDatabase, authRoutes);
 
 // Mount user routes with debugging
 app.use('/api/users', (req, res, next) => {
   console.log(`👤 User route accessed: ${req.method} ${req.path}`);
   next();
-}, userRoutes);
-app.use('/api/courses', courseRoutes);
-app.use('/api/join-us', joinUsRoutes);
+}, checkDatabase, userRoutes);
+app.use('/api/courses', checkDatabase, courseRoutes);
+app.use('/api/join-us', checkDatabase, joinUsRoutes);
 
 // Admin routes with enhanced security and audit logging
 app.use('/api/admin', (req, res, next) => {
@@ -341,7 +401,7 @@ app.use('/api/admin', (req, res, next) => {
     }
   });
   next();
-}, adminRoutes);
+}, checkDatabase, adminRoutes);
 
 // Additional Choreo-specific admin route mounting (fallback)
 app.use('/choreo-apis/sri-ko-lms-platform/backend/v1/api/admin', (req, res, next) => {
@@ -354,10 +414,10 @@ app.use('/choreo-apis/sri-ko-lms-platform/backend/v1/api/admin', (req, res, next
     }
   });
   next();
-}, adminRoutes);
+}, checkDatabase, adminRoutes);
 
-app.use('/api/subscriptions', subscriptionRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use('/api/subscriptions', checkDatabase, subscriptionRoutes);
+app.use('/api/payments', checkDatabase, paymentRoutes);
 
 // Static assets in production
 if ((process.env.NODE_ENV || 'development') === 'production') {

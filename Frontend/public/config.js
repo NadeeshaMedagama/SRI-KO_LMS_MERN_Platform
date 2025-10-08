@@ -6,7 +6,7 @@ window.configs = {
     // Use localhost for local development, Choreo URL for production
     apiUrl: (isLocalhost && isDevelopment) 
         ? 'http://localhost:5000'  // Local development without /api prefix
-        : 'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1/api', // Choreo deployment with correct URL
+        : 'https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev/choreo-apis/sri-ko-lms-platform/backend/v1', // Choreo deployment with working URL
     featureFlags: {
         enableNewFeature: true,
         enableExperimentalFeature: false,
