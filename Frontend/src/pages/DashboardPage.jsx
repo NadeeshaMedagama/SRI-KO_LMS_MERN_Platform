@@ -566,8 +566,48 @@ const DashboardPage = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Announcements</h2>
               <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                 {announcements.length > 0 ? (
-                  <div className="p-6">
-                    <p className="text-gray-600">Announcements will be displayed here.</p>
+                  <div className="divide-y divide-gray-200">
+                    {announcements.map((a, idx) => (
+                      <div key={a._id || idx} className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center mb-1">
+                              <h3 className="text-lg font-semibold text-gray-900 truncate">
+                                {a.title}
+                              </h3>
+                              {a.isPinned && (
+                                <svg className="w-4 h-4 text-yellow-500 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                </svg>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 line-clamp-3">
+                              {a.content}
+                            </p>
+                            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-800">
+                                {a.type || 'general'}
+                              </span>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full ${
+                                a.priority === 'urgent' ? 'bg-red-100 text-red-800' :
+                                a.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                                a.priority === 'medium' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {a.priority || 'medium'}
+                              </span>
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-800">
+                                {a.targetAudience === 'all' ? 'All Users' : (a.targetAudience || '').charAt(0).toUpperCase() + (a.targetAudience || '').slice(1)}
+                              </span>
+                              <span className="text-gray-500">
+                                {a.startDate ? new Date(a.startDate).toLocaleDateString() : ''}
+                                {a.endDate ? `  B7 Ends ${new Date(a.endDate).toLocaleDateString()}` : ''}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="p-12 text-center">
