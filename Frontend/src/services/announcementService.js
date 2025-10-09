@@ -19,7 +19,7 @@ const announcementService = {
   getAllAnnouncements: async (page = 1, limit = 20, filters = {}) => {
     try {
       console.log('🔍 Getting all announcements...', { page, limit, filters });
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       if (!token) {
         throw new Error('Authentication required');
       }
@@ -57,7 +57,7 @@ const announcementService = {
   getAnnouncementStats: async () => {
     try {
       console.log('🔍 Getting announcement stats...');
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       if (!token) {
         throw new Error('Authentication required');
       }
@@ -102,7 +102,7 @@ const announcementService = {
   createAnnouncement: async (announcementData) => {
     try {
       console.log('🔍 Creating announcement...', announcementData);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       if (!token) {
         throw new Error('Authentication required');
       }
@@ -135,7 +135,7 @@ const announcementService = {
   updateAnnouncement: async (announcementId, announcementData) => {
     try {
       console.log('🔍 Updating announcement...', { announcementId, announcementData });
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       if (!token) {
         throw new Error('Authentication required');
       }
@@ -168,7 +168,7 @@ const announcementService = {
   deleteAnnouncement: async (announcementId) => {
     try {
       console.log('🔍 Deleting announcement...', { announcementId });
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       if (!token) {
         throw new Error('Authentication required');
       }
@@ -200,7 +200,7 @@ const announcementService = {
   togglePinAnnouncement: async (announcementId) => {
     try {
       console.log('🔍 Toggling announcement pin...', { announcementId });
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       if (!token) {
         throw new Error('Authentication required');
       }
@@ -232,7 +232,7 @@ const announcementService = {
   toggleActiveAnnouncement: async (announcementId) => {
     try {
       console.log('🔍 Toggling announcement active status...', { announcementId });
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       if (!token) {
         throw new Error('Authentication required');
       }
