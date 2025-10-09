@@ -22,11 +22,19 @@ exports.protect = async (req, res, next) => {
   }
 
   try {
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Debug logging
+    console.log('JWT_SECRET available:', !!process.env.JWT_SECRET);
+    console.log('JWT_SECRET value:', process.env.JWT_SECRET);
+    console.log('Token received:', token.substring(0, 20) + '...');
+    
+    // Verify token using the same fallback as token generation
+    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
+    const decoded = jwt.verify(token, jwtSecret);
+    console.log('Token decoded successfully:', decoded);
 
     // Get user from payload
     req.user = await User.findById(decoded.id);
+    console.log('User found:', !!req.user);
 
     if (!req.user) {
       return res.status(401).json({

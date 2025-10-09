@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
-import apiUrl from '../config/apiConfig';
+import apiUrl, { getWorkingApiUrl } from '../config/apiConfig';
 import {
   ChartBarIcon,
   UsersIcon,
@@ -47,15 +47,16 @@ const AdminAnalyticsPage = () => {
     try {
       setLoading(true);
       
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       if (!token) {
         toast.error('Authentication required');
         return;
       }
 
-      console.log('Fetching analytics from:', `${apiUrl}/admin/analytics?period=${dateRange}`);
+      const workingApiUrl = await getWorkingApiUrl();
+      console.log('Fetching analytics from:', `${workingApiUrl}/admin/analytics?period=${dateRange}`);
 
-      const response = await fetch(`${apiUrl}/admin/analytics?period=${dateRange}`, {
+      const response = await fetch(`${workingApiUrl}/admin/analytics?period=${dateRange}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

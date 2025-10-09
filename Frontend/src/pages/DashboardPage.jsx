@@ -3,7 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import apiUrl, { getWorkingApiUrl } from '../config/apiConfig';
+import apiService from '../services/apiService';
 import announcementService from '../services/announcementService';
+import discussionForumService from '../services/discussionForumService';
 import {
   BookOpenIcon,
   CheckCircleIcon,
@@ -22,11 +24,13 @@ const DashboardPage = () => {
   const { user } = useAuth();
   const [dashboardData, setDashboardData] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
+  const [forums, setForums] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchDashboardData();
     fetchAnnouncements();
+    fetchForums();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -38,46 +42,31 @@ const DashboardPage = () => {
         return;
       }
 
-      // Try to get a working API URL
-      const workingApiUrl = await getWorkingApiUrl();
-      const dashboardUrl = `${workingApiUrl}/users/dashboard`;
-      
       console.log('🔧 Dashboard API Debug:');
-      console.log('  - Default API URL:', apiUrl);
-      console.log('  - Working API URL:', workingApiUrl);
-      console.log('  - Dashboard URL:', dashboardUrl);
       console.log('  - Token exists:', !!token);
 
-      const response = await fetch(dashboardUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
+      // Use apiService instead of direct fetch to ensure proper authentication
+      const response = await apiService.get('/users/dashboard');
+      
       console.log('📊 Dashboard Response:');
       console.log('  - Status:', response.status);
-      console.log('  - Status Text:', response.statusText);
-      console.log('  - Headers:', Object.fromEntries(response.headers.entries()));
+      console.log('  - Data:', response.data);
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Dashboard Data:', data);
-        if (data.success) {
-          setDashboardData(data.data);
-        } else {
-          console.error('❌ Dashboard API Error:', data.message);
-          toast.error(data.message || 'Failed to load dashboard data');
-        }
+      if (response.data.success) {
+        console.log('✅ Dashboard Data:', response.data.data);
+        setDashboardData(response.data.data);
       } else {
-        const errorData = await response.json();
-        console.error('❌ Dashboard HTTP Error:', errorData);
-        toast.error(errorData.message || `Failed to load dashboard data (${response.status})`);
+        console.error('❌ Dashboard API Error:', response.data.message);
+        toast.error(response.data.message || 'Failed to load dashboard data');
       }
     } catch (error) {
-      console.error('❌ Dashboard Network Error:', error);
-      toast.error('Failed to load dashboard data - Network error');
+      console.error('❌ Dashboard Error:', error);
+      if (error.response?.status === 401) {
+        toast.error('Authentication failed. Please login again.');
+        // Token will be cleared by apiService interceptor
+      } else {
+        toast.error('Failed to load dashboard data - Network error');
+      }
     } finally {
       setLoading(false);
     }
@@ -86,12 +75,27 @@ const DashboardPage = () => {
   const fetchAnnouncements = async () => {
     try {
       const response = await announcementService.getActiveAnnouncements();
-      if (response.success) {
+      if (response && response.success && Array.isArray(response.announcements)) {
         setAnnouncements(response.announcements);
+      } else {
+        setAnnouncements([]);
       }
     } catch (error) {
       console.error('Error fetching announcements:', error);
-      // Don't show error toast for announcements as it's not critical
+      // Do not toast here to avoid noisy UI on dashboard load
+      setAnnouncements([]);
+    }
+  };
+
+  const fetchForums = async () => {
+    try {
+      const response = await discussionForumService.getForums();
+      if (response.success) {
+        setForums(response.forums);
+      }
+    } catch (error) {
+      console.error('Error fetching forums:', error);
+      // Don't show error toast for forums as it's not critical
     }
   };
 
@@ -455,75 +459,125 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Announcements */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Announcements</h2>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            {announcements.length > 0 ? (
-              <div className="divide-y divide-gray-200">
-                {announcements.slice(0, 5).map((announcement) => (
-                  <div key={announcement._id} className={`p-6 border-l-4 ${getPriorityColor(announcement.priority)}`}>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start">
-                        <div className="flex-shrink-0 mr-3">
-                          {getPriorityIcon(announcement.priority)}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            <h3 className="text-lg font-medium text-gray-900 mr-2">
-                              {announcement.title}
-                            </h3>
-                            {announcement.isPinned && (
-                              <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+        {/* Main Content */}
+        <div>
+          {/* Discussion Forums */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Discussion Forums</h2>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                {forums.length > 0 ? (
+                  <div className="divide-y divide-gray-200">
+                    {forums.slice(0, 6).map((forum) => (
+                      <div key={forum._id} className="p-6 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center mb-2">
+                              <h3 className="text-lg font-medium text-gray-900 mr-3">
+                                {forum.title}
+                              </h3>
+                              {forum.isPinned && (
+                                <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                </svg>
+                              )}
+                              {forum.isLocked && (
+                                <svg className="w-4 h-4 text-red-500 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                              <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                                forum.category === 'korean-basics' ? 'bg-blue-100 text-blue-800' :
+                                forum.category === 'grammar' ? 'bg-green-100 text-green-800' :
+                                forum.category === 'vocabulary' ? 'bg-purple-100 text-purple-800' :
+                                forum.category === 'pronunciation' ? 'bg-yellow-100 text-yellow-800' :
+                                forum.category === 'conversation' ? 'bg-pink-100 text-pink-800' :
+                                forum.category === 'culture' ? 'bg-indigo-100 text-indigo-800' :
+                                forum.category === 'study-tips' ? 'bg-orange-100 text-orange-800' :
+                                forum.category === 'homework-help' ? 'bg-red-100 text-red-800' :
+                                forum.category === 'resources' ? 'bg-teal-100 text-teal-800' :
+                                forum.category === 'events' ? 'bg-cyan-100 text-cyan-800' :
+                                forum.category === 'introductions' ? 'bg-emerald-100 text-emerald-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {forum.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                              </span>
+                              <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                                forum.level === 'beginner' ? 'bg-green-100 text-green-800' :
+                                forum.level === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                                forum.level === 'advanced' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {forum.level.charAt(0).toUpperCase() + forum.level.slice(1)}
+                              </span>
+                            </div>
+                            <p className="text-gray-700 mb-3">
+                              {forum.description.length > 150
+                                ? `${forum.description.substring(0, 150)}...`
+                                : forum.description
+                              }
+                            </p>
+                            <div className="flex items-center text-sm text-gray-500">
+                              <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                               </svg>
-                            )}
-                            <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
-                              announcement.type === 'urgent' ? 'bg-red-100 text-red-800' :
-                              announcement.type === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
-                              announcement.type === 'event' ? 'bg-green-100 text-green-800' :
-                              'bg-blue-100 text-blue-800'
-                            }`}>
-                              {announcement.type.charAt(0).toUpperCase() + announcement.type.slice(1)}
-                            </span>
+                              <span>{forum.postCount} posts</span>
+                              <span className="mx-2">•</span>
+                              <span>Created by {forum.createdBy?.name}</span>
+                              <span className="mx-2">•</span>
+                              <span>{formatDate(forum.createdAt)}</span>
+                            </div>
                           </div>
-                          <p className="text-gray-700 mb-3">
-                            {announcement.content.length > 200 
-                              ? `${announcement.content.substring(0, 200)}...` 
-                              : announcement.content
-                            }
-                          </p>
-                          <div className="flex items-center text-sm text-gray-500">
-                            <CalendarIcon className="h-4 w-4 mr-1" />
-                            <span>Posted on {formatDate(announcement.createdAt)}</span>
-                            {announcement.endDate && (
-                              <>
-                                <span className="mx-2">•</span>
-                                <span>Expires on {formatDate(announcement.endDate)}</span>
-                              </>
-                            )}
+                          <div className="ml-4">
+                            <Link
+                              to={`/forums/${forum._id}`}
+                              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                              View Forum
+                            </Link>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    ))}
+                    {forums.length > 6 && (
+                      <div className="p-6 text-center border-t border-gray-200">
+                        <Link
+                          to="/forums"
+                          className="text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          View All Forums ({forums.length} total)
+                        </Link>
+                      </div>
+                    )}
                   </div>
-                ))}
-                {announcements.length > 5 && (
-                  <div className="p-6 text-center border-t border-gray-200">
-                    <p className="text-sm text-gray-500">
-                      Showing 5 of {announcements.length} announcements
-                    </p>
+                ) : (
+                  <div className="p-12 text-center">
+                    <svg className="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No discussion forums</h3>
+                    <p className="text-gray-600">There are no active discussion forums at the moment.</p>
                   </div>
                 )}
               </div>
-            ) : (
-              <div className="p-12 text-center">
-                <SpeakerWaveIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No announcements</h3>
-                <p className="text-gray-600">There are no active announcements at the moment.</p>
+            </div>
+
+            {/* Announcements */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Announcements</h2>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                {announcements.length > 0 ? (
+                  <div className="p-6">
+                    <p className="text-gray-600">Announcements will be displayed here.</p>
+                  </div>
+                ) : (
+                  <div className="p-12 text-center">
+                    <SpeakerWaveIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No announcements</h3>
+                    <p className="text-gray-600">There are no active announcements at the moment.</p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
         </div>
       </div>
     </div>

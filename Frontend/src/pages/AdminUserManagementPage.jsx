@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
-import apiUrl from '../config/apiConfig';
+import apiUrl, { getWorkingApiUrl } from '../config/apiConfig';
 import {
   UsersIcon,
   PlusIcon,
@@ -54,11 +54,13 @@ const AdminUserManagementPage = () => {
     try {
       setLoading(true);
       
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       if (!token) {
         toast.error('Authentication required');
         return;
       }
+
+      const workingApiUrl = await getWorkingApiUrl();
 
       const params = new URLSearchParams({
         page: currentPage,
@@ -68,9 +70,9 @@ const AdminUserManagementPage = () => {
         status: statusFilter !== 'all' ? statusFilter : '',
       });
 
-      console.log('Fetching users from:', `${apiUrl}/admin/users?${params}`);
+      console.log('Fetching users from:', `${workingApiUrl}/admin/users?${params}`);
 
-      const response = await fetch(`${apiUrl}/admin/users?${params}`, {
+      const response = await fetch(`${workingApiUrl}/admin/users?${params}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

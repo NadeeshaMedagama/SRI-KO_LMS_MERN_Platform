@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
-import apiUrl from '../config/apiConfig';
+import apiUrl, { getWorkingApiUrl } from '../config/apiConfig';
 import {
   UsersIcon,
   AcademicCapIcon,
@@ -46,7 +46,7 @@ const AdminDashboardPage = () => {
       console.log('🔄 Starting dashboard data fetch...');
 
       // Try to get token from both locations
-      const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       console.log('🔑 Token found:', token ? 'Yes' : 'No');
       if (!token) {
         console.error('❌ No token found');
@@ -55,12 +55,14 @@ const AdminDashboardPage = () => {
         return;
       }
 
-      console.log('🌐 API Base URL:', apiUrl);
+      // Resolve a working API URL at runtime (handles local/Choreo differences)
+      const workingApiUrl = await getWorkingApiUrl();
+      console.log('🌐 API Base URL:', apiUrl, '| Working URL:', workingApiUrl);
 
       // Fetch statistics
       try {
-        console.log('📊 Fetching stats from:', `${apiUrl}/admin/stats`);
-        const statsResponse = await fetch(`${apiUrl}/admin/stats`, {
+        console.log('📊 Fetching stats from:', `${workingApiUrl}/admin/stats`);
+        const statsResponse = await fetch(`${workingApiUrl}/admin/stats`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -91,7 +93,7 @@ const AdminDashboardPage = () => {
 
       // Fetch recent users
       try {
-        const usersResponse = await fetch(`${apiUrl}/admin/users?limit=5`, {
+        const usersResponse = await fetch(`${workingApiUrl}/admin/users?limit=5`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -121,7 +123,7 @@ const AdminDashboardPage = () => {
 
       // Fetch recent courses
       try {
-        const coursesResponse = await fetch(`${apiUrl}/admin/courses?limit=5`, {
+        const coursesResponse = await fetch(`${workingApiUrl}/admin/courses?limit=5`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -151,7 +153,7 @@ const AdminDashboardPage = () => {
 
       // Note: Activities endpoint might not exist, so we'll handle it gracefully
       try {
-        const activitiesResponse = await fetch(`${apiUrl}/admin/activities?limit=10`, {
+        const activitiesResponse = await fetch(`${workingApiUrl}/admin/activities?limit=10`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

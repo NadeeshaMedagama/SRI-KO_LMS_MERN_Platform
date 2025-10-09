@@ -25,10 +25,15 @@ console.log('  - Is Choreo:', baseUrl.includes('choreoapis.dev') || baseUrl.incl
 // Function to test API connectivity and return working URL
 export const testApiConnectivity = async (testUrl: string): Promise<boolean> => {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
     const response = await fetch(`${testUrl}/health`, { 
       method: 'HEAD',
-      timeout: 5000 
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
     return response.ok || response.status === 404; // 404 means endpoint exists but method not allowed
   } catch (error) {
     console.log(`❌ API test failed for ${testUrl}:`, error);

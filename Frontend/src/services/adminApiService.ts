@@ -3,7 +3,6 @@ import apiUrl from '../config/apiConfig';
 import { 
   AuthResponse, 
   LoginRequest, 
-  RegisterRequest, 
   User, 
   Course, 
   Video,
@@ -25,7 +24,7 @@ import {
   SystemSettings
 } from '../types';
 
-class ApiService {
+class AdminApiService {
   private api: AxiosInstance;
 
   constructor() {
@@ -37,14 +36,12 @@ class ApiService {
       },
     });
 
-    // Request interceptor to add auth token (prefer adminToken when available)
+    // Request interceptor to add admin auth token
     this.api.interceptors.request.use(
       (config) => {
         const adminToken = localStorage.getItem('adminToken');
-        const userToken = localStorage.getItem('token');
-        const token = adminToken || userToken;
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
+        if (adminToken) {
+          config.headers.Authorization = `Bearer ${adminToken}`;
         }
         return config;
       },
@@ -58,9 +55,9 @@ class ApiService {
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          window.location.href = '/login';
+          localStorage.removeItem('adminToken');
+          localStorage.removeItem('adminUser');
+          window.location.href = '/admin/login';
         }
         return Promise.reject(error);
       }
@@ -68,32 +65,27 @@ class ApiService {
   }
 
   // Auth endpoints
-  async login(credentials: LoginRequest): Promise<AuthResponse> {
-    console.log('🌐 LMS API: Making login request to:', this.api.defaults.baseURL + '/auth/login');
-    console.log('🌐 LMS API: Request data:', credentials);
+  async adminLogin(credentials: LoginRequest): Promise<AuthResponse> {
+    console.log('🌐 Admin API: Making admin login request to:', this.api.defaults.baseURL + '/auth/login');
+    console.log('🌐 Admin API: Request data:', credentials);
     try {
       const response: AxiosResponse<AuthResponse> = await this.api.post('/auth/login', credentials);
-      console.log('🌐 LMS API: Response received:', response.data);
+      console.log('🌐 Admin API: Response received:', response.data);
       return response.data;
     } catch (error: any) {
-      console.error('🌐 LMS API: Request failed:', error);
-      console.error('🌐 LMS API: Error response:', error.response?.data);
-      console.error('🌐 LMS API: Error status:', error.response?.status);
+      console.error('🌐 Admin API: Request failed:', error);
+      console.error('🌐 Admin API: Error response:', error.response?.data);
+      console.error('🌐 Admin API: Error status:', error.response?.status);
       throw error;
     }
   }
 
-  async register(userData: RegisterRequest): Promise<AuthResponse> {
-    const response: AxiosResponse<AuthResponse> = await this.api.post('/auth/register', userData);
-    return response.data;
-  }
-
-  async getCurrentUser(): Promise<User> {
+  async getCurrentAdminUser(): Promise<User> {
     const response: AxiosResponse<{ success: boolean; user: User }> = await this.api.get('/auth/me');
     return response.data.user;
   }
 
-  async updateProfile(userData: Partial<User>): Promise<User> {
+  async updateAdminProfile(userData: Partial<User>): Promise<User> {
     const response: AxiosResponse<{ success: boolean; user: User }> = await this.api.put('/auth/me', userData);
     return response.data.user;
   }
@@ -117,195 +109,6 @@ class ApiService {
   async delete(url: string): Promise<any> {
     const response = await this.api.delete(url);
     return response;
-  }
-
-  async forgotPassword(email: string): Promise<ApiResponse<null>> {
-    const response: AxiosResponse<ApiResponse<null>> = await this.api.post('/auth/forgot-password', { email });
-    return response.data;
-  }
-
-  async resetPassword(password: string, token: string): Promise<ApiResponse<null>> {
-    const response: AxiosResponse<ApiResponse<null>> = await this.api.post('/auth/reset-password', { password, token });
-    return response.data;
-  }
-
-  // Course endpoints
-  async getCourses(): Promise<Course[]> {
-    const response: AxiosResponse<{ success: boolean; data: Course[] }> = await this.api.get('/courses');
-    return response.data.data || [];
-  }
-
-  async getCourse(id: string): Promise<Course> {
-    const response: AxiosResponse<{ success: boolean; data: Course }> = await this.api.get(`/courses/${id}`);
-    return response.data.data!;
-  }
-
-  async createCourse(courseData: CreateCourseRequest): Promise<Course> {
-    const response: AxiosResponse<{ success: boolean; data: Course }> = await this.api.post('/courses', courseData);
-    return response.data.data!;
-  }
-
-  async updateCourse(id: string, courseData: UpdateCourseRequest): Promise<Course> {
-    const response: AxiosResponse<{ success: boolean; data: Course }> = await this.api.put(`/courses/${id}`, courseData);
-    return response.data.data!;
-  }
-
-  async deleteCourse(id: string): Promise<void> {
-    await this.api.delete(`/courses/${id}`);
-  }
-
-  async enrollInCourse(courseId: string): Promise<Enrollment> {
-    const response: AxiosResponse<{ success: boolean; data: Enrollment }> = await this.api.post(`/courses/${courseId}/enroll`);
-    return response.data.data!;
-  }
-
-  async unenrollFromCourse(courseId: string): Promise<void> {
-    await this.api.delete(`/courses/${courseId}/enroll`);
-  }
-
-  // Video endpoints
-  async addVideoToCourse(courseId: string, videoData: CreateVideoRequest): Promise<Video> {
-    const response: AxiosResponse<{ success: boolean; data: Video }> = await this.api.post(`/courses/${courseId}/videos`, videoData);
-    return response.data.data!;
-  }
-
-  async updateVideo(courseId: string, videoId: string, videoData: Partial<CreateVideoRequest>): Promise<Video> {
-    const response: AxiosResponse<{ success: boolean; data: Video }> = await this.api.put(`/courses/${courseId}/videos/${videoId}`, videoData);
-    return response.data.data!;
-  }
-
-  async deleteVideo(courseId: string, videoId: string): Promise<void> {
-    await this.api.delete(`/courses/${courseId}/videos/${videoId}`);
-  }
-
-  // Material endpoints
-  async addMaterialToCourse(courseId: string, materialData: CreateMaterialRequest): Promise<Material> {
-    const response: AxiosResponse<{ success: boolean; data: Material }> = await this.api.post(`/courses/${courseId}/materials`, materialData);
-    return response.data.data!;
-  }
-
-  async updateMaterial(courseId: string, materialId: string, materialData: Partial<CreateMaterialRequest>): Promise<Material> {
-    const response: AxiosResponse<{ success: boolean; data: Material }> = await this.api.put(`/courses/${courseId}/materials/${materialId}`, materialData);
-    return response.data.data!;
-  }
-
-  async deleteMaterial(courseId: string, materialId: string): Promise<void> {
-    await this.api.delete(`/courses/${courseId}/materials/${materialId}`);
-  }
-
-  // Progress endpoints
-  async getCourseProgress(courseId: string): Promise<Progress> {
-    const response: AxiosResponse<{ success: boolean; data: Progress }> = await this.api.get(`/courses/${courseId}/progress`);
-    return response.data.data!;
-  }
-
-  async updateVideoProgress(courseId: string, videoId: string): Promise<Progress> {
-    const response: AxiosResponse<{ success: boolean; data: Progress }> = await this.api.post(`/courses/${courseId}/videos/${videoId}/complete`);
-    return response.data.data!;
-  }
-
-  async updateMaterialProgress(courseId: string, materialId: string): Promise<Progress> {
-    const response: AxiosResponse<{ success: boolean; data: Progress }> = await this.api.post(`/courses/${courseId}/materials/${materialId}/complete`);
-    return response.data.data!;
-  }
-
-  // Payment endpoints
-  async createPayment(courseId: string, amount: number): Promise<Payment> {
-    const response: AxiosResponse<{ success: boolean; data: Payment }> = await this.api.post('/payments', { courseId, amount });
-    return response.data.data!;
-  }
-
-  async getPayments(): Promise<Payment[]> {
-    const response: AxiosResponse<{ success: boolean; data: Payment[] }> = await this.api.get('/payments');
-    return response.data.data || [];
-  }
-
-  // Admin payment endpoints (using admin routes as fallback)
-  async getPaymentStats(startDate?: string, endDate?: string): Promise<any> {
-    const params: any = {};
-    if (startDate) params.startDate = startDate;
-    if (endDate) params.endDate = endDate;
-    
-    try {
-      // Try admin payment-stats endpoint first
-      const response: AxiosResponse<{ success: boolean; stats: any; revenueByPlan: any[]; monthlyRevenue: any[] }> = await this.api.get('/admin/payment-stats', { params });
-      return response.data;
-    } catch (error) {
-      console.log('Admin payment-stats failed, trying payments/stats...');
-      // Fallback to payments/stats endpoint
-      const response: AxiosResponse<{ success: boolean; stats: any; revenueByPlan: any[]; monthlyRevenue: any[] }> = await this.api.get('/payments/stats', { params });
-      return response.data;
-    }
-  }
-
-  async getRecentPayments(limit: number = 10): Promise<any> {
-    try {
-      // Try admin recent-payments endpoint first
-      const response: AxiosResponse<{ success: boolean; payments: Payment[] }> = await this.api.get('/admin/recent-payments', {
-        params: { limit }
-      });
-      return response.data;
-    } catch (error) {
-      console.log('Admin recent-payments failed, trying payments/recent...');
-      // Fallback to payments/recent endpoint
-      const response: AxiosResponse<{ success: boolean; payments: Payment[] }> = await this.api.get('/payments/recent', {
-        params: { limit }
-      });
-      return response.data;
-    }
-  }
-
-  async getAllPayments(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
-    const params = { page, limit, ...filters };
-    try {
-      // Try admin all-payments endpoint first
-      const response: AxiosResponse<{ success: boolean; payments: Payment[]; pagination: any }> = await this.api.get('/admin/all-payments', { params });
-      return response.data;
-    } catch (error) {
-      console.log('Admin all-payments failed, trying payments/all...');
-      // Fallback to payments/all endpoint
-      const response: AxiosResponse<{ success: boolean; payments: Payment[]; pagination: any }> = await this.api.get('/payments/all', { params });
-      return response.data;
-    }
-  }
-
-  async verifyPayment(paymentId: string): Promise<Payment> {
-    const response: AxiosResponse<{ success: boolean; data: Payment }> = await this.api.post(`/payments/${paymentId}/verify`);
-    return response.data.data!;
-  }
-
-  // Subscription endpoints
-  async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
-    const response: AxiosResponse<{ success: boolean; data: SubscriptionPlan[] }> = await this.api.get('/subscriptions/plans');
-    return response.data.data || [];
-  }
-
-  async createSubscription(planId: string): Promise<Subscription> {
-    const response: AxiosResponse<{ success: boolean; data: Subscription }> = await this.api.post('/subscriptions', { planId });
-    return response.data.data!;
-  }
-
-  async getCurrentSubscription(): Promise<Subscription | null> {
-    const response: AxiosResponse<{ success: boolean; data: Subscription | null }> = await this.api.get('/subscriptions/current');
-    return response.data.data;
-  }
-
-  async cancelSubscription(): Promise<void> {
-    await this.api.delete('/subscriptions/current');
-  }
-
-  // Notification endpoints
-  async getNotifications(): Promise<Notification[]> {
-    const response: AxiosResponse<{ success: boolean; data: Notification[] }> = await this.api.get('/notifications');
-    return response.data.data || [];
-  }
-
-  async markNotificationAsRead(id: string): Promise<void> {
-    await this.api.put(`/notifications/${id}/read`);
-  }
-
-  async markAllNotificationsAsRead(): Promise<void> {
-    await this.api.put('/notifications/read-all');
   }
 
   // Admin endpoints
@@ -524,7 +327,57 @@ class ApiService {
     const response: AxiosResponse<{ success: boolean; post: any; message: string }> = await this.api.post(`/forums/${forumId}/posts`, postData);
     return response.data;
   }
+
+  // Payment endpoints
+  async getPaymentStats(startDate?: string, endDate?: string): Promise<any> {
+    const params: any = {};
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+    
+    try {
+      // Try admin payment-stats endpoint first
+      const response: AxiosResponse<{ success: boolean; stats: any; revenueByPlan: any[]; monthlyRevenue: any[] }> = await this.api.get('/admin/payment-stats', { params });
+      return response.data;
+    } catch (error) {
+      console.log('Admin payment-stats failed, trying payments/stats...');
+      // Fallback to payments/stats endpoint
+      const response: AxiosResponse<{ success: boolean; stats: any; revenueByPlan: any[]; monthlyRevenue: any[] }> = await this.api.get('/payments/stats', { params });
+      return response.data;
+    }
+  }
+
+  async getRecentPayments(limit: number = 10): Promise<any> {
+    try {
+      // Try admin recent-payments endpoint first
+      const response: AxiosResponse<{ success: boolean; payments: Payment[] }> = await this.api.get('/admin/recent-payments', {
+        params: { limit }
+      });
+      return response.data;
+    } catch (error) {
+      console.log('Admin recent-payments failed, trying payments/recent...');
+      // Fallback to payments/recent endpoint
+      const response: AxiosResponse<{ success: boolean; payments: Payment[] }> = await this.api.get('/payments/recent', {
+        params: { limit }
+      });
+      return response.data;
+    }
+  }
+
+  async getAllPayments(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+    const params = { page, limit, ...filters };
+    try {
+      // Try admin all-payments endpoint first
+      const response: AxiosResponse<{ success: boolean; payments: Payment[]; pagination: any }> = await this.api.get('/admin/all-payments', { params });
+      return response.data;
+    } catch (error) {
+      console.log('Admin all-payments failed, trying payments/all...');
+      // Fallback to payments/all endpoint
+      const response: AxiosResponse<{ success: boolean; payments: Payment[]; pagination: any }> = await this.api.get('/payments/all', { params });
+      return response.data;
+    }
+  }
 }
 
-export const apiService = new ApiService();
-export default apiService;
+export const adminApiService = new AdminApiService();
+export default adminApiService;
+

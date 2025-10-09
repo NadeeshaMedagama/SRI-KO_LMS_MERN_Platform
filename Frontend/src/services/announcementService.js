@@ -1,4 +1,5 @@
 import apiService from './apiService';
+import apiUrl, { getWorkingApiUrl } from '../config/apiConfig';
 
 const announcementService = {
   // Get active announcements for current user
@@ -18,9 +19,34 @@ const announcementService = {
   getAllAnnouncements: async (page = 1, limit = 20, filters = {}) => {
     try {
       console.log('🔍 Getting all announcements...', { page, limit, filters });
-      const response = await apiService.getAllAnnouncements(page, limit, filters);
-      console.log('📊 All announcements received:', response);
-      return response;
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const workingApiUrl = await getWorkingApiUrl();
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+        ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== ''))
+      });
+
+      const response = await fetch(`${workingApiUrl}/announcements/all?${params}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 All announcements received:', data);
+        return data;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch announcements');
+      }
     } catch (error) {
       console.error('Error getting all announcements:', error);
       throw error;
@@ -31,9 +57,28 @@ const announcementService = {
   getAnnouncementStats: async () => {
     try {
       console.log('🔍 Getting announcement stats...');
-      const response = await apiService.getAnnouncementStats();
-      console.log('📊 Announcement stats received:', response);
-      return response;
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const workingApiUrl = await getWorkingApiUrl();
+      const response = await fetch(`${workingApiUrl}/announcements/stats`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 Announcement stats received:', data);
+        return data;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch announcement stats');
+      }
     } catch (error) {
       console.error('Error getting announcement stats:', error);
       throw error;
@@ -57,9 +102,29 @@ const announcementService = {
   createAnnouncement: async (announcementData) => {
     try {
       console.log('🔍 Creating announcement...', announcementData);
-      const response = await apiService.createAnnouncement(announcementData);
-      console.log('📊 Announcement created:', response);
-      return response;
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const workingApiUrl = await getWorkingApiUrl();
+      const response = await fetch(`${workingApiUrl}/announcements`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(announcementData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 Announcement created:', data);
+        return data;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create announcement');
+      }
     } catch (error) {
       console.error('Error creating announcement:', error);
       throw error;
@@ -70,9 +135,29 @@ const announcementService = {
   updateAnnouncement: async (announcementId, announcementData) => {
     try {
       console.log('🔍 Updating announcement...', { announcementId, announcementData });
-      const response = await apiService.updateAnnouncement(announcementId, announcementData);
-      console.log('📊 Announcement updated:', response);
-      return response;
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const workingApiUrl = await getWorkingApiUrl();
+      const response = await fetch(`${workingApiUrl}/announcements/${announcementId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(announcementData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 Announcement updated:', data);
+        return data;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update announcement');
+      }
     } catch (error) {
       console.error('Error updating announcement:', error);
       throw error;
@@ -83,9 +168,28 @@ const announcementService = {
   deleteAnnouncement: async (announcementId) => {
     try {
       console.log('🔍 Deleting announcement...', { announcementId });
-      const response = await apiService.deleteAnnouncement(announcementId);
-      console.log('📊 Announcement deleted:', response);
-      return response;
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const workingApiUrl = await getWorkingApiUrl();
+      const response = await fetch(`${workingApiUrl}/announcements/${announcementId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 Announcement deleted:', data);
+        return data;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete announcement');
+      }
     } catch (error) {
       console.error('Error deleting announcement:', error);
       throw error;
@@ -96,9 +200,28 @@ const announcementService = {
   togglePinAnnouncement: async (announcementId) => {
     try {
       console.log('🔍 Toggling announcement pin...', { announcementId });
-      const response = await apiService.togglePinAnnouncement(announcementId);
-      console.log('📊 Announcement pin toggled:', response);
-      return response;
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const workingApiUrl = await getWorkingApiUrl();
+      const response = await fetch(`${workingApiUrl}/announcements/${announcementId}/pin`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 Announcement pin toggled:', data);
+        return data;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to toggle pin status');
+      }
     } catch (error) {
       console.error('Error toggling announcement pin:', error);
       throw error;
@@ -109,9 +232,28 @@ const announcementService = {
   toggleActiveAnnouncement: async (announcementId) => {
     try {
       console.log('🔍 Toggling announcement active status...', { announcementId });
-      const response = await apiService.toggleActiveAnnouncement(announcementId);
-      console.log('📊 Announcement active status toggled:', response);
-      return response;
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const workingApiUrl = await getWorkingApiUrl();
+      const response = await fetch(`${workingApiUrl}/announcements/${announcementId}/toggle`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 Announcement active status toggled:', data);
+        return data;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to toggle active status');
+      }
     } catch (error) {
       console.error('Error toggling announcement active status:', error);
       throw error;
@@ -133,3 +275,4 @@ const announcementService = {
 };
 
 export default announcementService;
+

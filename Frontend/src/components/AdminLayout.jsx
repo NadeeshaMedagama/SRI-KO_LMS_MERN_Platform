@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAdminAuth } from '../context/AdminAuthContext';
 import {
   HomeIcon,
   UsersIcon,
@@ -20,50 +20,24 @@ import {
 
 const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, isAuthenticated, loading } = useAuth();
+  const { adminUser, isAdminAuthenticated, loading } = useAdminAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is authenticated and is admin
+    // Check if admin is authenticated
     if (!loading) {
-      // Check if we have admin token in localStorage
-      const adminToken = localStorage.getItem('adminToken');
-      const adminUser = localStorage.getItem('adminUser');
-      
-      console.log('🔍 AdminLayout Debug:', {
-        isAuthenticated,
-        userRole: user?.role,
-        hasAdminToken: !!adminToken,
-        hasAdminUser: !!adminUser
-      });
-      
-      if (!isAuthenticated && !adminToken) {
-        console.log('🔍 AdminLayout: No authentication, redirecting to login');
-        navigate('/login');
-        return;
-      }
-
-      // If we have admin token but AuthContext is not updated, allow access
-      if (adminToken && adminUser && (!user || user.role !== 'admin')) {
-        console.log('🔍 AdminLayout: Found admin token, allowing access');
-        // Don't redirect, allow the admin to access the dashboard
-        return;
-      }
-
-      if (user && user.role !== 'admin' && !adminToken) {
-        console.log('🔍 AdminLayout: User is not admin, redirecting to dashboard');
-        navigate('/dashboard');
+      if (!isAdminAuthenticated) {
+        navigate('/admin/login');
         return;
       }
     }
-  }, [user, isAuthenticated, loading, navigate]);
+  }, [isAdminAuthenticated, loading, navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');
-    navigate('/login');
+    navigate('/admin/login');
   };
 
   const navigation = [
@@ -110,22 +84,7 @@ const AdminLayout = ({ children }) => {
     );
   }
 
-  // Get admin user data from localStorage if AuthContext is not updated
-  const adminUser = localStorage.getItem('adminUser');
-  const adminToken = localStorage.getItem('adminToken');
-  
-  let displayUser = user;
-  if (!user || user.role !== 'admin') {
-    if (adminUser && adminToken) {
-      try {
-        displayUser = JSON.parse(adminUser);
-      } catch (error) {
-        console.error('Error parsing admin user:', error);
-      }
-    }
-  }
-  
-  if (!displayUser || displayUser.role !== 'admin') {
+  if (!adminUser || adminUser.role !== 'admin') {
     return null; // Will redirect in useEffect
   }
 
@@ -181,10 +140,10 @@ const AdminLayout = ({ children }) => {
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center">
               <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                {displayUser.name?.charAt(0)?.toUpperCase() || 'A'}
+                {adminUser.name?.charAt(0)?.toUpperCase() || 'A'}
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900">{displayUser.name}</p>
+                <p className="text-sm font-medium text-gray-900">{adminUser.name}</p>
                 <p className="text-xs text-gray-500">Administrator</p>
               </div>
             </div>
@@ -234,10 +193,10 @@ const AdminLayout = ({ children }) => {
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center">
               <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                {displayUser.name?.charAt(0)?.toUpperCase() || 'A'}
+                {adminUser.name?.charAt(0)?.toUpperCase() || 'A'}
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900">{displayUser.name}</p>
+                <p className="text-sm font-medium text-gray-900">{adminUser.name}</p>
                 <p className="text-xs text-gray-500">Administrator</p>
               </div>
             </div>
@@ -284,12 +243,12 @@ const AdminLayout = ({ children }) => {
               <div className="flex items-center gap-x-4 lg:gap-x-6">
                 <div className="hidden lg:block lg:max-w-xs lg:truncate">
                   <p className="text-sm font-medium text-gray-900">
-                    {user.name}
+                    {adminUser.name}
                   </p>
                   <p className="text-xs text-gray-500">Administrator</p>
                 </div>
                 <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                  {displayUser.name?.charAt(0)?.toUpperCase() || 'A'}
+                  {adminUser.name?.charAt(0)?.toUpperCase() || 'A'}
                 </div>
               </div>
             </div>

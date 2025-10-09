@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import announcementService from '../services/announcementService';
+import discussionForumService from '../services/discussionForumService';
 
-const AdminAnnouncementManagementPage = () => {
+const AdminDiscussionForumManagementPage = () => {
   const [loading, setLoading] = useState(false);
-  const [announcements, setAnnouncements] = useState([]);
+  const [forums, setForums] = useState([]);
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
     inactive: 0,
-    pinned: 0
+    pinned: 0,
+    locked: 0
   });
   const [pagination, setPagination] = useState({
     current: 1,
@@ -17,27 +18,26 @@ const AdminAnnouncementManagementPage = () => {
     total: 0
   });
   const [filters, setFilters] = useState({
-    type: '',
-    priority: '',
-    targetAudience: '',
+    category: '',
+    level: '',
     isActive: '',
     isPinned: '',
-    dateFrom: '',
-    dateTo: ''
+    isLocked: '',
+    search: ''
   });
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+  const [editingForum, setEditingForum] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
-    content: '',
-    type: 'general',
-    priority: 'medium',
-    targetAudience: 'all',
+    description: '',
+    category: 'general',
+    level: 'all',
     isActive: true,
     isPinned: false,
-    startDate: '',
-    endDate: '',
-    tags: []
+    isLocked: false,
+    moderators: [],
+    tags: [],
+    rules: []
   });
 
   useEffect(() => {
@@ -45,166 +45,134 @@ const AdminAnnouncementManagementPage = () => {
   }, []);
 
   useEffect(() => {
-    fetchAnnouncements();
+    fetchForums();
   }, [pagination.current, filters]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       
-      // Fetch announcement statistics
-      const statsResponse = await announcementService.getAnnouncementStats();
+      // Fetch forum statistics
+      const statsResponse = await discussionForumService.getForumStats();
       if (statsResponse.success) {
         setStats(statsResponse.stats);
       }
     } catch (error) {
-      toast.error('Failed to load announcement data');
+      toast.error('Failed to load forum data');
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchAnnouncements = async () => {
+  const fetchForums = async () => {
     try {
       setLoading(true);
-      const response = await announcementService.getAllAnnouncements(pagination.current, 20, filters);
+      const response = await discussionForumService.getAllForums(pagination.current, 20, filters);
       if (response.success) {
-        setAnnouncements(response.announcements);
+        setForums(response.forums);
         setPagination(response.pagination);
       } else {
-        toast.error('Failed to load announcements');
+        toast.error('Failed to load forums');
       }
     } catch (error) {
-      toast.error('Failed to load announcements');
-      console.error('Error fetching announcements:', error);
+      toast.error('Failed to load forums');
+      console.error('Error fetching forums:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateAnnouncement = async (e) => {
+  const handleCreateForum = async (e) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.content || !formData.endDate) {
+    if (!formData.title || !formData.description) {
       toast.error('Please fill in all required fields');
       return;
     }
 
     try {
       setLoading(true);
-      
-      // Prepare the data for the API
-      const announcementData = {
-        title: formData.title,
-        content: formData.content,
-        type: formData.type,
-        priority: formData.priority,
-        targetAudience: formData.targetAudience,
-        isActive: formData.isActive,
-        isPinned: formData.isPinned,
-        startDate: formData.startDate || new Date().toISOString(),
-        endDate: formData.endDate,
-        tags: formData.tags
-      };
-
-      console.log('Sending announcement data:', announcementData);
-      const response = await announcementService.createAnnouncement(announcementData);
+      const response = await discussionForumService.createForum(formData);
 
       if (response.success) {
-        toast.success('Announcement created successfully');
+        toast.success('Forum created successfully');
         setShowCreateForm(false);
         resetForm();
-        fetchAnnouncements();
+        fetchForums();
         fetchData(); // Refresh stats
       } else {
-        toast.error(response.message || 'Failed to create announcement');
+        toast.error(response.message || 'Failed to create forum');
       }
     } catch (error) {
-      toast.error('Failed to create announcement');
-      console.error('Error creating announcement:', error);
+      toast.error('Failed to create forum');
+      console.error('Error creating forum:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdateAnnouncement = async (e) => {
+  const handleUpdateForum = async (e) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.content || !formData.endDate) {
+    if (!formData.title || !formData.description) {
       toast.error('Please fill in all required fields');
       return;
     }
 
     try {
       setLoading(true);
-      
-      // Prepare the data for the API
-      const announcementData = {
-        title: formData.title,
-        content: formData.content,
-        type: formData.type,
-        priority: formData.priority,
-        targetAudience: formData.targetAudience,
-        isActive: formData.isActive,
-        isPinned: formData.isPinned,
-        startDate: formData.startDate || new Date().toISOString(),
-        endDate: formData.endDate,
-        tags: formData.tags
-      };
-
-      console.log('Updating announcement data:', announcementData);
-      const response = await announcementService.updateAnnouncement(editingAnnouncement._id, announcementData);
+      const response = await discussionForumService.updateForum(editingForum._id, formData);
 
       if (response.success) {
-        toast.success('Announcement updated successfully');
-        setEditingAnnouncement(null);
+        toast.success('Forum updated successfully');
+        setEditingForum(null);
         resetForm();
-        fetchAnnouncements();
+        fetchForums();
         fetchData(); // Refresh stats
       } else {
-        toast.error(response.message || 'Failed to update announcement');
+        toast.error(response.message || 'Failed to update forum');
       }
     } catch (error) {
-      toast.error('Failed to update announcement');
-      console.error('Error updating announcement:', error);
+      toast.error('Failed to update forum');
+      console.error('Error updating forum:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteAnnouncement = async (announcementId) => {
-    if (!window.confirm('Are you sure you want to delete this announcement?')) {
+  const handleDeleteForum = async (forumId) => {
+    if (!window.confirm('Are you sure you want to delete this forum? This will also delete all posts in the forum.')) {
       return;
     }
 
     try {
       setLoading(true);
-      const response = await announcementService.deleteAnnouncement(announcementId);
+      const response = await discussionForumService.deleteForum(forumId);
 
       if (response.success) {
-        toast.success('Announcement deleted successfully');
-        fetchAnnouncements();
+        toast.success('Forum deleted successfully');
+        fetchForums();
         fetchData(); // Refresh stats
       } else {
-        toast.error(response.message || 'Failed to delete announcement');
+        toast.error(response.message || 'Failed to delete forum');
       }
     } catch (error) {
-      toast.error('Failed to delete announcement');
-      console.error('Error deleting announcement:', error);
+      toast.error('Failed to delete forum');
+      console.error('Error deleting forum:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTogglePin = async (announcementId) => {
+  const handleTogglePin = async (forumId) => {
     try {
       setLoading(true);
-      const response = await announcementService.togglePinAnnouncement(announcementId);
+      const response = await discussionForumService.togglePinForum(forumId);
 
       if (response.success) {
         toast.success(response.message);
-        fetchAnnouncements();
+        fetchForums();
         fetchData(); // Refresh stats
       } else {
         toast.error(response.message || 'Failed to toggle pin status');
@@ -217,14 +185,14 @@ const AdminAnnouncementManagementPage = () => {
     }
   };
 
-  const handleToggleActive = async (announcementId) => {
+  const handleToggleActive = async (forumId) => {
     try {
       setLoading(true);
-      const response = await announcementService.toggleActiveAnnouncement(announcementId);
+      const response = await discussionForumService.toggleActiveForum(forumId);
 
       if (response.success) {
         toast.success(response.message);
-        fetchAnnouncements();
+        fetchForums();
         fetchData(); // Refresh stats
       } else {
         toast.error(response.message || 'Failed to toggle active status');
@@ -240,31 +208,31 @@ const AdminAnnouncementManagementPage = () => {
   const resetForm = () => {
     setFormData({
       title: '',
-      content: '',
-      type: 'general',
-      priority: 'medium',
-      targetAudience: 'all',
+      description: '',
+      category: 'general',
+      level: 'all',
       isActive: true,
       isPinned: false,
-      startDate: '',
-      endDate: '',
-      tags: []
+      isLocked: false,
+      moderators: [],
+      tags: [],
+      rules: []
     });
   };
 
-  const handleEditAnnouncement = (announcement) => {
-    setEditingAnnouncement(announcement);
+  const handleEditForum = (forum) => {
+    setEditingForum(forum);
     setFormData({
-      title: announcement.title,
-      content: announcement.content,
-      type: announcement.type,
-      priority: announcement.priority,
-      targetAudience: announcement.targetAudience,
-      isActive: announcement.isActive,
-      isPinned: announcement.isPinned,
-      startDate: announcement.startDate ? new Date(announcement.startDate).toISOString().split('T')[0] : '',
-      endDate: announcement.endDate ? new Date(announcement.endDate).toISOString().split('T')[0] : '',
-      tags: announcement.tags || []
+      title: forum.title,
+      description: forum.description,
+      category: forum.category,
+      level: forum.level,
+      isActive: forum.isActive,
+      isPinned: forum.isPinned,
+      isLocked: forum.isLocked,
+      moderators: forum.moderators || [],
+      tags: forum.tags || [],
+      rules: forum.rules || []
     });
     setShowCreateForm(true);
   };
@@ -278,31 +246,38 @@ const AdminAnnouncementManagementPage = () => {
     setPagination(prev => ({ ...prev, current: page }));
   };
 
-  const getPriorityBadge = (priority) => {
-    const priorityColors = {
-      low: 'bg-gray-100 text-gray-800',
-      medium: 'bg-blue-100 text-blue-800',
-      high: 'bg-orange-100 text-orange-800',
-      urgent: 'bg-red-100 text-red-800'
+  const getCategoryBadge = (category) => {
+    const categoryColors = {
+      'general': 'bg-gray-100 text-gray-800',
+      'korean-basics': 'bg-blue-100 text-blue-800',
+      'grammar': 'bg-green-100 text-green-800',
+      'vocabulary': 'bg-purple-100 text-purple-800',
+      'pronunciation': 'bg-yellow-100 text-yellow-800',
+      'conversation': 'bg-pink-100 text-pink-800',
+      'culture': 'bg-indigo-100 text-indigo-800',
+      'study-tips': 'bg-orange-100 text-orange-800',
+      'homework-help': 'bg-red-100 text-red-800',
+      'resources': 'bg-teal-100 text-teal-800',
+      'events': 'bg-cyan-100 text-cyan-800',
+      'introductions': 'bg-emerald-100 text-emerald-800'
     };
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[priority] || 'bg-gray-100 text-gray-800'}`}>
-        {priority.charAt(0).toUpperCase() + priority.slice(1)}
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${categoryColors[category] || 'bg-gray-100 text-gray-800'}`}>
+        {category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
       </span>
     );
   };
 
-  const getTypeBadge = (type) => {
-    const typeColors = {
-      general: 'bg-gray-100 text-gray-800',
-      course: 'bg-blue-100 text-blue-800',
-      system: 'bg-purple-100 text-purple-800',
-      maintenance: 'bg-yellow-100 text-yellow-800',
-      event: 'bg-green-100 text-green-800'
+  const getLevelBadge = (level) => {
+    const levelColors = {
+      'beginner': 'bg-green-100 text-green-800',
+      'intermediate': 'bg-yellow-100 text-yellow-800',
+      'advanced': 'bg-red-100 text-red-800',
+      'all': 'bg-gray-100 text-gray-800'
     };
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${typeColors[type] || 'bg-gray-100 text-gray-800'}`}>
-        {type.charAt(0).toUpperCase() + type.slice(1)}
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${levelColors[level] || 'bg-gray-100 text-gray-800'}`}>
+        {level.charAt(0).toUpperCase() + level.slice(1)}
       </span>
     );
   };
@@ -310,21 +285,21 @@ const AdminAnnouncementManagementPage = () => {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Announcement Management</h1>
-        <p className="text-gray-600">Create and manage announcements for students and instructors</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Discussion Forum Management</h1>
+        <p className="text-gray-600">Create and manage discussion forums for Korean language learning</p>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-9 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Announcements</p>
+              <p className="text-sm font-medium text-gray-600">Total Forums</p>
               <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
             </div>
           </div>
@@ -371,6 +346,20 @@ const AdminAnnouncementManagementPage = () => {
             </div>
           </div>
         </div>
+
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex items-center">
+            <div className="p-2 bg-red-100 rounded-lg">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Locked</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.locked}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Action Buttons */}
@@ -378,12 +367,12 @@ const AdminAnnouncementManagementPage = () => {
         <button
           onClick={() => {
             setShowCreateForm(true);
-            setEditingAnnouncement(null);
+            setEditingForum(null);
             resetForm();
           }}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
         >
-          Create New Announcement
+          Create New Forum
         </button>
       </div>
 
@@ -391,9 +380,9 @@ const AdminAnnouncementManagementPage = () => {
       {showCreateForm && (
         <div className="bg-white p-6 rounded-lg shadow mb-6">
           <h3 className="text-lg font-semibold mb-4">
-            {editingAnnouncement ? 'Edit Announcement' : 'Create New Announcement'}
+            {editingForum ? 'Edit Forum' : 'Create New Forum'}
           </h3>
-          <form onSubmit={editingAnnouncement ? handleUpdateAnnouncement : handleCreateAnnouncement}>
+          <form onSubmit={editingForum ? handleUpdateForum : handleCreateForum}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
@@ -402,107 +391,88 @@ const AdminAnnouncementManagementPage = () => {
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter announcement title"
+                  placeholder="Enter forum title"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                 <select
-                  value={formData.type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+                  value={formData.category}
+                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="general">General</option>
-                  <option value="course">Course</option>
-                  <option value="system">System</option>
-                  <option value="maintenance">Maintenance</option>
-                  <option value="event">Event</option>
+                  <option value="korean-basics">Korean Basics</option>
+                  <option value="grammar">Grammar</option>
+                  <option value="vocabulary">Vocabulary</option>
+                  <option value="pronunciation">Pronunciation</option>
+                  <option value="conversation">Conversation</option>
+                  <option value="culture">Korean Culture</option>
+                  <option value="study-tips">Study Tips</option>
+                  <option value="homework-help">Homework Help</option>
+                  <option value="resources">Resources</option>
+                  <option value="events">Events</option>
+                  <option value="introductions">Introductions</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
                 <select
-                  value={formData.priority}
-                  onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
+                  value={formData.level}
+                  onChange={(e) => setFormData(prev => ({ ...prev, level: e.target.value }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
+                  <option value="all">All Levels</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
-                <select
-                  value={formData.targetAudience}
-                  onChange={(e) => setFormData(prev => ({ ...prev, targetAudience: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">All Users</option>
-                  <option value="students">Students Only</option>
-                  <option value="instructors">Instructors Only</option>
-                  <option value="admins">Admins Only</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                <input
-                  type="date"
-                  value={formData.startDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">End Date *</label>
-                <input
-                  type="date"
-                  value={formData.endDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.isActive}
+                    onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Active</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.isPinned}
+                    onChange={(e) => setFormData(prev => ({ ...prev, isPinned: e.target.checked }))}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Pinned</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.isLocked}
+                    onChange={(e) => setFormData(prev => ({ ...prev, isLocked: e.target.checked }))}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Locked</span>
+                </label>
               </div>
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Content *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
               <textarea
-                value={formData.content}
-                onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                rows={6}
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                rows={4}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter announcement content"
+                placeholder="Enter forum description"
                 required
               />
-            </div>
-
-            <div className="flex items-center space-x-4 mb-4">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">Active</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.isPinned}
-                  onChange={(e) => setFormData(prev => ({ ...prev, isPinned: e.target.checked }))}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">Pinned</span>
-              </label>
             </div>
 
             <div className="flex justify-end space-x-3">
@@ -510,7 +480,7 @@ const AdminAnnouncementManagementPage = () => {
                 type="button"
                 onClick={() => {
                   setShowCreateForm(false);
-                  setEditingAnnouncement(null);
+                  setEditingForum(null);
                   resetForm();
                 }}
                 className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
@@ -522,7 +492,7 @@ const AdminAnnouncementManagementPage = () => {
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 disabled={loading}
               >
-                {editingAnnouncement ? 'Update' : 'Create'} Announcement
+                {editingForum ? 'Update' : 'Create'} Forum
               </button>
             </div>
           </form>
@@ -534,48 +504,40 @@ const AdminAnnouncementManagementPage = () => {
         <h3 className="text-lg font-semibold mb-4">Filters</h3>
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
             <select
-              value={filters.type}
-              onChange={(e) => handleFilterChange('type', e.target.value)}
+              value={filters.category}
+              onChange={(e) => handleFilterChange('category', e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">All Types</option>
+              <option value="">All Categories</option>
               <option value="general">General</option>
-              <option value="course">Course</option>
-              <option value="system">System</option>
-              <option value="maintenance">Maintenance</option>
-              <option value="event">Event</option>
+              <option value="korean-basics">Korean Basics</option>
+              <option value="grammar">Grammar</option>
+              <option value="vocabulary">Vocabulary</option>
+              <option value="pronunciation">Pronunciation</option>
+              <option value="conversation">Conversation</option>
+              <option value="culture">Korean Culture</option>
+              <option value="study-tips">Study Tips</option>
+              <option value="homework-help">Homework Help</option>
+              <option value="resources">Resources</option>
+              <option value="events">Events</option>
+              <option value="introductions">Introductions</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
             <select
-              value={filters.priority}
-              onChange={(e) => handleFilterChange('priority', e.target.value)}
+              value={filters.level}
+              onChange={(e) => handleFilterChange('level', e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">All Priorities</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Audience</label>
-            <select
-              value={filters.targetAudience}
-              onChange={(e) => handleFilterChange('targetAudience', e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Audiences</option>
-              <option value="all">All Users</option>
-              <option value="students">Students</option>
-              <option value="instructors">Instructors</option>
-              <option value="admins">Admins</option>
+              <option value="">All Levels</option>
+              <option value="all">All Levels</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
             </select>
           </div>
 
@@ -593,18 +555,19 @@ const AdminAnnouncementManagementPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
             <input
-              type="date"
-              value={filters.dateFrom}
-              onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+              type="text"
+              value={filters.search}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Search forums..."
             />
           </div>
 
           <div className="flex items-end">
             <button
-              onClick={() => setFilters({ type: '', priority: '', targetAudience: '', isActive: '', isPinned: '', dateFrom: '', dateTo: '' })}
+              onClick={() => setFilters({ category: '', level: '', isActive: '', isPinned: '', isLocked: '', search: '' })}
               className="w-full bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
             >
               Clear Filters
@@ -613,85 +576,90 @@ const AdminAnnouncementManagementPage = () => {
         </div>
       </div>
 
-      {/* Announcements Table */}
+      {/* Forums Table */}
       <div className="bg-white rounded-lg shadow">
         <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold">All Announcements</h3>
+          <h3 className="text-lg font-semibold">All Forums</h3>
         </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Audience</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Forum</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posts</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {announcements.map((announcement) => (
-                <tr key={announcement._id}>
+              {forums.map((forum) => (
+                <tr key={forum._id}>
                   <td className="px-6 py-4">
                     <div>
                       <div className="text-sm font-medium text-gray-900 flex items-center">
-                        {announcement.title}
-                        {announcement.isPinned && (
+                        {forum.title}
+                        {forum.isPinned && (
                           <svg className="w-4 h-4 text-yellow-500 ml-2" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                           </svg>
                         )}
+                        {forum.isLocked && (
+                          <svg className="w-4 h-4 text-red-500 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
                       </div>
                       <div className="text-sm text-gray-500 truncate max-w-xs">
-                        {announcement.content.substring(0, 100)}...
+                        {forum.description.substring(0, 100)}...
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {getTypeBadge(announcement.type)}
+                    {getCategoryBadge(forum.category)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {getPriorityBadge(announcement.priority)}
+                    {getLevelBadge(forum.level)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {announcement.targetAudience.charAt(0).toUpperCase() + announcement.targetAudience.slice(1)}
+                    {forum.postCount}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${announcement.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                      {announcement.isActive ? 'Active' : 'Inactive'}
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${forum.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      {forum.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(announcement.createdAt).toLocaleDateString()}
+                    {new Date(forum.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
                       <button
-                        onClick={() => handleEditAnnouncement(announcement)}
+                        onClick={() => handleEditForum(forum)}
                         className="text-blue-600 hover:text-blue-900"
                         disabled={loading}
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => handleTogglePin(announcement._id)}
+                        onClick={() => handleTogglePin(forum._id)}
                         className="text-yellow-600 hover:text-yellow-900"
                         disabled={loading}
                       >
-                        {announcement.isPinned ? 'Unpin' : 'Pin'}
+                        {forum.isPinned ? 'Unpin' : 'Pin'}
                       </button>
                       <button
-                        onClick={() => handleToggleActive(announcement._id)}
-                        className={`${announcement.isActive ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
+                        onClick={() => handleToggleActive(forum._id)}
+                        className={`${forum.isActive ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
                         disabled={loading}
                       >
-                        {announcement.isActive ? 'Deactivate' : 'Activate'}
+                        {forum.isActive ? 'Deactivate' : 'Activate'}
                       </button>
                       <button
-                        onClick={() => handleDeleteAnnouncement(announcement._id)}
+                        onClick={() => handleDeleteForum(forum._id)}
                         className="text-red-600 hover:text-red-900"
                         disabled={loading}
                       >
@@ -710,7 +678,7 @@ const AdminAnnouncementManagementPage = () => {
           <div className="px-6 py-4 border-t border-gray-200">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-700">
-                Showing page {pagination.current} of {pagination.pages} ({pagination.total} total announcements)
+                Showing page {pagination.current} of {pagination.pages} ({pagination.total} total forums)
               </div>
               <div className="flex space-x-2">
                 <button
@@ -747,4 +715,5 @@ const AdminAnnouncementManagementPage = () => {
   );
 };
 
-export default AdminAnnouncementManagementPage;
+export default AdminDiscussionForumManagementPage;
+
