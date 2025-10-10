@@ -464,7 +464,16 @@ class ApiService {
   }
 
   async getAllForums(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
-    const params = { page, limit, ...filters };
+    // Clean filters to avoid sending empty strings which can be misinterpreted server-side
+    const cleanedFilters: any = {};
+    if (filters && typeof filters === 'object') {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== '' && value !== undefined && value !== null) {
+          cleanedFilters[key] = value;
+        }
+      });
+    }
+    const params = { page, limit, ...cleanedFilters };
     const response: AxiosResponse<{ success: boolean; forums: any[]; pagination: any }> = await this.api.get('/forums/all', { params });
     return response.data;
   }
