@@ -1,18 +1,20 @@
 const mongoose = require('mongoose');
+require('dotenv').config({ path: './config.env' });
+
+// Import the Announcement model
 const Announcement = require('./models/Announcement');
 const User = require('./models/User');
 
-// Test announcement creation
-async function testAnnouncementCreation() {
+async function createTestAnnouncement() {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sriko-lms');
-    console.log('Connected to MongoDB');
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('✅ Connected to MongoDB');
 
-    // Find an admin user
+    // Find an admin user to create the announcement
     const adminUser = await User.findOne({ role: 'admin' });
     if (!adminUser) {
-      console.log('No admin user found. Creating one...');
+      console.log('❌ No admin user found. Creating one...');
       const newAdmin = new User({
         name: 'Test Admin',
         email: 'admin@test.com',
@@ -20,43 +22,52 @@ async function testAnnouncementCreation() {
         role: 'admin'
       });
       await newAdmin.save();
-      console.log('Admin user created');
+      console.log('✅ Created admin user');
     }
 
-    // Test announcement creation
+    const creator = adminUser || await User.findOne({ role: 'admin' });
+
+    // Create a test announcement
     const testAnnouncement = new Announcement({
-      title: 'Test Announcement',
-      content: 'This is a test announcement to verify the system is working.',
+      title: 'Welcome to SRI-KO LMS!',
+      content: 'Welcome to our Learning Management System. This is a test announcement to verify that the announcement system is working correctly.',
       type: 'general',
       priority: 'medium',
       targetAudience: 'all',
       isActive: true,
       isPinned: false,
       startDate: new Date(),
-      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-      createdBy: adminUser._id,
-      tags: ['test', 'system']
+      endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+      createdBy: creator._id,
+      tags: ['welcome', 'test']
     });
 
     await testAnnouncement.save();
-    console.log('Test announcement created successfully:', testAnnouncement);
+    console.log('✅ Test announcement created successfully');
+    console.log('📢 Announcement details:', {
+      title: testAnnouncement.title,
+      targetAudience: testAnnouncement.targetAudience,
+      isActive: testAnnouncement.isActive,
+      startDate: testAnnouncement.startDate,
+      endDate: testAnnouncement.endDate
+    });
 
-    // Test getting announcements
-    const announcements = await Announcement.find().populate('createdBy', 'name email');
-    console.log('All announcements:', announcements);
+    // Test the getActiveAnnouncements method
+    console.log('\n🔍 Testing getActiveAnnouncements method...');
+    const activeAnnouncements = await Announcement.getActiveAnnouncements('students');
+    console.log('📊 Active announcements found:', activeAnnouncements.length);
+    console.log('📊 Announcements:', activeAnnouncements.map(a => ({
+      title: a.title,
+      targetAudience: a.targetAudience,
+      isActive: a.isActive
+    })));
 
-    // Test stats
-    const stats = await Announcement.getAnnouncementStats();
-    console.log('Announcement stats:', stats);
-
-    console.log('All tests passed!');
   } catch (error) {
-    console.error('Test failed:', error);
+    console.error('❌ Error:', error);
   } finally {
     await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
+    console.log('✅ Disconnected from MongoDB');
   }
 }
 
-testAnnouncementCreation();
-
+createTestAnnouncement();
