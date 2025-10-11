@@ -52,6 +52,7 @@ const joinUsRoutes = require('./routes/joinUsRoutes');
 const certificateRoutes = require('./routes/certificateRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
 const discussionForumRoutes = require('./routes/discussionForumRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 
 const fs = require('fs');
@@ -428,6 +429,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/certificates', checkDatabase, certificateRoutes);
 app.use('/api/announcements', checkDatabase, announcementRoutes);
 app.use('/api/forums', checkDatabase, discussionForumRoutes);
+app.use('/api/notifications', checkDatabase, notificationRoutes);
 app.use('/api/admin/settings', checkDatabase, settingsRoutes);
 
 // Static assets in production
