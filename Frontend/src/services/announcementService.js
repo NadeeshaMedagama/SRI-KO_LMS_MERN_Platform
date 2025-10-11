@@ -6,11 +6,17 @@ const announcementService = {
   getActiveAnnouncements: async () => {
     try {
       console.log('🔍 Getting active announcements...');
+      console.log('🔍 Token exists:', !!localStorage.getItem('token'));
       const response = await apiService.getActiveAnnouncements();
       console.log('📊 Active announcements received:', response);
+      console.log('📊 Response success:', response?.success);
+      console.log('📊 Announcements array:', response?.announcements);
+      console.log('📊 Announcements length:', response?.announcements?.length);
       return response;
     } catch (error) {
-      console.error('Error getting active announcements:', error);
+      console.error('❌ Error getting active announcements:', error);
+      console.error('❌ Error response:', error.response?.data);
+      console.error('❌ Error status:', error.response?.status);
       throw error;
     }
   },
