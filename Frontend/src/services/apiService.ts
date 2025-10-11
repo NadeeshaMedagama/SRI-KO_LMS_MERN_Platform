@@ -294,19 +294,6 @@ class ApiService {
     await this.api.delete('/subscriptions/current');
   }
 
-  // Notification endpoints
-  async getNotifications(): Promise<Notification[]> {
-    const response: AxiosResponse<{ success: boolean; data: Notification[] }> = await this.api.get('/notifications');
-    return response.data.data || [];
-  }
-
-  async markNotificationAsRead(id: string): Promise<void> {
-    await this.api.put(`/notifications/${id}/read`);
-  }
-
-  async markAllNotificationsAsRead(): Promise<void> {
-    await this.api.put('/notifications/read-all');
-  }
 
   // Admin endpoints
   async getAdminStats(): Promise<AdminStats> {
@@ -531,6 +518,91 @@ class ApiService {
 
   async createForumPost(forumId: string, postData: any): Promise<any> {
     const response: AxiosResponse<{ success: boolean; post: any; message: string }> = await this.api.post(`/forums/${forumId}/posts`, postData);
+    return response.data;
+  }
+
+  // Notification endpoints
+  async getNotifications(): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notifications: any[] }> = await this.api.get('/notifications');
+    return response.data;
+  }
+
+  async getAllNotifications(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+    // Clean filters to avoid sending empty strings which can be misinterpreted server-side
+    const cleanedFilters: any = {};
+    if (filters && typeof filters === 'object') {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== '' && value !== undefined && value !== null) {
+          cleanedFilters[key] = value;
+        }
+      });
+    }
+    const params = { page, limit, ...cleanedFilters };
+    const response: AxiosResponse<{ success: boolean; notifications: any[]; pagination: any }> = await this.api.get('/notifications/all', { params });
+    return response.data;
+  }
+
+  async getNotificationStats(): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; stats: any }> = await this.api.get('/notifications/stats');
+    return response.data;
+  }
+
+  async getNotification(notificationId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notification: any }> = await this.api.get(`/notifications/${notificationId}`);
+    return response.data;
+  }
+
+  async createNotification(notificationData: any): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notification: any; message: string }> = await this.api.post('/notifications', notificationData);
+    return response.data;
+  }
+
+  async updateNotification(notificationId: string, notificationData: any): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notification: any; message: string }> = await this.api.put(`/notifications/${notificationId}`, notificationData);
+    return response.data;
+  }
+
+  async deleteNotification(notificationId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.delete(`/notifications/${notificationId}`);
+    return response.data;
+  }
+
+  async togglePinNotification(notificationId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notification: any; message: string }> = await this.api.put(`/notifications/${notificationId}/pin`);
+    return response.data;
+  }
+
+  async toggleActiveNotification(notificationId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notification: any; message: string }> = await this.api.put(`/notifications/${notificationId}/toggle`);
+    return response.data;
+  }
+
+  async markNotificationAsRead(notificationId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.post(`/notifications/${notificationId}/read`);
+    return response.data;
+  }
+
+  async markNotificationAsClicked(notificationId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.post(`/notifications/${notificationId}/click`);
+    return response.data;
+  }
+
+  async sendNotificationToUsers(notificationData: any, userIds: string[]): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notifications: any[]; message: string }> = await this.api.post('/notifications/send-to-users', { notificationData, userIds });
+    return response.data;
+  }
+
+  async sendNotificationToParents(notificationData: any, studentIds: string[]): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notifications: any[]; message: string }> = await this.api.post('/notifications/send-to-parents', { notificationData, studentIds });
+    return response.data;
+  }
+
+  async getNotificationTargetUsers(role?: string, courseId?: string, search?: string): Promise<any> {
+    const params: any = {};
+    if (role) params.role = role;
+    if (courseId) params.courseId = courseId;
+    if (search) params.search = search;
+    const response: AxiosResponse<{ success: boolean; users: any[]; courses: any[] }> = await this.api.get('/notifications/target-users', { params });
     return response.data;
   }
 }
