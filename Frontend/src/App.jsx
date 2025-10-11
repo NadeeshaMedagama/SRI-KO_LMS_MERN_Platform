@@ -39,6 +39,7 @@ import AdminSubscriptionManagementPage from './pages/AdminSubscriptionManagement
 import AdminCertificateManagementPage from './pages/AdminCertificateManagementPage';
 import AdminAnnouncementManagementPage from './pages/AdminAnnouncementManagementPage';
 import AdminDiscussionForumManagementPage from './pages/AdminDiscussionForumManagementPage';
+import AdminNotificationManagementPage from './pages/AdminNotificationManagementPage';
 import AdminSettingsPage from './pages/AdminSettingsPage';
 import AdminLayout from './components/AdminLayout';
 
@@ -187,36 +188,7 @@ function App() {
             <Route path="announcements" element={<AdminAnnouncementManagementPage />} />
             <Route path="forums" element={<AdminDiscussionForumManagementPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
-        <Route
-          path="notifications"
-          element={
-            <div className="p-8 text-center">
-              <h1 className="text-2xl font-bold">
-                Notifications - Coming Soon
-              </h1>
-            </div>
-          }
-        />
-        <Route
-          path="announcements"
-          element={
-            <div className="p-8 text-center">
-              <h1 className="text-2xl font-bold">
-                Announcements - Coming Soon
-              </h1>
-            </div>
-          }
-        />
-        <Route
-          path="forums"
-          element={
-            <div className="p-8 text-center">
-              <h1 className="text-2xl font-bold">
-                Discussion Forums - Coming Soon
-              </h1>
-            </div>
-          }
-        />
+        <Route path="notifications" element={<AdminNotificationManagementPage />} />
       </Route>
     </Routes>
     </>
