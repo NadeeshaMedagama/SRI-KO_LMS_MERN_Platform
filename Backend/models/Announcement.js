@@ -95,9 +95,17 @@ announcementSchema.statics.getActiveAnnouncements = async function(audience = 'a
     ]
   };
 
+  console.log('📢 Announcement query:', JSON.stringify(query, null, 2));
+  console.log('📢 Current time:', now);
+  console.log('📢 Audience:', audience);
+
   const announcements = await this.find(query)
     .populate('createdBy', 'name email')
     .sort({ isPinned: -1, priority: -1, createdAt: -1 });
+
+  console.log('📢 Query result count:', announcements.length);
+  console.log('📢 All announcements in DB:', await this.countDocuments({}));
+  console.log('📢 Active announcements in DB:', await this.countDocuments({ isActive: true }));
 
   // If userId is provided, mark announcements as read
   if (userId) {
