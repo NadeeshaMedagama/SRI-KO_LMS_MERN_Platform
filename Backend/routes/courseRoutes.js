@@ -341,6 +341,63 @@ router.post('/:id/enroll', protect, authorize('student'), async (req, res) => {
   }
 });
 
+// @desc    Unenroll from course
+// @route   DELETE /api/courses/:id/enroll
+// @access  Private/Student
+router.delete('/:id/enroll', protect, authorize('student'), async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Course not found',
+      });
+    }
+
+    // Check if user is enrolled
+    const isEnrolled = course.enrolledStudents.includes(req.user.id);
+    if (!isEnrolled) {
+      return res.status(400).json({
+        success: false,
+        message: 'You are not enrolled in this course',
+      });
+    }
+
+    // Remove student from course
+    course.enrolledStudents = course.enrolledStudents.filter(
+      studentId => studentId.toString() !== req.user.id.toString()
+    );
+    await course.save();
+
+    // Remove progress record
+    await Progress.findOneAndDelete({
+      student: req.user.id,
+      course: req.params.id,
+    });
+
+    // Remove course from user's enrolled courses
+    await User.findByIdAndUpdate(req.user.id, {
+      $pull: { enrolledCourses: req.params.id },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Unenrolled from course successfully',
+      course: {
+        id: course._id,
+        title: course.title,
+      },
+    });
+  } catch (error) {
+    console.error('Error unenrolling from course:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
 // @desc    Add course review
 // @route   POST /api/courses/:id/reviews
 // @access  Private
