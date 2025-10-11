@@ -18,6 +18,7 @@ import {
   UserIcon,
   SpeakerWaveIcon,
   ExclamationTriangleIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 const DashboardPage = () => {
@@ -26,6 +27,9 @@ const DashboardPage = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [forums, setForums] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [unenrollingCourse, setUnenrollingCourse] = useState(null);
+  const [showUnenrollModal, setShowUnenrollModal] = useState(false);
+  const [courseToUnenroll, setCourseToUnenroll] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -173,6 +177,44 @@ const DashboardPage = () => {
       default:
         return 'border-l-gray-500 bg-gray-50';
     }
+  };
+
+  const handleUnenrollClick = (course) => {
+    setCourseToUnenroll(course);
+    setShowUnenrollModal(true);
+  };
+
+  const handleUnenrollConfirm = async () => {
+    if (!courseToUnenroll) return;
+
+    try {
+      setUnenrollingCourse(courseToUnenroll._id);
+      await apiService.unenrollFromCourse(courseToUnenroll._id);
+      
+      // Update dashboard data to remove the unenrolled course
+      setDashboardData(prevData => ({
+        ...prevData,
+        enrolledCourses: prevData.enrolledCourses.filter(course => course._id !== courseToUnenroll._id),
+        statistics: {
+          ...prevData.statistics,
+          totalEnrolledCourses: prevData.statistics.totalEnrolledCourses - 1
+        }
+      }));
+      
+      toast.success(`Successfully unenrolled from "${courseToUnenroll.title}"`);
+      setShowUnenrollModal(false);
+      setCourseToUnenroll(null);
+    } catch (error) {
+      console.error('Error unenrolling from course:', error);
+      toast.error('Failed to unenroll from course. Please try again.');
+    } finally {
+      setUnenrollingCourse(null);
+    }
+  };
+
+  const handleUnenrollCancel = () => {
+    setShowUnenrollModal(false);
+    setCourseToUnenroll(null);
   };
 
   if (loading) {
@@ -377,13 +419,32 @@ const DashboardPage = () => {
                     </div>
 
                     {/* Action Button */}
-                    <Link
-                      to={`/courses/${course._id}`}
-                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
-                    >
-                      <PlayIcon className="h-4 w-4 mr-2" />
-                      {course.progress.isCompleted ? 'Review Course' : 'Continue Learning'}
-                    </Link>
+                    <div className="space-y-2">
+                      <Link
+                        to={`/courses/${course._id}`}
+                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                      >
+                        <PlayIcon className="h-4 w-4 mr-2" />
+                        {course.progress.isCompleted ? 'Review Course' : 'Continue Learning'}
+                      </Link>
+                      <button 
+                        onClick={() => handleUnenrollClick(course)}
+                        disabled={unenrollingCourse === course._id}
+                        className="w-full bg-red-50 text-red-600 py-2 px-4 rounded-lg hover:bg-red-100 transition-colors border border-red-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {unenrollingCourse === course._id ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Unenrolling...
+                          </>
+                        ) : (
+                          <>
+                            <XMarkIcon className="w-4 h-4 mr-2" />
+                            Unenroll
+                          </>
+                        )}
+                      </button>
+                    </div>
 
                     {/* Certificate Badge */}
                     {course.progress.certificate && (
@@ -625,6 +686,41 @@ const DashboardPage = () => {
             </div>
         </div>
       </div>
+
+      {/* Unenroll Confirmation Modal */}
+      {showUnenrollModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <div className="p-2 bg-red-100 rounded-lg mr-3">
+                <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Confirm Unenrollment</h3>
+            </div>
+            
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to unenroll from <strong>"{courseToUnenroll?.title}"</strong>? 
+              This action will remove all your progress and you'll need to re-enroll to access the course again.
+            </p>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={handleUnenrollCancel}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUnenrollConfirm}
+                disabled={unenrollingCourse}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {unenrollingCourse ? 'Unenrolling...' : 'Yes, Unenroll'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
