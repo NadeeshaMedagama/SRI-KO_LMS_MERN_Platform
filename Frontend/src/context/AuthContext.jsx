@@ -78,14 +78,20 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = localStorage.getItem('token');
         if (token) {
-          const workingApiUrl = await getWorkingApiUrl();
-          const response = await fetch(`${workingApiUrl}/auth/me`, {
+          // Use a timeout to prevent hanging
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('API timeout')), 5000)
+          );
+          
+          const apiPromise = fetch(`http://localhost:5000/api/auth/me`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`,
             },
           });
+
+          const response = await Promise.race([apiPromise, timeoutPromise]);
 
           if (response.ok) {
             const data = await response.json();
