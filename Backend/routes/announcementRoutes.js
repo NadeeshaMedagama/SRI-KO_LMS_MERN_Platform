@@ -8,17 +8,21 @@ const { protect, authorize } = require('../middleware/auth');
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
+    console.log('📢 Fetching announcements for user:', req.user.email, 'role:', req.user.role);
     const audience = req.user.role === 'admin' ? 'admins' : 
                    req.user.role === 'instructor' ? 'instructors' : 'students';
     
+    console.log('📢 Audience:', audience);
     const announcements = await Announcement.getActiveAnnouncements(audience, req.user._id);
+    console.log('📢 Announcements found:', announcements.length);
+    console.log('📢 Announcements:', announcements.map(a => ({ title: a.title, targetAudience: a.targetAudience, isActive: a.isActive })));
 
     res.json({
       success: true,
       announcements
     });
   } catch (error) {
-    console.error('Error fetching announcements:', error);
+    console.error('❌ Error fetching announcements:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
