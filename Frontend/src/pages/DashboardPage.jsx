@@ -74,14 +74,19 @@ const DashboardPage = () => {
 
   const fetchAnnouncements = async () => {
     try {
+      console.log('🔍 Dashboard: Fetching announcements...');
       const response = await announcementService.getActiveAnnouncements();
+      console.log('📊 Dashboard: Announcements response:', response);
       if (response && response.success && Array.isArray(response.announcements)) {
+        console.log('✅ Dashboard: Setting announcements:', response.announcements);
         setAnnouncements(response.announcements);
       } else {
+        console.log('❌ Dashboard: No valid announcements data, setting empty array');
         setAnnouncements([]);
       }
     } catch (error) {
-      console.error('Error fetching announcements:', error);
+      console.error('❌ Dashboard: Error fetching announcements:', error);
+      console.error('❌ Dashboard: Error details:', error.response?.data);
       // Do not toast here to avoid noisy UI on dashboard load
       setAnnouncements([]);
     }
