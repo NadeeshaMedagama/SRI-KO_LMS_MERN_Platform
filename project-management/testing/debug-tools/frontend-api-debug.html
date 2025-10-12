@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Debug - API Request Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .success-section {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .error-section {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .info-section {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .url-test {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .loading {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        #test-results {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+        .step {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Frontend API Request Debug Test</h1>
+        <p>Let's test if the frontend can communicate with the backend properly.</p>
+        
+        <button onclick="testConfig()">🔧 Test Config</button>
+        <button onclick="testAPI()">🌐 Test API</button>
+        <button onclick="testAuth()">🔐 Test Auth</button>
+        <button onclick="testFrontend()">📱 Test Frontend</button>
+    </div>
+
+    <div class="container">
+        <h2>🔍 Current Status</h2>
+        
+        <div class="info-section">
+            <h3>📊 System Status</h3>
+            <div class="url-test">
+                Frontend: http://localhost:5173/ ✅ Running
+                Backend: http://localhost:5000/ ✅ Running
+                Config: window.configs.apiUrl = <span id="config-url">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🧪 Test Results</h2>
+        <div id="test-results">
+            <p>Click the test buttons above to run diagnostics...</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🔧 Debug Steps</h2>
+        
+        <div class="step">
+            <h3>1. Check Browser Console</h3>
+            <p>Press F12 → Console tab → Look for any red error messages</p>
+            <p><strong>Common errors:</strong></p>
+            <ul>
+                <li>CORS errors</li>
+                <li>Failed to fetch</li>
+                <li>Module not found</li>
+                <li>React errors</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>2. Check Network Tab</h3>
+            <p>Press F12 → Network tab → Refresh page → Look for failed requests</p>
+            <p><strong>Look for:</strong></p>
+            <ul>
+                <li>Red failed requests</li>
+                <li>404 errors</li>
+                <li>CORS errors</li>
+                <li>Timeout errors</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>3. Test Direct API Access</h3>
+            <p>Try accessing these URLs directly:</p>
+            <ul>
+                <li><a href="http://localhost:5000/api/health" target="_blank">Backend Health</a></li>
+                <li><a href="http://localhost:5000/api/auth/me" target="_blank">Auth Endpoint</a></li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>4. Clear Browser Cache</h3>
+            <p>Press Ctrl+Shift+R (hard refresh) or clear all browser data</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🎯 Quick Fixes</h2>
+        
+        <div class="success-section">
+            <h3>✅ Try These Solutions</h3>
+            <ol>
+                <li><strong>Hard Refresh:</strong> Ctrl+Shift+R</li>
+                <li><strong>Incognito Mode:</strong> Open in private window</li>
+                <li><strong>Different Browser:</strong> Try Chrome, Firefox, or Edge</li>
+                <li><strong>Disable Extensions:</strong> Try incognito mode</li>
+                <li><strong>Check Console:</strong> Look for JavaScript errors</li>
+            </ol>
+        </div>
+        
+        <div class="error-section">
+            <h3>❌ If Still Blank</h3>
+            <p>The issue might be:</p>
+            <ul>
+                <li>JavaScript errors preventing React from rendering</li>
+                <li>Network issues with API calls</li>
+                <li>Browser compatibility issues</li>
+                <li>Cached corrupted files</li>
+                <li>CORS configuration issues</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Load config.js first
+        const script = document.createElement('script');
+        script.src = '/config.js';
+        script.onload = function() {
+            document.getElementById('config-url').textContent = window.configs?.apiUrl || 'Not found';
+        };
+        document.head.appendChild(script);
+        
+        async function testConfig() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<p class="loading">🔄 Testing configuration...</p>';
+            
+            try {
+                const config = window.configs;
+                if (config && config.apiUrl) {
+                    results.innerHTML = `
+                        <div class="success-section">
+                            <h3>✅ Configuration Test Results</h3>
+                            <p><strong>API URL:</strong> <span class="success">${config.apiUrl}</span></p>
+                            <p><strong>Feature Flags:</strong> ${JSON.stringify(config.featureFlags)}</p>
+                            <p><strong>Status:</strong> <span class="success">CONFIGURED</span></p>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="error-section">
+                            <h3>❌ Configuration Test Failed</h3>
+                            <p><strong>Error:</strong> <span class="error">window.configs not found</span></p>
+                            <p><strong>Status:</strong> <span class="error">NOT CONFIGURED</span></p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="error-section">
+                        <h3>❌ Configuration Test Error</h3>
+                        <p><strong>Error:</strong> <span class="error">${error.message}</span></p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testAPI() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<p class="loading">🔄 Testing API connection...</p>';
+            
+            try {
+                const apiUrl = window.configs?.apiUrl || 'http://localhost:5000';
+                const response = await fetch(`${apiUrl}/api/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    results.innerHTML = `
+                        <div class="success-section">
+                            <h3>✅ API Test Results</h3>
+                            <p><strong>Status:</strong> <span class="success">CONNECTED</span></p>
+                            <p><strong>Response:</strong> ${response.status} ${response.statusText}</p>
+                            <p><strong>Message:</strong> ${data.message}</p>
+                            <p><strong>Environment:</strong> ${data.environment}</p>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="error-section">
+                            <h3>❌ API Test Failed</h3>
+                            <p><strong>Status:</strong> <span class="error">${response.status} ${response.statusText}</span></p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="error-section">
+                        <h3>❌ API Test Error</h3>
+                        <p><strong>Error:</strong> <span class="error">${error.message}</span></p>
+                        <p><strong>Possible causes:</strong></p>
+                        <ul>
+                            <li>Backend not running</li>
+                            <li>CORS issues</li>
+                            <li>Network connectivity</li>
+                            <li>Wrong API URL</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testAuth() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<p class="loading">🔄 Testing authentication...</p>';
+            
+            try {
+                const apiUrl = window.configs?.apiUrl || 'http://localhost:5000';
+                const response = await fetch(`${apiUrl}/api/auth/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    results.innerHTML = `
+                        <div class="success-section">
+                            <h3>✅ Auth Test Results</h3>
+                            <p><strong>Status:</strong> <span class="success">AUTH ENDPOINT WORKING</span></p>
+                            <p><strong>Response:</strong> ${response.status} ${response.statusText}</p>
+                            <p><strong>Authenticated:</strong> ${data.success ? 'Yes' : 'No'}</p>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="error-section">
+                            <h3>❌ Auth Test Failed</h3>
+                            <p><strong>Status:</strong> <span class="error">${response.status} ${response.statusText}</span></p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="error-section">
+                        <h3>❌ Auth Test Error</h3>
+                        <p><strong>Error:</strong> <span class="error">${error.message}</span></p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testFrontend() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<p class="loading">🔄 Testing frontend...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:5173/');
+                const html = await response.text();
+                
+                if (response.ok) {
+                    const hasReact = html.includes('react');
+                    const hasVite = html.includes('vite');
+                    const hasConfig = html.includes('config.js');
+                    
+                    results.innerHTML = `
+                        <div class="success-section">
+                            <h3>✅ Frontend Test Results</h3>
+                            <p><strong>Status:</strong> <span class="success">FRONTEND WORKING</span></p>
+                            <p><strong>Response:</strong> ${response.status} ${response.statusText}</p>
+                            <p><strong>Contains React:</strong> ${hasReact ? 'Yes' : 'No'}</p>
+                            <p><strong>Contains Vite:</strong> ${hasVite ? 'Yes' : 'No'}</p>
+                            <p><strong>Contains Config:</strong> ${hasConfig ? 'Yes' : 'No'}</p>
+                            <p><strong>Content Length:</strong> ${html.length} characters</p>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="error-section">
+                            <h3>❌ Frontend Test Failed</h3>
+                            <p><strong>Status:</strong> <span class="error">${response.status} ${response.statusText}</span></p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="error-section">
+                        <h3>❌ Frontend Test Error</h3>
+                        <p><strong>Error:</strong> <span class="error">${error.message}</span></p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-run tests on page load
+        window.onload = function() {
+            setTimeout(() => {
+                testConfig();
+                setTimeout(testAPI, 1000);
+                setTimeout(testAuth, 2000);
+                setTimeout(testFrontend, 3000);
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
+

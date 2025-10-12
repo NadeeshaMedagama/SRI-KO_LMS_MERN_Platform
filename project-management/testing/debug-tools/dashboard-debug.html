@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Dashboard Debug Tool</h1>
+    
+    <div class="debug-section">
+        <h3>Authentication Status</h3>
+        <div id="auth-status">Checking...</div>
+        <button onclick="checkAuth()">Check Authentication</button>
+        <button onclick="clearAuth()">Clear Authentication</button>
+    </div>
+
+    <div class="debug-section">
+        <h3>API Connectivity</h3>
+        <div id="api-status">Checking...</div>
+        <button onclick="checkAPI()">Test API</button>
+    </div>
+
+    <div class="debug-section">
+        <h3>Dashboard Test</h3>
+        <div id="dashboard-status">Ready to test...</div>
+        <button onclick="testDashboard()">Test Dashboard</button>
+    </div>
+
+    <div class="debug-section">
+        <h3>Login Test</h3>
+        <div>
+            <input type="email" id="email" placeholder="Email" value="admin@example.com" style="margin: 5px; padding: 5px;">
+            <input type="password" id="password" placeholder="Password" value="Admin@123" style="margin: 5px; padding: 5px;">
+            <button onclick="testLogin()">Test Login</button>
+        </div>
+        <div id="login-status">Ready to test login...</div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = type;
+        }
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                updateStatus('auth-status', '❌ No token found in localStorage', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    updateStatus('auth-status', `✅ Authenticated as: ${data.user.name} (${data.user.email})`, 'success');
+                } else {
+                    updateStatus('auth-status', `❌ Token invalid: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                updateStatus('auth-status', `❌ Auth check failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    updateStatus('api-status', `✅ API is healthy: ${data.message}`, 'success');
+                } else {
+                    updateStatus('api-status', `❌ API error: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                updateStatus('api-status', `❌ API unreachable: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDashboard() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                updateStatus('dashboard-status', '❌ No token - please login first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/users/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    updateStatus('dashboard-status', `✅ Dashboard loaded successfully`, 'success');
+                    console.log('Dashboard data:', data);
+                } else {
+                    const errorData = await response.json();
+                    updateStatus('dashboard-status', `❌ Dashboard error: ${errorData.message}`, 'error');
+                }
+            } catch (error) {
+                updateStatus('dashboard-status', `❌ Dashboard request failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                updateStatus('login-status', '❌ Please enter email and password', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.token);
+                    updateStatus('login-status', `✅ Login successful: ${data.user.name}`, 'success');
+                    checkAuth(); // Update auth status
+                } else {
+                    const errorData = await response.json();
+                    updateStatus('login-status', `❌ Login failed: ${errorData.message}`, 'error');
+                }
+            } catch (error) {
+                updateStatus('login-status', `❌ Login request failed: ${error.message}`, 'error');
+            }
+        }
+
+        function clearAuth() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('adminToken');
+            updateStatus('auth-status', '✅ Authentication cleared', 'success');
+        }
+
+        // Auto-check on page load
+        window.onload = function() {
+            checkAPI();
+            checkAuth();
+        };
+    </script>
+</body>
+</html>
+

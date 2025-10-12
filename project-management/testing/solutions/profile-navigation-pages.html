@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Navigation Pages - SRI-KO LMS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .success-section {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .feature-section {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .test-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .test-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        .page-preview {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .feature-list li:before {
+            content: "✅ ";
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Profile Navigation Pages - SRI-KO LMS</h1>
+        <p>New pages created for profile page navigation buttons with full functionality.</p>
+        
+        <button onclick="openApp()">🚀 Open Application</button>
+        <button onclick="testProfilePage()">👤 Test Profile Page</button>
+        <button onclick="testAllPages()">📚 Test All Pages</button>
+    </div>
+
+    <div class="container">
+        <h2>✅ Pages Created Successfully</h2>
+        
+        <div class="success-section">
+            <h3>🎯 Three New Pages Created</h3>
+            <p>All pages are fully functional and integrated with the existing SRI-KO LMS system:</p>
+            
+            <div class="test-results">
+                <div class="test-card">
+                    <h4>📚 My Courses Page</h4>
+                    <p><strong>Route:</strong> <code>/my-courses</code></p>
+                    <p><strong>Features:</strong></p>
+                    <ul class="feature-list">
+                        <li>Course statistics overview</li>
+                        <li>Detailed course cards with progress</li>
+                        <li>Certificate tracking</li>
+                        <li>Instructor information</li>
+                        <li>Continue learning buttons</li>
+                    </ul>
+                </div>
+                
+                <div class="test-card">
+                    <h4>📊 Learning Progress Page</h4>
+                    <p><strong>Route:</strong> <code>/learning-progress</code></p>
+                    <p><strong>Features:</strong></p>
+                    <ul class="feature-list">
+                        <li>Learning statistics dashboard</li>
+                        <li>Progress visualization</li>
+                        <li>Learning streak tracking</li>
+                        <li>Course completion details</li>
+                        <li>Recent activity timeline</li>
+                    </ul>
+                </div>
+                
+                <div class="test-card">
+                    <h4>🌐 Public Profile Page</h4>
+                    <p><strong>Route:</strong> <code>/public-profile</code></p>
+                    <p><strong>Features:</strong></p>
+                    <ul class="feature-list">
+                        <li>Public profile display</li>
+                        <li>Learning achievements</li>
+                        <li>Completed courses showcase</li>
+                        <li>Contact information</li>
+                        <li>Social links integration</li>
+                        <li>Profile sharing functionality</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🔗 Navigation Integration</h2>
+        
+        <div class="feature-section">
+            <h3>Profile Page Quick Actions</h3>
+            <p>The profile page now has functional navigation buttons:</p>
+            
+            <div class="code-block">
+// ProfilePage.jsx - Quick Actions Section
+&lt;button onClick={() => navigate('/my-courses')}&gt;
+  &lt;AcademicCapIcon className="w-5 h-5 inline mr-3" /&gt;
+  View My Courses
+&lt;/button&gt;
+
+&lt;button onClick={() => navigate('/learning-progress')}&gt;
+  &lt;BriefcaseIcon className="w-5 h-5 inline mr-3" /&gt;
+  Learning Progress
+&lt;/button&gt;
+
+&lt;button onClick={() => navigate('/public-profile')}&gt;
+  &lt;GlobeAltIcon className="w-5 h-5 inline mr-3" /&gt;
+  Public Profile
+&lt;/button&gt;
+            </div>
+        </div>
+        
+        <div class="feature-section">
+            <h3>Routing Configuration</h3>
+            <p>All pages are properly configured in App.jsx:</p>
+            
+            <div class="code-block">
+// App.jsx - New Routes Added
+&lt;Route path="/my-courses" element={&lt;ProtectedRoute&gt;&lt;Layout /&gt;&lt;/ProtectedRoute&gt;}&gt;
+  &lt;Route index element={&lt;MyCoursesPage /&gt;} /&gt;
+&lt;/Route&gt;
+
+&lt;Route path="/learning-progress" element={&lt;ProtectedRoute&gt;&lt;Layout /&gt;&lt;/ProtectedRoute&gt;}&gt;
+  &lt;Route index element={&lt;LearningProgressPage /&gt;} /&gt;
+&lt;/Route&gt;
+
+&lt;Route path="/public-profile" element={&lt;ProtectedRoute&gt;&lt;Layout /&gt;&lt;/ProtectedRoute&gt;}&gt;
+  &lt;Route index element={&lt;PublicProfilePage /&gt;} /&gt;
+&lt;/Route&gt;
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📊 Page Features Overview</h2>
+        
+        <div class="test-results">
+            <div class="test-card">
+                <h4>📚 My Courses Page Features</h4>
+                <ul class="feature-list">
+                    <li><strong>Statistics Cards:</strong> Total courses, completed, in progress, certificates</li>
+                    <li><strong>Course Grid:</strong> Detailed course cards with thumbnails</li>
+                    <li><strong>Progress Tracking:</strong> Visual progress bars for each course</li>
+                    <li><strong>Course Details:</strong> Title, description, level, category, duration</li>
+                    <li><strong>Instructor Info:</strong> Instructor name and avatar</li>
+                    <li><strong>Action Buttons:</strong> Continue learning or view certificate</li>
+                    <li><strong>Certificate Badges:</strong> Visual indicators for completed courses</li>
+                    <li><strong>Empty State:</strong> Helpful message when no courses enrolled</li>
+                </ul>
+            </div>
+            
+            <div class="test-card">
+                <h4>📊 Learning Progress Page Features</h4>
+                <ul class="feature-list">
+                    <li><strong>Main Stats:</strong> Courses enrolled, lessons completed, certificates, time spent</li>
+                    <li><strong>Progress Visualization:</strong> Overall completion and certificate rates</li>
+                    <li><strong>Learning Streak:</strong> Consecutive learning days with fire icon</li>
+                    <li><strong>Course Details:</strong> Individual course progress breakdown</li>
+                    <li><strong>Recent Activity:</strong> Timeline of learning activities</li>
+                    <li><strong>Interactive Charts:</strong> Visual progress indicators</li>
+                    <li><strong>Motivational Elements:</strong> Encouraging messages and achievements</li>
+                </ul>
+            </div>
+            
+            <div class="test-card">
+                <h4>🌐 Public Profile Page Features</h4>
+                <ul class="feature-list">
+                    <li><strong>Profile Header:</strong> Cover image, avatar, basic info</li>
+                    <li><strong>Bio Section:</strong> User's personal description</li>
+                    <li><strong>Learning Stats:</strong> Public learning achievements</li>
+                    <li><strong>Completed Courses:</strong> Showcase of finished courses</li>
+                    <li><strong>Contact Info:</strong> Email, phone, website, location</li>
+                    <li><strong>Social Links:</strong> LinkedIn, Twitter, GitHub integration</li>
+                    <li><strong>Share Functionality:</strong> Native sharing or clipboard copy</li>
+                    <li><strong>Responsive Design:</strong> Mobile-friendly layout</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🎯 How to Test</h2>
+        
+        <div class="feature-section">
+            <h3>Step-by-Step Testing</h3>
+            <ol>
+                <li><strong>Open Application:</strong> Go to <code>http://localhost:5176</code></li>
+                <li><strong>Login:</strong> Use <code>student@test.com</code> / <code>password123</code></li>
+                <li><strong>Go to Profile:</strong> Click on your profile in the header</li>
+                <li><strong>Test Navigation:</strong> Click each button in "Quick Actions" section:</li>
+                <ul>
+                    <li><strong>View My Courses:</strong> Shows enrolled courses with progress</li>
+                    <li><strong>Learning Progress:</strong> Shows learning analytics and progress</li>
+                    <li><strong>Public Profile:</strong> Shows public profile view</li>
+                </ul>
+                <li><strong>Verify Functionality:</strong> Each page should load with proper data</li>
+                <li><strong>Test Responsiveness:</strong> Check on different screen sizes</li>
+            </ol>
+        </div>
+        
+        <div class="page-preview">
+            <h3>📱 Page Preview</h3>
+            <p>Each page is designed with:</p>
+            <ul class="feature-list">
+                <li>Consistent SRI-KO LMS design language</li>
+                <li>Responsive grid layouts</li>
+                <li>Interactive elements and hover effects</li>
+                <li>Loading states and error handling</li>
+                <li>Proper data fetching from backend</li>
+                <li>Toast notifications for user feedback</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📁 Files Created/Modified</h2>
+        
+        <div class="code-block">
+New Pages Created:
+- /Frontend/src/pages/MyCoursesPage.jsx        # My Courses page
+- /Frontend/src/pages/LearningProgressPage.jsx  # Learning Progress page  
+- /Frontend/src/pages/PublicProfilePage.jsx     # Public Profile page
+
+Files Modified:
+- /Frontend/src/App.jsx                         # Added new routes
+- /Frontend/src/pages/ProfilePage.jsx           # Added navigation functionality
+        </div>
+        
+        <div class="success-section">
+            <h3>🚀 Complete Integration</h3>
+            <p>All pages are fully integrated with the existing SRI-KO LMS system:</p>
+            <ul class="feature-list">
+                <li><strong>Authentication:</strong> All pages are protected routes</li>
+                <li><strong>Data Integration:</strong> Uses existing API endpoints</li>
+                <li><strong>Design Consistency:</strong> Matches existing UI/UX</li>
+                <li><strong>Navigation:</strong> Seamless navigation between pages</li>
+                <li><strong>Error Handling:</strong> Proper error states and loading</li>
+                <li><strong>Responsive Design:</strong> Works on all device sizes</li>
+            </ul>
+        </div>
+        
+        <p style="background: #d4edda; padding: 15px; border-radius: 5px; border: 1px solid #c3e6cb; color: #155724;">
+            <strong>✅ ALL PAGES CREATED AND INTEGRATED SUCCESSFULLY!</strong> The profile page navigation buttons now lead to fully functional pages that provide comprehensive views of the user's learning journey, progress, and public profile. All pages are responsive, integrated with the backend, and follow the existing design patterns.
+        </p>
+    </div>
+
+    <script>
+        function openApp() {
+            window.open('http://localhost:5176', '_blank');
+        }
+        
+        function testProfilePage() {
+            window.open('http://localhost:5176/profile', '_blank');
+        }
+        
+        function testAllPages() {
+            const pages = [
+                'http://localhost:5176/my-courses',
+                'http://localhost:5176/learning-progress', 
+                'http://localhost:5176/public-profile'
+            ];
+            
+            pages.forEach((url, index) => {
+                setTimeout(() => {
+                    window.open(url, '_blank');
+                }, index * 1000);
+            });
+        }
+    </script>
+</body>
+</html>
+

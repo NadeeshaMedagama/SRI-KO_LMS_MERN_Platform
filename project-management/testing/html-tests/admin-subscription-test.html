@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Subscription Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Admin Subscription API Test</h1>
+    
+    <div class="test-section">
+        <h3>Login as Admin</h3>
+        <button onclick="loginAsAdmin()">Login as Admin</button>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Payment Stats</h3>
+        <button onclick="testPaymentStats()">Get Payment Stats</button>
+        <div id="stats-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Recent Payments</h3>
+        <button onclick="testRecentPayments()">Get Recent Payments</button>
+        <div id="recent-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test All Payments</h3>
+        <button onclick="testAllPayments()">Get All Payments</button>
+        <div id="all-result"></div>
+    </div>
+
+    <script>
+        let authToken = '';
+        const API_BASE = 'http://localhost:5000/api';
+        
+        async function loginAsAdmin() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@sri-ko.com',
+                        password: 'Admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.token;
+                    document.getElementById('login-result').innerHTML = 
+                        `<div class="success">✅ Login successful! Token: ${authToken.substring(0, 20)}...</div>`;
+                } else {
+                    document.getElementById('login-result').innerHTML = 
+                        `<div class="error">❌ Login failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('login-result').innerHTML = 
+                    `<div class="error">❌ Login error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testPaymentStats() {
+            if (!authToken) {
+                document.getElementById('stats-result').innerHTML = 
+                    '<div class="error">❌ Please login first</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/payments/stats`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('stats-result').innerHTML = 
+                        `<div class="success">✅ Payment stats retrieved successfully!</div>
+                         <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    document.getElementById('stats-result').innerHTML = 
+                        `<div class="error">❌ Failed to get stats: ${data.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('stats-result').innerHTML = 
+                    `<div class="error">❌ Stats error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testRecentPayments() {
+            if (!authToken) {
+                document.getElementById('recent-result').innerHTML = 
+                    '<div class="error">❌ Please login first</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/payments/recent?limit=5`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('recent-result').innerHTML = 
+                        `<div class="success">✅ Recent payments retrieved successfully!</div>
+                         <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    document.getElementById('recent-result').innerHTML = 
+                        `<div class="error">❌ Failed to get recent payments: ${data.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('recent-result').innerHTML = 
+                    `<div class="error">❌ Recent payments error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testAllPayments() {
+            if (!authToken) {
+                document.getElementById('all-result').innerHTML = 
+                    '<div class="error">❌ Please login first</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/payments/all?page=1&limit=10`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('all-result').innerHTML = 
+                        `<div class="success">✅ All payments retrieved successfully!</div>
+                         <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    document.getElementById('all-result').innerHTML = 
+                        `<div class="error">❌ Failed to get all payments: ${data.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('all-result').innerHTML = 
+                    `<div class="error">❌ All payments error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

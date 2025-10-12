@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .stat-card { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Dashboard Test</h1>
+        
+        <div class="test-section info">
+            <h3>Test Admin Login and Dashboard Data</h3>
+            <p>This test will verify the admin login flow and dashboard data fetching.</p>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 1: Admin Login</h3>
+            <button onclick="testAdminLogin()">Test Admin Login</button>
+            <div id="loginResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 2: Dashboard Stats</h3>
+            <button onclick="testDashboardStats()">Test Dashboard Stats</button>
+            <div id="statsResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 3: Recent Users</h3>
+            <button onclick="testRecentUsers()">Test Recent Users</button>
+            <div id="usersResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 4: Recent Courses</h3>
+            <button onclick="testRecentCourses()">Test Recent Courses</button>
+            <div id="coursesResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Dashboard Preview</h3>
+            <div id="dashboardPreview"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+        const API_BASE = 'http://localhost:5000';
+
+        async function testAdminLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = '<p>Testing admin login...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/admin-login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@sriko.com',
+                        password: 'Admin123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.token;
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Login Successful!</h4>
+                            <p><strong>User:</strong> ${data.user.name} (${data.user.email})</p>
+                            <p><strong>Role:</strong> ${data.user.role}</p>
+                            <p><strong>Token:</strong> ${data.token.substring(0, 50)}...</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Login Failed</h4>
+                            <p>${data.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Login Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testDashboardStats() {
+            const resultDiv = document.getElementById('statsResult');
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<div class="error"><p>Please login first!</p></div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>Fetching dashboard stats...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/stats`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Stats Retrieved!</h4>
+                            <div class="stats">
+                                <div class="stat-card">
+                                    <h5>Total Users</h5>
+                                    <p style="font-size: 24px; font-weight: bold; color: #007bff;">${data.stats.totalUsers}</p>
+                                </div>
+                                <div class="stat-card">
+                                    <h5>Total Courses</h5>
+                                    <p style="font-size: 24px; font-weight: bold; color: #28a745;">${data.stats.totalCourses}</p>
+                                </div>
+                                <div class="stat-card">
+                                    <h5>Total Revenue</h5>
+                                    <p style="font-size: 24px; font-weight: bold; color: #ffc107;">$${data.stats.totalRevenue.toLocaleString()}</p>
+                                </div>
+                                <div class="stat-card">
+                                    <h5>Active Users</h5>
+                                    <p style="font-size: 24px; font-weight: bold; color: #17a2b8;">${data.stats.activeUsers}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Update dashboard preview
+                    updateDashboardPreview(data.stats);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Stats Failed</h4>
+                            <p>${data.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Stats Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testRecentUsers() {
+            const resultDiv = document.getElementById('usersResult');
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<div class="error"><p>Please login first!</p></div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>Fetching recent users...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/users?limit=5`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    let usersHtml = '<div class="success"><h4>✅ Users Retrieved!</h4><ul>';
+                    data.users.forEach(user => {
+                        usersHtml += `
+                            <li>
+                                <strong>${user.name}</strong> (${user.email}) 
+                                <span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 12px;">${user.role}</span>
+                                <small style="color: #666;">- ${new Date(user.createdAt).toLocaleDateString()}</small>
+                            </li>
+                        `;
+                    });
+                    usersHtml += '</ul></div>';
+                    resultDiv.innerHTML = usersHtml;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Users Failed</h4>
+                            <p>${data.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Users Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testRecentCourses() {
+            const resultDiv = document.getElementById('coursesResult');
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<div class="error"><p>Please login first!</p></div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>Fetching recent courses...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/courses?limit=5`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    let coursesHtml = '<div class="success"><h4>✅ Courses Retrieved!</h4><ul>';
+                    data.courses.forEach(course => {
+                        coursesHtml += `
+                            <li>
+                                <strong>${course.title}</strong> 
+                                <span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 12px;">${course.category}</span>
+                                <small style="color: #666;">- ${course.enrolledStudents?.length || 0} students</small>
+                                <small style="color: #666;">- ${new Date(course.createdAt).toLocaleDateString()}</small>
+                            </li>
+                        `;
+                    });
+                    coursesHtml += '</ul></div>';
+                    resultDiv.innerHTML = coursesHtml;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Courses Failed</h4>
+                            <p>${data.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Courses Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function updateDashboardPreview(stats) {
+            const previewDiv = document.getElementById('dashboardPreview');
+            previewDiv.innerHTML = `
+                <div class="info">
+                    <h4>Dashboard Preview</h4>
+                    <p>This is what the admin dashboard should display:</p>
+                    <div class="stats">
+                        <div class="stat-card">
+                            <h5>👥 Total Users</h5>
+                            <p style="font-size: 32px; font-weight: bold; color: #007bff;">${stats.totalUsers}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h5>📚 Total Courses</h5>
+                            <p style="font-size: 32px; font-weight: bold; color: #28a745;">${stats.totalCourses}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h5>💰 Total Revenue</h5>
+                            <p style="font-size: 32px; font-weight: bold; color: #ffc107;">$${stats.totalRevenue.toLocaleString()}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h5>✅ Completed Courses</h5>
+                            <p style="font-size: 32px; font-weight: bold; color: #17a2b8;">${stats.completedCourses}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Auto-run tests on page load
+        window.onload = function() {
+            setTimeout(() => {
+                testAdminLogin();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

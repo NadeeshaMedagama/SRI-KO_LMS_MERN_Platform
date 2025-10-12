@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Admin Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Quick Admin Dashboard Test</h1>
+    <div id="results"></div>
+
+    <script>
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = message;
+            document.getElementById('results').appendChild(div);
+        }
+
+        async function testAdminDashboard() {
+            try {
+                // Check configuration
+                const configs = window.configs || {};
+                const apiUrl = configs.apiUrl || 'http://localhost:5000/api';
+                
+                addResult(`🔧 Configuration:<br>
+                    API URL: ${apiUrl}<br>
+                    Hostname: ${window.location.hostname}<br>
+                    Port: ${window.location.port}`, 'info');
+
+                // Test admin login
+                addResult('🔐 Testing admin login...', 'info');
+                const loginResponse = await fetch(`${apiUrl}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@sriko.com',
+                        password: 'Admin123'
+                    })
+                });
+
+                const loginData = await loginResponse.json();
+                if (!loginData.success) {
+                    throw new Error(`Login failed: ${loginData.message}`);
+                }
+
+                addResult(`✅ Admin login successful!<br>
+                    User: ${loginData.user.name} (${loginData.user.role})`, 'success');
+
+                const token = loginData.token;
+
+                // Test admin courses
+                addResult('📚 Testing admin courses...', 'info');
+                const coursesResponse = await fetch(`${apiUrl}/admin/courses?limit=3`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!coursesResponse.ok) {
+                    throw new Error(`Courses API failed: ${coursesResponse.status} ${coursesResponse.statusText}`);
+                }
+
+                const coursesData = await coursesResponse.json();
+                if (!coursesData.success) {
+                    throw new Error(`Courses API error: ${coursesData.message}`);
+                }
+
+                addResult(`✅ Courses loaded successfully!<br>
+                    Found ${coursesData.count} courses out of ${coursesData.total} total<br>
+                    First course: ${coursesData.courses[0]?.title || 'N/A'}`, 'success');
+
+                // Test admin stats
+                addResult('📊 Testing admin stats...', 'info');
+                const statsResponse = await fetch(`${apiUrl}/admin/stats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!statsResponse.ok) {
+                    throw new Error(`Stats API failed: ${statsResponse.status} ${statsResponse.statusText}`);
+                }
+
+                const statsData = await statsResponse.json();
+                if (!statsData.success) {
+                    throw new Error(`Stats API error: ${statsData.message}`);
+                }
+
+                addResult(`✅ Stats loaded successfully!<br>
+                    Total Users: ${statsData.stats.totalUsers}<br>
+                    Total Courses: ${statsData.stats.totalCourses}<br>
+                    Total Revenue: $${statsData.stats.totalRevenue}`, 'success');
+
+                addResult('🎉 All tests passed! Admin dashboard should work correctly.', 'success');
+
+            } catch (error) {
+                addResult(`❌ Test failed: ${error.message}`, 'error');
+                console.error('Test error:', error);
+            }
+        }
+
+        // Run test when page loads
+        window.addEventListener('load', () => {
+            setTimeout(testAdminDashboard, 500);
+        });
+    </script>
+</body>
+</html>
+
+
+

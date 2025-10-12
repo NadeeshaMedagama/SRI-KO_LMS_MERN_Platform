@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .warning { border-left: 4px solid #ffc107; }
+        .info { border-left: 4px solid #17a2b8; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
+        .stat-number { font-size: 2em; font-weight: bold; color: #007bff; }
+        .stat-label { color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Admin Dashboard Debug Tool</h1>
+        
+        <div class="card info">
+            <h3>📋 Current Status</h3>
+            <div id="status-info"></div>
+        </div>
+        
+        <div class="card">
+            <h3>🧪 Tests</h3>
+            <button onclick="testConfiguration()">Test Configuration</button>
+            <button onclick="testBackendConnection()">Test Backend</button>
+            <button onclick="testAdminLogin()">Test Admin Login</button>
+            <button onclick="testAdminDashboard()">Test Admin Dashboard</button>
+            <button onclick="runAllTests()">Run All Tests</button>
+        </div>
+        
+        <div class="card">
+            <h3>📊 Test Results</h3>
+            <div id="test-results"></div>
+        </div>
+        
+        <div class="card">
+            <h3>📈 Admin Dashboard Data</h3>
+            <div id="dashboard-data"></div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        let dashboardData = null;
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `card ${type}`;
+            div.innerHTML = message;
+            document.getElementById('test-results').appendChild(div);
+            testResults.push({ message, type, timestamp: new Date() });
+        }
+        
+        function updateStatus() {
+            const statusDiv = document.getElementById('status-info');
+            statusDiv.innerHTML = `
+                <p><strong>Frontend URL:</strong> ${window.location.href}</p>
+                <p><strong>Hostname:</strong> ${window.location.hostname}</p>
+                <p><strong>Port:</strong> ${window.location.port}</p>
+                <p><strong>Protocol:</strong> ${window.location.protocol}</p>
+                <p><strong>Config Loaded:</strong> ${window.configs ? 'Yes' : 'No'}</p>
+                <p><strong>API URL:</strong> ${window.configs?.apiUrl || 'Not loaded'}</p>
+            `;
+        }
+        
+        async function testConfiguration() {
+            addResult('🔧 Testing configuration...', 'info');
+            
+            try {
+                // Load config.js if not already loaded
+                if (!window.configs) {
+                    const script = document.createElement('script');
+                    script.src = '/config.js';
+                    document.head.appendChild(script);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                const configs = window.configs || {};
+                const apiUrl = configs.apiUrl || 'http://localhost:5000';
+                
+                addResult(`✅ Configuration loaded successfully!<br>
+                    <strong>Base URL:</strong> ${apiUrl}<br>
+                    <strong>Final API URL:</strong> ${apiUrl}/api<br>
+                    <strong>Is Localhost:</strong> ${window.location.hostname === 'localhost'}<br>
+                    <strong>Is Development:</strong> ${['5173', '5174', '5175', '3000'].includes(window.location.port)}`, 'success');
+                    
+            } catch (error) {
+                addResult(`❌ Configuration test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testBackendConnection() {
+            addResult('🔌 Testing backend connection...', 'info');
+            
+            try {
+                const configs = window.configs || {};
+                const baseUrl = configs.apiUrl || 'http://localhost:5000';
+                const apiUrl = `${baseUrl}/api`;
+                
+                const response = await fetch(`${apiUrl}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`✅ Backend connection successful!<br>
+                        <strong>Status:</strong> ${response.status}<br>
+                        <strong>Message:</strong> ${data.message}<br>
+                        <strong>Environment:</strong> ${data.environment}<br>
+                        <strong>MongoDB:</strong> ${data.mongodb}`, 'success');
+                } else {
+                    addResult(`❌ Backend connection failed: ${response.status} ${response.statusText}`, 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ Backend connection error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAdminLogin() {
+            addResult('🔐 Testing admin login...', 'info');
+            
+            try {
+                const configs = window.configs || {};
+                const baseUrl = configs.apiUrl || 'http://localhost:5000';
+                const apiUrl = `${baseUrl}/api`;
+                
+                const response = await fetch(`${apiUrl}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@sriko.com',
+                        password: 'Admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Store token for next tests
+                    window.testToken = data.token;
+                    addResult(`✅ Admin login successful!<br>
+                        <strong>User:</strong> ${data.user.name} (${data.user.role})<br>
+                        <strong>Token:</strong> ${data.token.substring(0, 20)}...`, 'success');
+                } else {
+                    addResult(`❌ Admin login failed: ${data.message || 'Unknown error'}`, 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ Admin login error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAdminDashboard() {
+            addResult('📊 Testing admin dashboard data...', 'info');
+            
+            try {
+                if (!window.testToken) {
+                    addResult('❌ No token available. Please run admin login test first.', 'error');
+                    return;
+                }
+                
+                const configs = window.configs || {};
+                const baseUrl = configs.apiUrl || 'http://localhost:5000';
+                const apiUrl = `${baseUrl}/api`;
+                
+                // Test stats endpoint
+                const statsResponse = await fetch(`${apiUrl}/admin/stats`, {
+                    headers: { 'Authorization': `Bearer ${window.testToken}` }
+                });
+                
+                if (!statsResponse.ok) {
+                    throw new Error(`Stats API failed: ${statsResponse.status} ${statsResponse.statusText}`);
+                }
+                
+                const statsData = await statsResponse.json();
+                if (!statsData.success) {
+                    throw new Error(`Stats API error: ${statsData.message}`);
+                }
+                
+                // Test users endpoint
+                const usersResponse = await fetch(`${apiUrl}/admin/users?limit=3`, {
+                    headers: { 'Authorization': `Bearer ${window.testToken}` }
+                });
+                
+                const usersData = await usersResponse.json();
+                
+                // Test courses endpoint
+                const coursesResponse = await fetch(`${apiUrl}/admin/courses?limit=3`, {
+                    headers: { 'Authorization': `Bearer ${window.testToken}` }
+                });
+                
+                const coursesData = await coursesResponse.json();
+                
+                // Store dashboard data
+                dashboardData = {
+                    stats: statsData.stats,
+                    users: usersData.users || [],
+                    courses: coursesData.courses || []
+                };
+                
+                addResult(`✅ Admin dashboard data loaded successfully!<br>
+                    <strong>Stats:</strong> ${statsData.stats.totalUsers} users, ${statsData.stats.totalCourses} courses<br>
+                    <strong>Users:</strong> ${usersData.count || 0} loaded<br>
+                    <strong>Courses:</strong> ${coursesData.count || 0} loaded`, 'success');
+                
+                // Display dashboard data
+                displayDashboardData();
+                
+            } catch (error) {
+                addResult(`❌ Admin dashboard test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function displayDashboardData() {
+            if (!dashboardData) return;
+            
+            const dashboardDiv = document.getElementById('dashboard-data');
+            dashboardDiv.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">${dashboardData.stats.totalUsers}</div>
+                        <div class="stat-label">Total Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${dashboardData.stats.totalCourses}</div>
+                        <div class="stat-label">Total Courses</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">$${dashboardData.stats.totalRevenue.toLocaleString()}</div>
+                        <div class="stat-label">Total Revenue</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${dashboardData.stats.activeUsers}</div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h4>Recent Users (${dashboardData.users.length})</h4>
+                    <pre>${JSON.stringify(dashboardData.users.map(u => ({ name: u.name, email: u.email, role: u.role })), null, 2)}</pre>
+                </div>
+                
+                <div class="card">
+                    <h4>Recent Courses (${dashboardData.courses.length})</h4>
+                    <pre>${JSON.stringify(dashboardData.courses.map(c => ({ title: c.title, category: c.category, price: c.price })), null, 2)}</pre>
+                </div>
+            `;
+        }
+        
+        async function runAllTests() {
+            document.getElementById('test-results').innerHTML = '';
+            testResults = [];
+            
+            await testConfiguration();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testBackendConnection();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testAdminLogin();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testAdminDashboard();
+            
+            // Summary
+            const successCount = testResults.filter(r => r.type === 'success').length;
+            const totalCount = testResults.length;
+            
+            addResult(`📊 Test Summary: ${successCount}/${totalCount} tests passed`, 
+                successCount === totalCount ? 'success' : 'warning');
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            updateStatus();
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>
+
+
+

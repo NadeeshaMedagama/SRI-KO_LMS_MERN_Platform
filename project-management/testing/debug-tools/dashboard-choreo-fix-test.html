@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Choreo Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        .code {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Dashboard Choreo Fix Test</h1>
+        
+        <div class="test-section info">
+            <h3>📋 Problem Description</h3>
+            <p>The dashboard was showing "Not Found" error in Choreo deployment because:</p>
+            <ul>
+                <li>Choreo API URL: <code>https://bfdef01f-7fc1-46ea-af69-42279e15f710-dev.e1-us-east-azure.choreoapis.dev/sri-ko-lms-platform/backend/v1</code></li>
+                <li>Dashboard was calling: <code>${baseUrl}/api/users/dashboard</code></li>
+                <li>This resulted in: <code>https://...choreoapis.dev/sri-ko-lms-platform/backend/v1/api/users/dashboard</code></li>
+                <li>But the correct URL should be: <code>https://...choreoapis.dev/sri-ko-lms-platform/backend/v1/users/dashboard</code></li>
+            </ul>
+        </div>
+
+        <div class="test-section success">
+            <h3>✅ Solution Implemented</h3>
+            <p>Updated <code>apiConfig.ts</code> to handle Choreo API URL structure:</p>
+            <div class="code">
+// Handle Choreo API URL structure - it already includes the API path
+let apiUrl;
+if (baseUrl.includes('choreoapis.dev')) {
+  // Choreo API URL already includes the full path, just return baseUrl
+  apiUrl = baseUrl;
+} else {
+  // Local development URL needs /api prefix
+  apiUrl = `${baseUrl}/api`;
+}
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test API URL Construction</h3>
+            <div id="urlTestResults"></div>
+            <button onclick="testUrlConstruction()">Test URL Construction</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Test Dashboard API Call</h3>
+            <div id="dashboardTestResults"></div>
+            <button onclick="testDashboardAPI()">Test Dashboard API</button>
+        </div>
+
+        <div class="test-section success">
+            <h3>✅ Files Updated</h3>
+            <ul>
+                <li><strong>apiConfig.ts</strong> - Centralized API URL handling</li>
+                <li><strong>DashboardPage.jsx</strong> - Uses centralized API config</li>
+                <li><strong>AuthContext.jsx</strong> - Updated login/auth calls</li>
+                <li><strong>ProfilePage.jsx</strong> - Updated avatar upload</li>
+                <li><strong>JoinUsPage.jsx</strong> - Updated form submission</li>
+                <li><strong>AdminDashboardPage.jsx</strong> - Updated admin API calls</li>
+                <li><strong>AdminUserManagementPage.jsx</strong> - Updated user management</li>
+                <li><strong>AdminAnalyticsPage.jsx</strong> - Updated analytics calls</li>
+                <li><strong>AdminCourseManagementPage.jsx</strong> - Updated course management</li>
+            </ul>
+        </div>
+
+        <div class="test-section warning">
+            <h3>⚠️ Important Notes</h3>
+            <ul>
+                <li><strong>Build Required:</strong> Run <code>npm run build</code> to apply changes</li>
+                <li><strong>Deploy:</strong> Deploy the updated <code>dist</code> folder to Choreo</li>
+                <li><strong>Test:</strong> Verify dashboard loads correctly after deployment</li>
+                <li><strong>Backward Compatibility:</strong> Local development still works with <code>/api</code> prefix</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Simulate the API configuration logic
+        function getApiUrl() {
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const isDevelopment = window.location.port === '5173' || window.location.port === '5174' || window.location.port === '5175' || window.location.port === '3000';
+            
+            const baseUrl = (isLocalhost && isDevelopment) 
+                ? 'http://localhost:5000'  // Local development
+                : 'https://bfdef01f-7fc1-46ea-af69-42279e15f710-dev.e1-us-east-azure.choreoapis.dev/sri-ko-lms-platform/backend/v1'; // Choreo deployment
+            
+            // Handle Choreo API URL structure
+            let apiUrl;
+            if (baseUrl.includes('choreoapis.dev')) {
+                apiUrl = baseUrl;
+            } else {
+                apiUrl = `${baseUrl}/api`;
+            }
+            
+            return { baseUrl, apiUrl };
+        }
+
+        function testUrlConstruction() {
+            const resultDiv = document.getElementById('urlTestResults');
+            const { baseUrl, apiUrl } = getApiUrl();
+            
+            const dashboardUrl = `${apiUrl}/users/dashboard`;
+            
+            resultDiv.innerHTML = `
+                <div class="result info">
+                    <strong>Base URL:</strong> ${baseUrl}
+                    <br><br>
+                    <strong>API URL:</strong> ${apiUrl}
+                    <br><br>
+                    <strong>Dashboard URL:</strong> ${dashboardUrl}
+                    <br><br>
+                    <strong>Environment:</strong> ${baseUrl.includes('choreoapis.dev') ? 'Choreo Production' : 'Local Development'}
+                    <br><br>
+                    <strong>Status:</strong> ${baseUrl.includes('choreoapis.dev') ? '✅ Choreo URL (no /api prefix)' : '✅ Local URL (with /api prefix)'}
+                </div>
+            `;
+        }
+
+        async function testDashboardAPI() {
+            const resultDiv = document.getElementById('dashboardTestResults');
+            const { apiUrl } = getApiUrl();
+            
+            resultDiv.innerHTML = '<div class="result info">Testing dashboard API call...</div>';
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    resultDiv.innerHTML = '<div class="result error">❌ No authentication token found. Please login first.</div>';
+                    return;
+                }
+                
+                const dashboardUrl = `${apiUrl}/users/dashboard`;
+                console.log('Testing dashboard URL:', dashboardUrl);
+                
+                const response = await fetch(dashboardUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                
+                console.log('Dashboard response status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            ✅ Dashboard API call successful!
+                            <br><br>
+                            <strong>Status:</strong> ${response.status}
+                            <br>
+                            <strong>URL:</strong> ${dashboardUrl}
+                            <br>
+                            <strong>Response:</strong> ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                } else {
+                    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            ❌ Dashboard API call failed!
+                            <br><br>
+                            <strong>Status:</strong> ${response.status}
+                            <br>
+                            <strong>URL:</strong> ${dashboardUrl}
+                            <br>
+                            <strong>Error:</strong> ${errorData.message || 'Unknown error'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ Network error: ${error.message}
+                        <br><br>
+                        <strong>URL:</strong> ${apiUrl}/users/dashboard
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run URL construction test on page load
+        window.onload = function() {
+            testUrlConstruction();
+        };
+    </script>
+</body>
+</html>

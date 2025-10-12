@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Admin API Connection Test</h1>
+    
+    <div class="test-section info">
+        <h3>Configuration Check</h3>
+        <p><strong>Current URL:</strong> <span id="current-url"></span></p>
+        <p><strong>API URL:</strong> <span id="api-url"></span></p>
+        <p><strong>Token Exists:</strong> <span id="token-status"></span></p>
+    </div>
+
+    <div class="test-section">
+        <h3>Admin Login Test</h3>
+        <button onclick="testAdminLogin()">Test Admin Login</button>
+        <div id="login-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Admin Stats Test</h3>
+        <button onclick="testAdminStats()">Test Admin Stats</button>
+        <div id="stats-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Admin Users Test</h3>
+        <button onclick="testAdminUsers()">Test Admin Users</button>
+        <div id="users-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Admin Courses Test</h3>
+        <button onclick="testAdminCourses()">Test Admin Courses</button>
+        <div id="courses-result"></div>
+    </div>
+
+    <script>
+        // Load config
+        const script = document.createElement('script');
+        script.src = '/config.js';
+        script.onload = function() {
+            document.getElementById('current-url').textContent = window.location.href;
+            document.getElementById('api-url').textContent = window.configs?.apiUrl || 'Not loaded';
+            document.getElementById('token-status').textContent = localStorage.getItem('token') ? 'Yes' : 'No';
+        };
+        document.head.appendChild(script);
+
+        async function testAdminLogin() {
+            const resultDiv = document.getElementById('login-result');
+            resultDiv.innerHTML = '<p>Testing admin login...</p>';
+            
+            try {
+                const response = await fetch(`${window.configs?.apiUrl || 'http://localhost:5000'}/api/auth/admin-login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'testadmin@example.com',
+                        password: 'Password123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Login Successful!</h4>
+                            <p><strong>User:</strong> ${data.user.name} (${data.user.role})</p>
+                            <p><strong>Token:</strong> ${data.token.substring(0, 50)}...</p>
+                        </div>
+                    `;
+                    document.getElementById('token-status').textContent = 'Yes';
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Login Failed</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Network Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testAdminStats() {
+            const resultDiv = document.getElementById('stats-result');
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<div class="error"><p>❌ No token found. Please login first.</p></div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>Testing admin stats...</p>';
+            
+            try {
+                const response = await fetch(`${window.configs?.apiUrl || 'http://localhost:5000'}/api/admin/stats`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Stats Retrieved!</h4>
+                            <pre>${JSON.stringify(data.stats, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Stats Failed</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Network Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testAdminUsers() {
+            const resultDiv = document.getElementById('users-result');
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<div class="error"><p>❌ No token found. Please login first.</p></div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>Testing admin users...</p>';
+            
+            try {
+                const response = await fetch(`${window.configs?.apiUrl || 'http://localhost:5000'}/api/admin/users?limit=5`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Users Retrieved!</h4>
+                            <p><strong>Total Users:</strong> ${data.total}</p>
+                            <p><strong>Users Count:</strong> ${data.users.length}</p>
+                            <pre>${JSON.stringify(data.users.slice(0, 2), null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Users Failed</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Network Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testAdminCourses() {
+            const resultDiv = document.getElementById('courses-result');
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<div class="error"><p>❌ No token found. Please login first.</p></div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>Testing admin courses...</p>';
+            
+            try {
+                const response = await fetch(`${window.configs?.apiUrl || 'http://localhost:5000'}/api/admin/courses?limit=5`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Courses Retrieved!</h4>
+                            <p><strong>Total Courses:</strong> ${data.total}</p>
+                            <p><strong>Courses Count:</strong> ${data.courses.length}</p>
+                            <pre>${JSON.stringify(data.courses.slice(0, 2), null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Courses Failed</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Network Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

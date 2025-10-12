@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRI-KO LMS - Frontend Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .loading { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        iframe { width: 100%; height: 600px; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 SRI-KO LMS - Frontend Debug</h1>
+    
+    <div class="test-section info">
+        <h3>📋 Debug Information</h3>
+        <p>This page will help debug the frontend blank page issue.</p>
+        <p><strong>Frontend URL:</strong> <a href="http://127.0.0.1:5173" target="_blank">http://127.0.0.1:5173</a></p>
+        <p><strong>Backend URL:</strong> <a href="http://localhost:5000" target="_blank">http://localhost:5000</a></p>
+    </div>
+
+    <div class="test-section">
+        <h3>🎨 Frontend Preview</h3>
+        <p>If the frontend is working correctly, you should see the SRI-KO LMS homepage below:</p>
+        <iframe src="http://127.0.0.1:5173" id="frontend-frame"></iframe>
+        <button onclick="refreshFrame()">Refresh Frame</button>
+        <button onclick="openInNewTab()">Open in New Tab</button>
+    </div>
+
+    <div class="test-section">
+        <h3>🔧 Console Debug</h3>
+        <p>Check the browser console (F12) for any JavaScript errors. Common issues:</p>
+        <ul>
+            <li>Missing dependencies</li>
+            <li>API connection errors</li>
+            <li>CSS loading issues</li>
+            <li>React rendering errors</li>
+        </ul>
+        <button onclick="testConsoleErrors()">Test for Console Errors</button>
+        <pre id="console-output" style="display: none;"></pre>
+    </div>
+
+    <div class="test-section">
+        <h3>🌐 Network Debug</h3>
+        <p>Check if all resources are loading correctly:</p>
+        <button onclick="testResourceLoading()">Test Resource Loading</button>
+        <pre id="resource-output" style="display: none;"></pre>
+    </div>
+
+    <div class="test-section">
+        <h3>📊 Quick Status Check</h3>
+        <p id="status-text">Checking status...</p>
+        <button onclick="quickStatusCheck()">Refresh Status</button>
+    </div>
+
+    <script>
+        function refreshFrame() {
+            document.getElementById('frontend-frame').src = 'http://127.0.0.1:5173?' + Date.now();
+        }
+
+        function openInNewTab() {
+            window.open('http://127.0.0.1:5173', '_blank');
+        }
+
+        async function testConsoleErrors() {
+            const outputEl = document.getElementById('console-output');
+            outputEl.style.display = 'block';
+            outputEl.textContent = 'Testing for common console errors...\n\n';
+            
+            try {
+                // Test if React is loaded
+                const response = await fetch('http://127.0.0.1:5173/src/main.jsx');
+                if (response.ok) {
+                    outputEl.textContent += '✅ Main.jsx is accessible\n';
+                } else {
+                    outputEl.textContent += '❌ Main.jsx is not accessible\n';
+                }
+                
+                // Test if config.js is loaded
+                const configResponse = await fetch('http://127.0.0.1:5173/config.js');
+                if (configResponse.ok) {
+                    outputEl.textContent += '✅ Config.js is accessible\n';
+                } else {
+                    outputEl.textContent += '❌ Config.js is not accessible\n';
+                }
+                
+                // Test if CSS is loaded
+                const cssResponse = await fetch('http://127.0.0.1:5173/src/index.css');
+                if (cssResponse.ok) {
+                    outputEl.textContent += '✅ Index.css is accessible\n';
+                } else {
+                    outputEl.textContent += '❌ Index.css is not accessible\n';
+                }
+                
+                outputEl.textContent += '\n✅ All core resources are accessible. Check browser console for JavaScript errors.';
+                
+            } catch (error) {
+                outputEl.textContent += `❌ Error testing resources: ${error.message}`;
+            }
+        }
+
+        async function testResourceLoading() {
+            const outputEl = document.getElementById('resource-output');
+            outputEl.style.display = 'block';
+            outputEl.textContent = 'Testing resource loading...\n\n';
+            
+            const resources = [
+                'http://127.0.0.1:5173/src/main.jsx',
+                'http://127.0.0.1:5173/src/App.jsx',
+                'http://127.0.0.1:5173/src/index.css',
+                'http://127.0.0.1:5173/config.js',
+                'http://127.0.0.1:5173/src/context/AuthContext.jsx'
+            ];
+            
+            for (const resource of resources) {
+                try {
+                    const response = await fetch(resource);
+                    const status = response.ok ? '✅' : '❌';
+                    outputEl.textContent += `${status} ${resource} - ${response.status}\n`;
+                } catch (error) {
+                    outputEl.textContent += `❌ ${resource} - ERROR: ${error.message}\n`;
+                }
+            }
+        }
+
+        async function quickStatusCheck() {
+            const statusEl = document.getElementById('status-text');
+            statusEl.textContent = 'Checking status...';
+            
+            try {
+                // Test frontend
+                const frontendResponse = await fetch('http://127.0.0.1:5173');
+                const frontendOk = frontendResponse.ok;
+                
+                // Test backend
+                const backendResponse = await fetch('http://localhost:5000/api/auth/me');
+                const backendOk = backendResponse.status === 401; // 401 is expected for unauthenticated requests
+                
+                let status = '';
+                if (frontendOk && backendOk) {
+                    status = '✅ Both frontend and backend are running correctly!';
+                } else if (frontendOk) {
+                    status = '⚠️ Frontend is running, but backend may have issues';
+                } else if (backendOk) {
+                    status = '⚠️ Backend is running, but frontend may have issues';
+                } else {
+                    status = '❌ Both frontend and backend have issues';
+                }
+                
+                statusEl.textContent = status;
+                
+            } catch (error) {
+                statusEl.textContent = `❌ Error checking status: ${error.message}`;
+            }
+        }
+
+        // Run quick status check on page load
+        window.onload = function() {
+            quickStatusCheck();
+        };
+    </script>
+</body>
+</html>
