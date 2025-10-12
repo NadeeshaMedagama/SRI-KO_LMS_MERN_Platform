@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/apiService';
 import toast from 'react-hot-toast';
-import apiUrl from '../config/apiConfig';
+import apiUrl, { getWorkingApiUrl } from '../config/apiConfig';
 import {
   BookOpenIcon,
   PlusIcon,
@@ -66,12 +66,13 @@ const AdminCourseManagementPage = () => {
     try {
       setLoading(true);
       
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       if (!token) {
         toast.error('Authentication required');
         return;
       }
 
+      const workingApiUrl = await getWorkingApiUrl();
       const params = new URLSearchParams({
         page: currentPage,
         limit: 10,
@@ -80,9 +81,9 @@ const AdminCourseManagementPage = () => {
         status: statusFilter !== 'all' ? statusFilter : '',
       });
 
-      console.log('Fetching courses from:', `${apiUrl}/admin/courses?${params}`);
+      console.log('Fetching courses from:', `${workingApiUrl}/admin/courses?${params}`);
 
-      const response = await fetch(`${apiUrl}/admin/courses?${params}`, {
+      const response = await fetch(`${workingApiUrl}/admin/courses?${params}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

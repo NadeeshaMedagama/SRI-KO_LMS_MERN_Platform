@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { apiService } from '../services/apiService';
-import apiUrl from '../config/apiConfig';
+import apiUrl, { getWorkingApiUrl } from '../config/apiConfig';
 
 const AuthContext = createContext();
 
@@ -78,13 +78,20 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = localStorage.getItem('token');
         if (token) {
-          const response = await fetch(`${apiUrl}/auth/me`, {
+          // Use a timeout to prevent hanging
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('API timeout')), 5000)
+          );
+          
+          const apiPromise = fetch(`http://localhost:5000/api/auth/me`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`,
             },
           });
+
+          const response = await Promise.race([apiPromise, timeoutPromise]);
 
           if (response.ok) {
             const data = await response.json();
@@ -125,7 +132,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     dispatch({ type: 'LOGIN_START' });
     try {
-      const response = await fetch(`${apiUrl}/auth/login`, {
+      const workingApiUrl = await getWorkingApiUrl();
+      const response = await fetch(`${workingApiUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,6 +143,7 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         const data = await response.json();
+        
         if (data.success) {
           const { token, user } = data;
           localStorage.setItem('token', token);
@@ -144,11 +153,8 @@ export const AuthProvider = ({ children }) => {
             payload: { user, token },
           });
 
-          // Check if user is admin and store admin data
-          if (user.role === 'admin') {
-            localStorage.setItem('adminToken', token);
-            localStorage.setItem('adminUser', JSON.stringify(user));
-          }
+          // Note: Admin data is now handled by AdminAuthContext
+          // Regular users should not interfere with admin authentication
 
           toast.success('Login successful!');
           return { success: true, user };
@@ -175,7 +181,8 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'LOGIN_START' });
     try {
       // Use the regular login endpoint since admin-login is not available in deployment
-      const response = await fetch(`${apiUrl}/auth/login`, {
+      const workingApiUrl = await getWorkingApiUrl();
+      const response = await fetch(`${workingApiUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -252,8 +259,6 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminUser');
     dispatch({ type: 'LOGOUT' });
     toast.success('Logged out successfully');
   };

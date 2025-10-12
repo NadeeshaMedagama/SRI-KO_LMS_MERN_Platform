@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { apiService } from '../services/apiService';
+import { useAdminAuth } from '../context/AdminAuthContext';
 import toast from 'react-hot-toast';
 import {
   EyeIcon,
@@ -19,7 +18,7 @@ const AdminLoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { adminLogin } = useAuth();
+  const { adminLogin } = useAdminAuth();
 
   const handleChange = e => {
     setFormData({

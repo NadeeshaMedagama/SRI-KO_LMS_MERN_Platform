@@ -89,46 +89,47 @@ router.get('/dashboard', protect, async (req, res) => {
 
     // Get recent activity (last 10 progress updates)
     const recentActivity = progressData
+      .filter(progress => progress.course) // Filter out progress entries without course data
       .sort((a, b) => new Date(b.lastAccessed) - new Date(a.lastAccessed))
       .slice(0, 10)
       .map(progress => ({
         courseId: progress.course._id,
-        courseTitle: progress.course.title,
-        progress: progress.overallProgress,
+        courseTitle: progress.course.title || 'Untitled Course',
+        progress: progress.overallProgress || 0,
         lastAccessed: progress.lastAccessed,
-        isCompleted: progress.isCompleted,
-        certificate: progress.certificate
+        isCompleted: progress.isCompleted || false,
+        certificate: progress.certificate || ''
       }));
 
     // Format enrolled courses with progress
     const enrolledCoursesWithProgress = user.enrolledCourses.map(course => {
-      const progress = progressData.find(p => p.course._id.toString() === course._id.toString());
+      const progress = progressData.find(p => p.course && p.course._id.toString() === course._id.toString());
       
       // Calculate total lessons in course
       const totalLessons = course.curriculum ? 
-        course.curriculum.reduce((total, week) => total + week.lessons.length, 0) : 0;
+        course.curriculum.reduce((total, week) => total + (week.lessons ? week.lessons.length : 0), 0) : 0;
       
       return {
         _id: course._id,
-        title: course.title,
-        description: course.description,
-        category: course.category,
-        level: course.level,
-        duration: course.duration,
-        price: course.price,
-        thumbnail: course.thumbnail,
-        instructor: course.instructor,
+        title: course.title || 'Untitled Course',
+        description: course.description || '',
+        category: course.category || 'other',
+        level: course.level || 'beginner',
+        duration: course.duration || 0,
+        price: course.price || 0,
+        thumbnail: course.thumbnail || '',
+        instructor: course.instructor || { name: 'Unknown Instructor' },
         enrolledAt: course.enrolledAt || course.createdAt,
         progress: progress ? {
-          overallProgress: progress.overallProgress,
-          completedLessons: progress.completedLessons.length,
+          overallProgress: progress.overallProgress || 0,
+          completedLessons: progress.completedLessons ? progress.completedLessons.length : 0,
           totalLessons: totalLessons,
-          timeSpent: progress.timeSpent,
+          timeSpent: progress.timeSpent || 0,
           lastAccessed: progress.lastAccessed,
-          isCompleted: progress.isCompleted,
+          isCompleted: progress.isCompleted || false,
           completionDate: progress.completionDate,
-          certificate: progress.certificate,
-          currentWeek: progress.currentWeek
+          certificate: progress.certificate || '',
+          currentWeek: progress.currentWeek || 1
         } : {
           overallProgress: 0,
           completedLessons: 0,
@@ -162,18 +163,20 @@ router.get('/dashboard', protect, async (req, res) => {
         },
         enrolledCourses: enrolledCoursesWithProgress,
         recentActivity,
-        progressData: progressData.map(progress => ({
-          courseId: progress.course._id,
-          courseTitle: progress.course.title,
-          completedLessons: progress.completedLessons,
-          overallProgress: progress.overallProgress,
-          timeSpent: progress.timeSpent,
-          lastAccessed: progress.lastAccessed,
-          isCompleted: progress.isCompleted,
-          completionDate: progress.completionDate,
-          certificate: progress.certificate,
-          currentWeek: progress.currentWeek
-        }))
+        progressData: progressData
+          .filter(progress => progress.course) // Filter out progress entries without course data
+          .map(progress => ({
+            courseId: progress.course._id,
+            courseTitle: progress.course.title || 'Untitled Course',
+            completedLessons: progress.completedLessons || [],
+            overallProgress: progress.overallProgress || 0,
+            timeSpent: progress.timeSpent || 0,
+            lastAccessed: progress.lastAccessed,
+            isCompleted: progress.isCompleted || false,
+            completionDate: progress.completionDate,
+            certificate: progress.certificate || '',
+            currentWeek: progress.currentWeek || 1
+          }))
       }
     });
   } catch (error) {

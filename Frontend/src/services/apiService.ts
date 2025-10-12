@@ -37,10 +37,12 @@ class ApiService {
       },
     });
 
-    // Request interceptor to add auth token
+    // Request interceptor to add auth token (prefer adminToken when available)
     this.api.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('token');
+        const adminToken = localStorage.getItem('adminToken');
+        const userToken = localStorage.getItem('token');
+        const token = adminToken || userToken;
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -292,19 +294,6 @@ class ApiService {
     await this.api.delete('/subscriptions/current');
   }
 
-  // Notification endpoints
-  async getNotifications(): Promise<Notification[]> {
-    const response: AxiosResponse<{ success: boolean; data: Notification[] }> = await this.api.get('/notifications');
-    return response.data.data || [];
-  }
-
-  async markNotificationAsRead(id: string): Promise<void> {
-    await this.api.put(`/notifications/${id}/read`);
-  }
-
-  async markAllNotificationsAsRead(): Promise<void> {
-    await this.api.put('/notifications/read-all');
-  }
 
   // Admin endpoints
   async getAdminStats(): Promise<AdminStats> {
@@ -355,6 +344,266 @@ class ApiService {
 
   async moderateCourse(courseId: string, action: 'approve' | 'reject' | 'suspend'): Promise<void> {
     await this.api.put(`/admin/courses/${courseId}/moderate`, { action });
+  }
+
+  // Certificate endpoints
+  async getAllCertificates(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+    const params = { page, limit, ...filters };
+    const response: AxiosResponse<{ success: boolean; certificates: any[]; pagination: any }> = await this.api.get('/certificates', { params });
+    return response.data;
+  }
+
+  async getCertificateStats(): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; stats: any }> = await this.api.get('/certificates/stats');
+    return response.data;
+  }
+
+  async getEligibleStudents(courseId?: string): Promise<any> {
+    const params = courseId ? { courseId } : {};
+    const response: AxiosResponse<{ success: boolean; eligibleStudents: any[] }> = await this.api.get('/certificates/eligible-students', { params });
+    return response.data;
+  }
+
+  async createCertificate(certificateData: any): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; certificate: any; message: string }> = await this.api.post('/certificates', certificateData);
+    return response.data;
+  }
+
+  async updateCertificateStatus(certificateId: string, status: string, certificateUrl?: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; certificate: any; message: string }> = await this.api.put(`/certificates/${certificateId}/status`, { status, certificateUrl });
+    return response.data;
+  }
+
+  async sendCertificate(certificateId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; certificate: any; message: string }> = await this.api.post(`/certificates/${certificateId}/send`);
+    return response.data;
+  }
+
+  async getCertificate(certificateId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; certificate: any }> = await this.api.get(`/certificates/${certificateId}`);
+    return response.data;
+  }
+
+  async deleteCertificate(certificateId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.delete(`/certificates/${certificateId}`);
+    return response.data;
+  }
+
+  // Announcement endpoints
+  async getActiveAnnouncements(): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; announcements: any[] }> = await this.api.get('/announcements');
+    return response.data;
+  }
+
+  async getAllAnnouncements(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+    const params = { page, limit, ...filters };
+    const response: AxiosResponse<{ success: boolean; announcements: any[]; pagination: any }> = await this.api.get('/announcements/all', { params });
+    return response.data;
+  }
+
+  async getAnnouncementStats(): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; stats: any }> = await this.api.get('/announcements/stats');
+    return response.data;
+  }
+
+  async getAnnouncement(announcementId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; announcement: any }> = await this.api.get(`/announcements/${announcementId}`);
+    return response.data;
+  }
+
+  async createAnnouncement(announcementData: any): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; announcement: any; message: string }> = await this.api.post('/announcements', announcementData);
+    return response.data;
+  }
+
+  async updateAnnouncement(announcementId: string, announcementData: any): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; announcement: any; message: string }> = await this.api.put(`/announcements/${announcementId}`, announcementData);
+    return response.data;
+  }
+
+  async deleteAnnouncement(announcementId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.delete(`/announcements/${announcementId}`);
+    return response.data;
+  }
+
+  async togglePinAnnouncement(announcementId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; announcement: any; message: string }> = await this.api.put(`/announcements/${announcementId}/pin`);
+    return response.data;
+  }
+
+  async toggleActiveAnnouncement(announcementId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; announcement: any; message: string }> = await this.api.put(`/announcements/${announcementId}/toggle`);
+    return response.data;
+  }
+
+  async markAnnouncementAsRead(announcementId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.post(`/announcements/${announcementId}/read`);
+    return response.data;
+  }
+
+  // Discussion Forum endpoints
+  async getForums(category?: string, level?: string): Promise<any> {
+    const params: any = {};
+    if (category) params.category = category;
+    if (level) params.level = level;
+    const response: AxiosResponse<{ success: boolean; forums: any[] }> = await this.api.get('/forums', { params });
+    return response.data;
+  }
+
+  async getAllForums(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+    // Clean filters to avoid sending empty strings which can be misinterpreted server-side
+    const cleanedFilters: any = {};
+    if (filters && typeof filters === 'object') {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== '' && value !== undefined && value !== null) {
+          cleanedFilters[key] = value;
+        }
+      });
+    }
+    const params = { page, limit, ...cleanedFilters };
+    const response: AxiosResponse<{ success: boolean; forums: any[]; pagination: any }> = await this.api.get('/forums/all', { params });
+    return response.data;
+  }
+
+  async getForumStats(): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; stats: any }> = await this.api.get('/forums/stats');
+    return response.data;
+  }
+
+  async getForum(forumId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; forum: any }> = await this.api.get(`/forums/${forumId}`);
+    return response.data;
+  }
+
+  async createForum(forumData: any): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; forum: any; message: string }> = await this.api.post('/forums', forumData);
+    return response.data;
+  }
+
+  async updateForum(forumId: string, forumData: any): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; forum: any; message: string }> = await this.api.put(`/forums/${forumId}`, forumData);
+    return response.data;
+  }
+
+  async deleteForum(forumId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.delete(`/forums/${forumId}`);
+    return response.data;
+  }
+
+  async togglePinForum(forumId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; forum: any; message: string }> = await this.api.put(`/forums/${forumId}/pin`);
+    return response.data;
+  }
+
+  async toggleActiveForum(forumId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; forum: any; message: string }> = await this.api.put(`/forums/${forumId}/toggle`);
+    return response.data;
+  }
+
+  async subscribeToForum(forumId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; forum: any; message: string }> = await this.api.post(`/forums/${forumId}/subscribe`);
+    return response.data;
+  }
+
+  async unsubscribeFromForum(forumId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; forum: any; message: string }> = await this.api.post(`/forums/${forumId}/unsubscribe`);
+    return response.data;
+  }
+
+  async getForumPosts(forumId: string, page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+    const params = { page, limit, ...filters };
+    const response: AxiosResponse<{ success: boolean; posts: any[]; pagination: any }> = await this.api.get(`/forums/${forumId}/posts`, { params });
+    return response.data;
+  }
+
+  async createForumPost(forumId: string, postData: any): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; post: any; message: string }> = await this.api.post(`/forums/${forumId}/posts`, postData);
+    return response.data;
+  }
+
+  // Notification endpoints
+  async getNotifications(): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notifications: any[] }> = await this.api.get('/notifications');
+    return response.data;
+  }
+
+  async getAllNotifications(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
+    // Clean filters to avoid sending empty strings which can be misinterpreted server-side
+    const cleanedFilters: any = {};
+    if (filters && typeof filters === 'object') {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== '' && value !== undefined && value !== null) {
+          cleanedFilters[key] = value;
+        }
+      });
+    }
+    const params = { page, limit, ...cleanedFilters };
+    const response: AxiosResponse<{ success: boolean; notifications: any[]; pagination: any }> = await this.api.get('/notifications/all', { params });
+    return response.data;
+  }
+
+  async getNotificationStats(): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; stats: any }> = await this.api.get('/notifications/stats');
+    return response.data;
+  }
+
+  async getNotification(notificationId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notification: any }> = await this.api.get(`/notifications/${notificationId}`);
+    return response.data;
+  }
+
+  async createNotification(notificationData: any): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notification: any; message: string }> = await this.api.post('/notifications', notificationData);
+    return response.data;
+  }
+
+  async updateNotification(notificationId: string, notificationData: any): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notification: any; message: string }> = await this.api.put(`/notifications/${notificationId}`, notificationData);
+    return response.data;
+  }
+
+  async deleteNotification(notificationId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.delete(`/notifications/${notificationId}`);
+    return response.data;
+  }
+
+  async togglePinNotification(notificationId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notification: any; message: string }> = await this.api.put(`/notifications/${notificationId}/pin`);
+    return response.data;
+  }
+
+  async toggleActiveNotification(notificationId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notification: any; message: string }> = await this.api.put(`/notifications/${notificationId}/toggle`);
+    return response.data;
+  }
+
+  async markNotificationAsRead(notificationId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.post(`/notifications/${notificationId}/read`);
+    return response.data;
+  }
+
+  async markNotificationAsClicked(notificationId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.post(`/notifications/${notificationId}/click`);
+    return response.data;
+  }
+
+  async sendNotificationToUsers(notificationData: any, userIds: string[]): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notifications: any[]; message: string }> = await this.api.post('/notifications/send-to-users', { notificationData, userIds });
+    return response.data;
+  }
+
+  async sendNotificationToParents(notificationData: any, studentIds: string[]): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; notifications: any[]; message: string }> = await this.api.post('/notifications/send-to-parents', { notificationData, studentIds });
+    return response.data;
+  }
+
+  async getNotificationTargetUsers(role?: string, courseId?: string, search?: string): Promise<any> {
+    const params: any = {};
+    if (role) params.role = role;
+    if (courseId) params.courseId = courseId;
+    if (search) params.search = search;
+    const response: AxiosResponse<{ success: boolean; users: any[]; courses: any[] }> = await this.api.get('/notifications/target-users', { params });
+    return response.data;
   }
 }
 

@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import { useAdminAuth } from './context/AdminAuthContext';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
 import ScrollToTop from './components/ScrollToTop';
@@ -35,6 +36,11 @@ import AdminCourseManagementPage from './pages/AdminCourseManagementPage';
 import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminSubscriptionManagementPage from './pages/AdminSubscriptionManagementPage';
+import AdminCertificateManagementPage from './pages/AdminCertificateManagementPage';
+import AdminAnnouncementManagementPage from './pages/AdminAnnouncementManagementPage';
+import AdminDiscussionForumManagementPage from './pages/AdminDiscussionForumManagementPage';
+import AdminNotificationManagementPage from './pages/AdminNotificationManagementPage';
+import AdminSettingsPage from './pages/AdminSettingsPage';
 import AdminLayout from './components/AdminLayout';
 
 // Protected Route Component
@@ -42,11 +48,12 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   const { loading, isAuthenticated, user } = useAuth();
+  const { loading: adminLoading } = useAdminAuth();
 
   // Debug logging
-  console.log('🔍 App.jsx - Current state:', { loading, isAuthenticated, user: user?.name });
+  console.log('🔍 App.jsx - Current state:', { loading, isAuthenticated, user: user?.name, adminLoading });
 
-  if (loading) {
+  if (loading || adminLoading) {
     console.log('🔄 App.jsx - Showing loading spinner');
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -176,55 +183,12 @@ function App() {
         <Route path="users" element={<AdminUserManagementPage />} />
         <Route path="courses" element={<AdminCourseManagementPage />} />
         <Route path="analytics" element={<AdminAnalyticsPage />} />
-        <Route path="subscriptions" element={<AdminSubscriptionManagementPage />} />
-        <Route
-          path="certificates"
-          element={
-            <div className="p-8 text-center">
-              <h1 className="text-2xl font-bold">Certificates - Coming Soon</h1>
-            </div>
-          }
-        />
-        <Route
-          path="notifications"
-          element={
-            <div className="p-8 text-center">
-              <h1 className="text-2xl font-bold">
-                Notifications - Coming Soon
-              </h1>
-            </div>
-          }
-        />
-        <Route
-          path="announcements"
-          element={
-            <div className="p-8 text-center">
-              <h1 className="text-2xl font-bold">
-                Announcements - Coming Soon
-              </h1>
-            </div>
-          }
-        />
-        <Route
-          path="forums"
-          element={
-            <div className="p-8 text-center">
-              <h1 className="text-2xl font-bold">
-                Discussion Forums - Coming Soon
-              </h1>
-            </div>
-          }
-        />
-        <Route
-          path="settings"
-          element={
-            <div className="p-8 text-center">
-              <h1 className="text-2xl font-bold">
-                Admin Settings - Coming Soon
-              </h1>
-            </div>
-          }
-        />
+            <Route path="subscriptions" element={<AdminSubscriptionManagementPage />} />
+            <Route path="certificates" element={<AdminCertificateManagementPage />} />
+            <Route path="announcements" element={<AdminAnnouncementManagementPage />} />
+            <Route path="forums" element={<AdminDiscussionForumManagementPage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
+        <Route path="notifications" element={<AdminNotificationManagementPage />} />
       </Route>
     </Routes>
     </>

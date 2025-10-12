@@ -3,6 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import apiUrl, { getWorkingApiUrl } from '../config/apiConfig';
+import apiService from '../services/apiService';
+import announcementService from '../services/announcementService';
+import discussionForumService from '../services/discussionForumService';
 import {
   BookOpenIcon,
   CheckCircleIcon,
@@ -13,15 +16,25 @@ import {
   PlayIcon,
   CalendarIcon,
   UserIcon,
+  SpeakerWaveIcon,
+  ExclamationTriangleIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 const DashboardPage = () => {
   const { user } = useAuth();
   const [dashboardData, setDashboardData] = useState(null);
+  const [announcements, setAnnouncements] = useState([]);
+  const [forums, setForums] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [unenrollingCourse, setUnenrollingCourse] = useState(null);
+  const [showUnenrollModal, setShowUnenrollModal] = useState(false);
+  const [courseToUnenroll, setCourseToUnenroll] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
+    fetchAnnouncements();
+    fetchForums();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -33,48 +46,65 @@ const DashboardPage = () => {
         return;
       }
 
-      // Try to get a working API URL
-      const workingApiUrl = await getWorkingApiUrl();
-      const dashboardUrl = `${workingApiUrl}/users/dashboard`;
-      
       console.log('🔧 Dashboard API Debug:');
-      console.log('  - Default API URL:', apiUrl);
-      console.log('  - Working API URL:', workingApiUrl);
-      console.log('  - Dashboard URL:', dashboardUrl);
       console.log('  - Token exists:', !!token);
 
-      const response = await fetch(dashboardUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
+      // Use apiService instead of direct fetch to ensure proper authentication
+      const response = await apiService.get('/users/dashboard');
+      
       console.log('📊 Dashboard Response:');
       console.log('  - Status:', response.status);
-      console.log('  - Status Text:', response.statusText);
-      console.log('  - Headers:', Object.fromEntries(response.headers.entries()));
+      console.log('  - Data:', response.data);
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Dashboard Data:', data);
-        if (data.success) {
-          setDashboardData(data.data);
-        } else {
-          console.error('❌ Dashboard API Error:', data.message);
-          toast.error(data.message || 'Failed to load dashboard data');
-        }
+      if (response.data.success) {
+        console.log('✅ Dashboard Data:', response.data.data);
+        setDashboardData(response.data.data);
       } else {
-        const errorData = await response.json();
-        console.error('❌ Dashboard HTTP Error:', errorData);
-        toast.error(errorData.message || `Failed to load dashboard data (${response.status})`);
+        console.error('❌ Dashboard API Error:', response.data.message);
+        toast.error(response.data.message || 'Failed to load dashboard data');
       }
     } catch (error) {
-      console.error('❌ Dashboard Network Error:', error);
-      toast.error('Failed to load dashboard data - Network error');
+      console.error('❌ Dashboard Error:', error);
+      if (error.response?.status === 401) {
+        toast.error('Authentication failed. Please login again.');
+        // Token will be cleared by apiService interceptor
+      } else {
+        toast.error('Failed to load dashboard data - Network error');
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAnnouncements = async () => {
+    try {
+      console.log('🔍 Dashboard: Fetching announcements...');
+      const response = await announcementService.getActiveAnnouncements();
+      console.log('📊 Dashboard: Announcements response:', response);
+      if (response && response.success && Array.isArray(response.announcements)) {
+        console.log('✅ Dashboard: Setting announcements:', response.announcements);
+        setAnnouncements(response.announcements);
+      } else {
+        console.log('❌ Dashboard: No valid announcements data, setting empty array');
+        setAnnouncements([]);
+      }
+    } catch (error) {
+      console.error('❌ Dashboard: Error fetching announcements:', error);
+      console.error('❌ Dashboard: Error details:', error.response?.data);
+      // Do not toast here to avoid noisy UI on dashboard load
+      setAnnouncements([]);
+    }
+  };
+
+  const fetchForums = async () => {
+    try {
+      const response = await discussionForumService.getForums();
+      if (response.success) {
+        setForums(response.forums);
+      }
+    } catch (error) {
+      console.error('Error fetching forums:', error);
+      // Don't show error toast for forums as it's not critical
     }
   };
 
@@ -121,6 +151,70 @@ const DashboardPage = () => {
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getPriorityIcon = (priority) => {
+    switch (priority) {
+      case 'urgent':
+        return <ExclamationTriangleIcon className="h-4 w-4 text-red-500" />;
+      case 'high':
+        return <ExclamationTriangleIcon className="h-4 w-4 text-orange-500" />;
+      default:
+        return <SpeakerWaveIcon className="h-4 w-4 text-blue-500" />;
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'urgent':
+        return 'border-l-red-500 bg-red-50';
+      case 'high':
+        return 'border-l-orange-500 bg-orange-50';
+      case 'medium':
+        return 'border-l-blue-500 bg-blue-50';
+      case 'low':
+        return 'border-l-gray-500 bg-gray-50';
+      default:
+        return 'border-l-gray-500 bg-gray-50';
+    }
+  };
+
+  const handleUnenrollClick = (course) => {
+    setCourseToUnenroll(course);
+    setShowUnenrollModal(true);
+  };
+
+  const handleUnenrollConfirm = async () => {
+    if (!courseToUnenroll) return;
+
+    try {
+      setUnenrollingCourse(courseToUnenroll._id);
+      await apiService.unenrollFromCourse(courseToUnenroll._id);
+      
+      // Update dashboard data to remove the unenrolled course
+      setDashboardData(prevData => ({
+        ...prevData,
+        enrolledCourses: prevData.enrolledCourses.filter(course => course._id !== courseToUnenroll._id),
+        statistics: {
+          ...prevData.statistics,
+          totalEnrolledCourses: prevData.statistics.totalEnrolledCourses - 1
+        }
+      }));
+      
+      toast.success(`Successfully unenrolled from "${courseToUnenroll.title}"`);
+      setShowUnenrollModal(false);
+      setCourseToUnenroll(null);
+    } catch (error) {
+      console.error('Error unenrolling from course:', error);
+      toast.error('Failed to unenroll from course. Please try again.');
+    } finally {
+      setUnenrollingCourse(null);
+    }
+  };
+
+  const handleUnenrollCancel = () => {
+    setShowUnenrollModal(false);
+    setCourseToUnenroll(null);
   };
 
   if (loading) {
@@ -325,13 +419,32 @@ const DashboardPage = () => {
                     </div>
 
                     {/* Action Button */}
-                    <Link
-                      to={`/courses/${course._id}`}
-                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
-                    >
-                      <PlayIcon className="h-4 w-4 mr-2" />
-                      {course.progress.isCompleted ? 'Review Course' : 'Continue Learning'}
-                    </Link>
+                    <div className="space-y-2">
+                      <Link
+                        to={`/courses/${course._id}`}
+                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                      >
+                        <PlayIcon className="h-4 w-4 mr-2" />
+                        {course.progress.isCompleted ? 'Review Course' : 'Continue Learning'}
+                      </Link>
+                      <button 
+                        onClick={() => handleUnenrollClick(course)}
+                        disabled={unenrollingCourse === course._id}
+                        className="w-full bg-red-50 text-red-600 py-2 px-4 rounded-lg hover:bg-red-100 transition-colors border border-red-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {unenrollingCourse === course._id ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Unenrolling...
+                          </>
+                        ) : (
+                          <>
+                            <XMarkIcon className="w-4 h-4 mr-2" />
+                            Unenroll
+                          </>
+                        )}
+                      </button>
+                    </div>
 
                     {/* Certificate Badge */}
                     {course.progress.certificate && (
@@ -411,7 +524,203 @@ const DashboardPage = () => {
             )}
           </div>
         </div>
+
+        {/* Main Content */}
+        <div>
+          {/* Discussion Forums */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Discussion Forums</h2>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                {forums.length > 0 ? (
+                  <div className="divide-y divide-gray-200">
+                    {forums.slice(0, 6).map((forum) => (
+                      <div key={forum._id} className="p-6 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center mb-2">
+                              <h3 className="text-lg font-medium text-gray-900 mr-3">
+                                {forum.title}
+                              </h3>
+                              {forum.isPinned && (
+                                <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                </svg>
+                              )}
+                              {forum.isLocked && (
+                                <svg className="w-4 h-4 text-red-500 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                              <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                                forum.category === 'korean-basics' ? 'bg-blue-100 text-blue-800' :
+                                forum.category === 'grammar' ? 'bg-green-100 text-green-800' :
+                                forum.category === 'vocabulary' ? 'bg-purple-100 text-purple-800' :
+                                forum.category === 'pronunciation' ? 'bg-yellow-100 text-yellow-800' :
+                                forum.category === 'conversation' ? 'bg-pink-100 text-pink-800' :
+                                forum.category === 'culture' ? 'bg-indigo-100 text-indigo-800' :
+                                forum.category === 'study-tips' ? 'bg-orange-100 text-orange-800' :
+                                forum.category === 'homework-help' ? 'bg-red-100 text-red-800' :
+                                forum.category === 'resources' ? 'bg-teal-100 text-teal-800' :
+                                forum.category === 'events' ? 'bg-cyan-100 text-cyan-800' :
+                                forum.category === 'introductions' ? 'bg-emerald-100 text-emerald-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {forum.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                              </span>
+                              <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                                forum.level === 'beginner' ? 'bg-green-100 text-green-800' :
+                                forum.level === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                                forum.level === 'advanced' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {forum.level.charAt(0).toUpperCase() + forum.level.slice(1)}
+                              </span>
+                            </div>
+                            <p className="text-gray-700 mb-3">
+                              {forum.description.length > 150
+                                ? `${forum.description.substring(0, 150)}...`
+                                : forum.description
+                              }
+                            </p>
+                            <div className="flex items-center text-sm text-gray-500">
+                              <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                              </svg>
+                              <span>{forum.postCount} posts</span>
+                              <span className="mx-2">•</span>
+                              <span>Created by {forum.createdBy?.name}</span>
+                              <span className="mx-2">•</span>
+                              <span>{formatDate(forum.createdAt)}</span>
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <Link
+                              to={`/forums/${forum._id}`}
+                              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                              View Forum
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {forums.length > 6 && (
+                      <div className="p-6 text-center border-t border-gray-200">
+                        <Link
+                          to="/forums"
+                          className="text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          View All Forums ({forums.length} total)
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-12 text-center">
+                    <svg className="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No discussion forums</h3>
+                    <p className="text-gray-600">There are no active discussion forums at the moment.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Announcements */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Announcements</h2>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                {announcements.length > 0 ? (
+                  <div className="divide-y divide-gray-200">
+                    {announcements.map((a, idx) => (
+                      <div key={a._id || idx} className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center mb-1">
+                              <h3 className="text-lg font-semibold text-gray-900 truncate">
+                                {a.title}
+                              </h3>
+                              {a.isPinned && (
+                                <svg className="w-4 h-4 text-yellow-500 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                </svg>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 line-clamp-3">
+                              {a.content}
+                            </p>
+                            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-800">
+                                {a.type || 'general'}
+                              </span>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full ${
+                                a.priority === 'urgent' ? 'bg-red-100 text-red-800' :
+                                a.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                                a.priority === 'medium' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {a.priority || 'medium'}
+                              </span>
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-800">
+                                {a.targetAudience === 'all' ? 'All Users' : (a.targetAudience || '').charAt(0).toUpperCase() + (a.targetAudience || '').slice(1)}
+                              </span>
+                              <span className="text-gray-500">
+                                {a.startDate ? new Date(a.startDate).toLocaleDateString() : ''}
+                                {a.endDate ? `  B7 Ends ${new Date(a.endDate).toLocaleDateString()}` : ''}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-12 text-center">
+                    <SpeakerWaveIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No announcements</h3>
+                    <p className="text-gray-600">There are no active announcements at the moment.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+        </div>
       </div>
+
+      {/* Unenroll Confirmation Modal */}
+      {showUnenrollModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <div className="p-2 bg-red-100 rounded-lg mr-3">
+                <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Confirm Unenrollment</h3>
+            </div>
+            
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to unenroll from <strong>"{courseToUnenroll?.title}"</strong>? 
+              This action will remove all your progress and you'll need to re-enroll to access the course again.
+            </p>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={handleUnenrollCancel}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUnenrollConfirm}
+                disabled={unenrollingCourse}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {unenrollingCourse ? 'Unenrolling...' : 'Yes, Unenroll'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
