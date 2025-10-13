@@ -29,7 +29,7 @@ Make sure these environment variables are set in Choreo:
 ```env
 NODE_ENV=production
 PORT=5000
-MONGODB_URI=mongodb+srv://nadeeshamedagama:Nadeesha2001@cluster0.aairnvz.mongodb.net/SriKo?retryWrites=true&w=majority&appName=Cluster0
+MONGODB_URI=mongodb+srv://username:password@cluster0.aairnvz.mongodb.net/DBname?retryWrites=true&w=majority&appName=Cluster0
 JWT_SECRET=your-jwt-secret-key-for-production
 JWT_EXPIRE=30d
 CORS_ORIGIN=https://aa154534-bca8-4dd3-a52e-51387c5d6859.e1-us-east-azure.choreoapps.dev
