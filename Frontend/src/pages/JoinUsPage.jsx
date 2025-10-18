@@ -395,13 +395,13 @@ const JoinUsPage = () => {
       </section>
 
       {/* Contact Information Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12" id="get-in-touch">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-white mb-4">
               Get in Touch
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
               Have questions? We're here to help you start your Korean language journey.
             </p>
           </div>
@@ -409,11 +409,11 @@ const JoinUsPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Location */}
             <div className="text-center">
-              <div className="bg-blue-100 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <MapPinIcon className="h-8 w-8 text-blue-600" />
+              <div className="bg-white bg-opacity-20 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <MapPinIcon className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Visit Us</h3>
-              <p className="text-gray-600">
+              <h3 className="text-lg font-semibold text-white mb-2">Visit Us</h3>
+              <p className="text-blue-100">
                 SRI-KO Korean Language Institute<br />
                 123 Education Street<br />
                 Colombo 07, Sri Lanka
@@ -422,11 +422,11 @@ const JoinUsPage = () => {
 
             {/* Phone */}
             <div className="text-center">
-              <div className="bg-green-100 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <PhoneIcon className="h-8 w-8 text-green-600" />
+              <div className="bg-white bg-opacity-20 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <PhoneIcon className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Call Us</h3>
-              <p className="text-gray-600">
+              <h3 className="text-lg font-semibold text-white mb-2">Call Us</h3>
+              <p className="text-blue-100">
                 +94 11 234 5678<br />
                 +94 77 123 4567<br />
                 Mon - Fri: 9:00 AM - 6:00 PM
@@ -435,11 +435,11 @@ const JoinUsPage = () => {
 
             {/* Email */}
             <div className="text-center">
-              <div className="bg-purple-100 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <EnvelopeIcon className="h-8 w-8 text-purple-600" />
+              <div className="bg-white bg-opacity-20 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <EnvelopeIcon className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Email Us</h3>
-              <p className="text-gray-600">
+              <h3 className="text-lg font-semibold text-white mb-2">Email Us</h3>
+              <p className="text-blue-100">
                 info@sriko-korean.com<br />
                 admissions@sriko-korean.com<br />
                 We respond within 24 hours
@@ -448,36 +448,36 @@ const JoinUsPage = () => {
           </div>
 
           {/* Additional Contact Info */}
-          <div className="mt-12 bg-gray-50 rounded-xl p-8">
+          <div className="mt-12 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Office Hours</h3>
-                <div className="space-y-2 text-gray-600">
+                <h3 className="text-xl font-semibold text-white mb-4">Office Hours</h3>
+                <div className="space-y-2 text-blue-100">
                   <div className="flex items-center">
-                    <ClockIcon className="h-5 w-5 mr-2 text-blue-600" />
+                    <ClockIcon className="h-5 w-5 mr-2 text-white" />
                     <span>Monday - Friday: 9:00 AM - 6:00 PM</span>
                   </div>
                   <div className="flex items-center">
-                    <ClockIcon className="h-5 w-5 mr-2 text-blue-600" />
+                    <ClockIcon className="h-5 w-5 mr-2 text-white" />
                     <span>Saturday: 9:00 AM - 1:00 PM</span>
                   </div>
                   <div className="flex items-center">
-                    <ClockIcon className="h-5 w-5 mr-2 text-blue-600" />
+                    <ClockIcon className="h-5 w-5 mr-2 text-white" />
                     <span>Sunday: Closed</span>
                   </div>
                 </div>
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Quick Links</h3>
+                <h3 className="text-xl font-semibold text-white mb-4">Quick Links</h3>
                 <div className="space-y-2">
-                  <a href="/courses" className="block text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="/courses" className="block text-blue-100 hover:text-white transition-colors">
                     View Our Courses
                   </a>
-                  <a href="/pricing" className="block text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="/pricing" className="block text-blue-100 hover:text-white transition-colors">
                     Check Pricing
                   </a>
                   {!isAuthenticated && (
-                    <a href="/register" className="block text-blue-600 hover:text-blue-800 transition-colors">
+                    <a href="/register" className="block text-blue-100 hover:text-white transition-colors">
                       Create Account
                     </a>
                   )}
