@@ -42,6 +42,7 @@ import AdminDiscussionForumManagementPage from './pages/AdminDiscussionForumMana
 import AdminNotificationManagementPage from './pages/AdminNotificationManagementPage';
 import AdminSettingsPage from './pages/AdminSettingsPage';
 import AdminLayout from './components/AdminLayout';
+import AdminJoinUsPage from './pages/AdminJoinUsPage';
 
 // Protected Route Component
 import ProtectedRoute from './components/ProtectedRoute';
@@ -188,6 +189,7 @@ function App() {
             <Route path="announcements" element={<AdminAnnouncementManagementPage />} />
             <Route path="forums" element={<AdminDiscussionForumManagementPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
+        <Route path="join-us" element={<AdminJoinUsPage />} />
         <Route path="notifications" element={<AdminNotificationManagementPage />} />
       </Route>
     </Routes>
