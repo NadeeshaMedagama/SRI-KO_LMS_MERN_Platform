@@ -244,6 +244,59 @@ if (process.env.SKIP_DB === 'true') {
       // In production, try to continue without database for basic functionality
       console.log('⚠️ Continuing without database connection - some features may not work');
     });
+
+  // Comprehensive MongoDB connection event listeners for auto-reconnect
+  const db = mongoose.connection;
+
+  db.on('connected', () => {
+    console.log('✅ MongoDB connected successfully');
+    console.log('🔧 Connection state:', mongoose.connection.readyState);
+  });
+
+  db.on('error', (err) => {
+    console.error('❌ MongoDB error:', err.message);
+    console.error('❌ Error details:', {
+      name: err.name,
+      message: err.message,
+      code: err.code
+    });
+  });
+
+  db.on('disconnected', () => {
+    console.warn('⚠️ MongoDB disconnected. Attempting to reconnect...');
+    setTimeout(() => {
+      mongoose.connect(process.env.MONGODB_URI, mongooseOptions)
+        .then(() => {
+          console.log('✅ MongoDB reconnected successfully');
+        })
+        .catch(err => {
+          console.error('❌ MongoDB reconnection attempt failed:', err.message);
+        });
+    }, 5000); // retry after 5 seconds
+  });
+
+  db.on('reconnected', () => {
+    console.log('✅ MongoDB reconnected successfully');
+  });
+
+  db.on('close', () => {
+    console.warn('⚠️ MongoDB connection closed');
+  });
+
+  // Graceful shutdown handling
+  process.on('SIGINT', async () => {
+    console.log('🛑 SIGINT received, closing MongoDB connection...');
+    await mongoose.connection.close();
+    console.log('🔌 MongoDB connection closed due to app termination');
+    process.exit(0);
+  });
+
+  process.on('SIGTERM', async () => {
+    console.log('🛑 SIGTERM received, closing MongoDB connection...');
+    await mongoose.connection.close();
+    console.log('🔌 MongoDB connection closed due to app termination');
+    process.exit(0);
+  });
 }
 
 // Health check endpoints with detailed status
