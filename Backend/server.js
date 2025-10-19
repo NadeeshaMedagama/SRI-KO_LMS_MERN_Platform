@@ -205,13 +205,18 @@ console.log('🔧 NODE_ENV:', process.env.NODE_ENV);
 if (process.env.SKIP_DB === 'true') {
   console.log('⚠️ Skipping MongoDB connection (SKIP_DB=true)');
 } else {
-  // Set mongoose options for better connection handling
+  // Enhanced mongoose options for maximum stability and auto-reconnect
   const mongooseOptions = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
     serverSelectionTimeoutMS: 30000, // 30 seconds
     socketTimeoutMS: 45000, // 45 seconds
-    bufferCommands: false
+    maxPoolSize: 10, // Maximum number of connections in the connection pool
+    minPoolSize: 1, // Minimum number of connections in the connection pool
+    bufferCommands: false, // Disable mongoose buffering
+    connectTimeoutMS: 30000, // Connection timeout
+    heartbeatFrequencyMS: 10000, // Heartbeat frequency
+    maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
+    retryWrites: true, // Retry write operations
+    w: 'majority' // Write concern
   };
 
   mongoose
