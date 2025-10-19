@@ -20,6 +20,8 @@ import {
   TrophyIcon,
   // ChatBubbleLeftRightIcon,
   // ExclamationTriangleIcon,
+  LanguageIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 
 const AdminDashboardPage = () => {
@@ -35,6 +37,12 @@ const AdminDashboardPage = () => {
   const [recentUsers, setRecentUsers] = useState([]);
   const [recentCourses, setRecentCourses] = useState([]);
   const [recentActivities, setRecentActivities] = useState([]);
+  const [joinUsSubmissions, setJoinUsSubmissions] = useState([]);
+  const [joinUsStats, setJoinUsStats] = useState({
+    total: 0,
+    byStatus: {},
+    recent: []
+  });
 
   useEffect(() => {
     fetchDashboardData();
@@ -153,7 +161,7 @@ const AdminDashboardPage = () => {
 
       // Note: Activities endpoint might not exist, so we'll handle it gracefully
       try {
-        const activitiesResponse = await fetch(`${workingApiUrl}/admin/activities?limit=10`, {
+        const activitiesResponse = await fetch(`${workingApiUrl}/admin/activities?limit=15`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -170,6 +178,66 @@ const AdminDashboardPage = () => {
       } catch (activitiesError) {
         console.log('Activities endpoint not available:', activitiesError);
         setRecentActivities([]);
+      }
+
+      // Fetch Join Us submissions
+      try {
+        const joinUsResponse = await fetch(`${workingApiUrl}/join-us/submissions?limit=5`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (joinUsResponse.ok) {
+          const joinUsData = await joinUsResponse.json();
+          console.log('Join Us response:', joinUsData);
+          if (joinUsData.success) {
+            setJoinUsSubmissions(joinUsData.data || []);
+            console.log('Join Us submissions loaded:', joinUsData.data);
+          } else {
+            console.error('Join Us API returned error:', joinUsData.message);
+            toast.error(joinUsData.message || 'Failed to load join us submissions');
+          }
+        } else {
+          const errorData = await joinUsResponse.json();
+          console.error('Join Us API error:', errorData);
+          toast.error(errorData.message || 'Failed to load join us submissions');
+        }
+      } catch (joinUsError) {
+        console.error('Join Us fetch error:', joinUsError);
+        toast.error('Failed to load join us submissions');
+      }
+
+      // Fetch Join Us statistics
+      try {
+        const joinUsStatsResponse = await fetch(`${workingApiUrl}/join-us/stats`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (joinUsStatsResponse.ok) {
+          const joinUsStatsData = await joinUsStatsResponse.json();
+          console.log('Join Us stats response:', joinUsStatsData);
+          if (joinUsStatsData.success) {
+            setJoinUsStats(joinUsStatsData.data || { total: 0, byStatus: {}, recent: [] });
+            console.log('Join Us stats loaded:', joinUsStatsData.data);
+          } else {
+            console.error('Join Us stats API returned error:', joinUsStatsData.message);
+            toast.error(joinUsStatsData.message || 'Failed to load join us statistics');
+          }
+        } else {
+          const errorData = await joinUsStatsResponse.json();
+          console.error('Join Us stats API error:', errorData);
+          toast.error(errorData.message || 'Failed to load join us statistics');
+        }
+      } catch (joinUsStatsError) {
+        console.error('Join Us stats fetch error:', joinUsStatsError);
+        toast.error('Failed to load join us statistics');
       }
     } catch (error) {
       console.error('❌ Dashboard error:', error);
@@ -203,6 +271,21 @@ const AdminDashboardPage = () => {
         return 'bg-blue-100 text-blue-800';
       case 'student':
         return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusBadgeColor = status => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'contacted':
+        return 'bg-blue-100 text-blue-800';
+      case 'enrolled':
+        return 'bg-green-100 text-green-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -344,6 +427,57 @@ const AdminDashboardPage = () => {
           </div>
         </div>
 
+        {/* Additional Statistics Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <LanguageIcon className="h-8 w-8 text-indigo-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">
+                  Korean Program Applications
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {joinUsStats.total}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <ClipboardDocumentListIcon className="h-8 w-8 text-orange-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">
+                  Pending Applications
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {joinUsStats.byStatus?.pending || 0}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <UserGroupIcon className="h-8 w-8 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">
+                  Enrolled Students
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {joinUsStats.byStatus?.enrolled || 0}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Quick Actions */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -406,6 +540,17 @@ const AdminDashboardPage = () => {
               <div>
                 <p className="font-medium text-gray-900">Settings</p>
                 <p className="text-sm text-gray-500">System configuration</p>
+              </div>
+            </Link>
+
+            <Link
+              to="/admin/join-us"
+              className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <LanguageIcon className="h-6 w-6 text-indigo-600 mr-3" />
+              <div>
+                <p className="font-medium text-gray-900">Korean Program Applications</p>
+                <p className="text-sm text-gray-500">Manage join us submissions</p>
               </div>
             </Link>
           </div>
@@ -507,6 +652,69 @@ const AdminDashboardPage = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Korean Language Program Applications */}
+        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Recent Korean Program Applications
+              </h2>
+              <Link
+                to="/admin/join-us"
+                className="text-sm text-blue-600 hover:text-blue-500"
+              >
+                View all
+              </Link>
+            </div>
+          </div>
+          <div className="p-6">
+            <div className="space-y-4">
+              {joinUsSubmissions.length > 0 ? (
+                joinUsSubmissions.map(submission => (
+                  <div
+                    key={submission._id}
+                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                  >
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                        {submission.name?.charAt(0)?.toUpperCase() || 'A'}
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm font-medium text-gray-900">
+                          {submission.name}
+                        </p>
+                        <p className="text-sm text-gray-500">{submission.email}</p>
+                        <p className="text-xs text-gray-400">
+                          Level: {submission.currentLevel} | 
+                          Interests: {submission.interests?.length || 0}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(submission.status)}`}
+                      >
+                        {submission.status}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {formatDate(submission.submittedAt)}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <LanguageIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">No Korean program applications yet</p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Applications will appear here when users submit the join us form
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
