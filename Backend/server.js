@@ -454,15 +454,38 @@ app.get('/choreo-apis/sri-ko-lms-platform/backend/v1/api/health', (req, res) => 
   });
 });
 
-// Database availability middleware
-const checkDatabase = (req, res, next) => {
+// Enhanced database availability middleware with auto-reconnect
+const checkDatabase = async (req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
-    console.log(`⚠️ Database not available for ${req.method} ${req.path}`);
-    return res.status(503).json({
-      success: false,
-      message: 'Database service temporarily unavailable',
-      error: 'DATABASE_CONNECTION_ERROR'
-    });
+    console.log(`⚠️ Database disconnected for ${req.method} ${req.path}. Attempting to reconnect...`);
+    
+    try {
+      // Attempt to reconnect with enhanced options
+      const mongooseOptions = {
+        serverSelectionTimeoutMS: 30000,
+        socketTimeoutMS: 45000,
+        maxPoolSize: 10,
+        minPoolSize: 1,
+        bufferCommands: false,
+        connectTimeoutMS: 30000,
+        heartbeatFrequencyMS: 10000,
+        maxIdleTimeMS: 30000,
+        retryWrites: true,
+        w: 'majority'
+      };
+      
+      await mongoose.connect(process.env.MONGODB_URI, mongooseOptions);
+      console.log('✅ Database reconnected successfully');
+      return next();
+    } catch (err) {
+      console.error('❌ Database reconnection failed:', err.message);
+      return res.status(503).json({
+        success: false,
+        message: 'Database service temporarily unavailable. Please try again shortly.',
+        error: 'DATABASE_CONNECTION_ERROR',
+        retryAfter: 5 // seconds
+      });
+    }
   }
   next();
 };
