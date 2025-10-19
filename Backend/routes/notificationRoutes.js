@@ -153,6 +153,20 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
       });
     }
 
+    // Sanitize parentNotification to avoid ObjectId cast errors from empty strings
+    let sanitizedParentNotification = {};
+    if (parentNotification && parentNotification.isParentNotification) {
+      const maybeStudentId = parentNotification.studentId;
+      const maybeParentId = parentNotification.parentId;
+      sanitizedParentNotification.isParentNotification = true;
+      if (typeof maybeStudentId === 'string' && maybeStudentId.length === 24) {
+        sanitizedParentNotification.studentId = maybeStudentId;
+      }
+      if (typeof maybeParentId === 'string' && maybeParentId.length === 24) {
+        sanitizedParentNotification.parentId = maybeParentId;
+      }
+    }
+
     // Create notification
     const notification = new Notification({
       title,
@@ -173,7 +187,7 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
       tags: tags || [],
       koreanTitle,
       koreanMessage,
-      parentNotification: parentNotification || {},
+      parentNotification: sanitizedParentNotification,
       deliveryMethods: deliveryMethods || {
         inApp: true,
         email: false,

@@ -2,6 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Course = require('../models/Course');
+const Announcement = require('../models/Announcement');
+const DiscussionForum = require('../models/DiscussionForum');
+const Notification = require('../models/Notification');
 const { protect, authorize } = require('../middleware/auth');
 const {
   validateUserRegistration,
@@ -763,5 +766,44 @@ router.get(
     }
   },
 );
+
+// @desc    Get recent admin activities (users, notifications, announcements, forums)
+// @route   GET /api/admin/activities
+// @access  Private/Admin
+router.get('/activities', protect, authorize('admin'), async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+
+    const [recentUsers, recentNotifications, recentAnnouncements, recentForums] = await Promise.all([
+      User.find().select('name email createdAt').sort({ createdAt: -1 }).limit(limit),
+      require('../models/Notification').find().select('title createdAt').sort({ createdAt: -1 }).limit(limit),
+      require('../models/Announcement').find().select('title createdAt').sort({ createdAt: -1 }).limit(limit),
+      require('../models/DiscussionForum').find().select('title createdAt').sort({ createdAt: -1 }).limit(limit),
+    ]);
+
+    const activities = [];
+
+    for (const u of recentUsers) {
+      activities.push({ type: 'user_created', message: `Created user ${u.name || u.email}`, createdAt: u.createdAt });
+    }
+    for (const n of recentNotifications) {
+      activities.push({ type: 'notification_created', message: `Created notification: ${n.title}`, createdAt: n.createdAt });
+    }
+    for (const a of recentAnnouncements) {
+      activities.push({ type: 'announcement_created', message: `Created announcement: ${a.title}`, createdAt: a.createdAt });
+    }
+    for (const f of recentForums) {
+      activities.push({ type: 'forum_created', message: `Created discussion forum: ${f.title}`, createdAt: f.createdAt });
+    }
+
+    activities.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const sliced = activities.slice(0, limit);
+
+    res.json({ success: true, activities: sliced });
+  } catch (error) {
+    console.error('Error fetching recent activities:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 module.exports = router;
