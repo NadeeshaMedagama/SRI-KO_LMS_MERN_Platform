@@ -297,6 +297,37 @@ if (process.env.SKIP_DB === 'true') {
     console.log('🔌 MongoDB connection closed due to app termination');
     process.exit(0);
   });
+
+  // Keep MongoDB connection alive with periodic ping
+  // This prevents idle connection drops on platforms like AWS or Choreo
+  setInterval(async () => {
+    if (mongoose.connection.readyState === 1) {
+      try {
+        await mongoose.connection.db.admin().ping();
+        console.log('🏓 MongoDB ping successful - connection alive');
+      } catch (err) {
+        console.warn('⚠️ MongoDB ping failed:', err.message);
+        // If ping fails, try to reconnect
+        if (mongoose.connection.readyState !== 1) {
+          console.log('🔄 Attempting to reconnect after ping failure...');
+          try {
+            await mongoose.connect(process.env.MONGODB_URI, mongooseOptions);
+            console.log('✅ MongoDB reconnected after ping failure');
+          } catch (reconnectErr) {
+            console.error('❌ MongoDB reconnection after ping failure failed:', reconnectErr.message);
+          }
+        }
+      }
+    } else {
+      console.log('⚠️ MongoDB connection not ready, attempting to reconnect...');
+      try {
+        await mongoose.connect(process.env.MONGODB_URI, mongooseOptions);
+        console.log('✅ MongoDB reconnected successfully');
+      } catch (err) {
+        console.error('❌ MongoDB reconnection attempt failed:', err.message);
+      }
+    }
+  }, 5 * 60 * 1000); // Ping every 5 minutes
 }
 
 // Health check endpoints with detailed status
