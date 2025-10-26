@@ -5,6 +5,31 @@ const Course = require('../models/Course');
 const User = require('../models/User');
 const Progress = require('../models/Progress');
 const { protect, authorize } = require('../middleware/auth');
+const { uploadCertificate, handleUploadError } = require('../middleware/upload');
+const path = require('path');
+
+// @desc    Get user's certificates
+// @route   GET /api/certificates/my-certificates
+// @access  Private
+router.get('/my-certificates', protect, async (req, res) => {
+  try {
+    const certificates = await Certificate.find({ student: req.user.id })
+      .populate('course', 'title description category level')
+      .populate('issuedBy', 'name email')
+      .sort({ issuedDate: -1 });
+
+    res.json({
+      success: true,
+      certificates
+    });
+  } catch (error) {
+    console.error('Error fetching user certificates:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
 
 // @desc    Get all certificates with pagination and filters
 // @route   GET /api/certificates
@@ -66,27 +91,27 @@ router.get('/eligible-students', protect, authorize('admin'), async (req, res) =
 
     // Get all completed progress records
     const completedProgress = await Progress.find({ 
-      status: 'completed',
+      isCompleted: true,
       ...(courseId && { course: courseId })
     })
-    .populate('user', 'name email')
+    .populate('student', 'name email')
     .populate('course', 'title description')
-    .sort({ completedAt: -1 });
+    .sort({ completionDate: -1 });
 
     // Filter out students who already have certificates for these courses
     const eligibleStudents = [];
     
     for (const progress of completedProgress) {
       const existingCertificate = await Certificate.findOne({
-        student: progress.user._id,
+        student: progress.student._id,
         course: progress.course._id
       });
 
       if (!existingCertificate) {
         eligibleStudents.push({
-          student: progress.user,
+          student: progress.student,
           course: progress.course,
-          completedAt: progress.completedAt,
+          completedAt: progress.completionDate,
           progressId: progress._id
         });
       }
@@ -105,10 +130,10 @@ router.get('/eligible-students', protect, authorize('admin'), async (req, res) =
   }
 });
 
-// @desc    Create a new certificate
+// @desc    Create a new certificate (with optional file upload)
 // @route   POST /api/certificates
 // @access  Private/Admin
-router.post('/', protect, authorize('admin'), async (req, res) => {
+router.post('/', protect, authorize('admin'), uploadCertificate, handleUploadError, async (req, res) => {
   try {
     const { studentId, courseId, notes } = req.body;
 
@@ -140,9 +165,9 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
 
     // Check if student has completed the course
     const progress = await Progress.findOne({
-      user: studentId,
+      student: studentId,
       course: courseId,
-      status: 'completed'
+      isCompleted: true
     });
 
     if (!progress) {
@@ -165,15 +190,24 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
       });
     }
 
+    // Get certificate URL if file was uploaded
+    let certificateUrl = '';
+    if (req.file) {
+      // Construct the URL to access the certificate file
+      certificateUrl = `/uploads/${req.file.filename}`;
+    }
+
     // Create certificate
     const certificate = new Certificate({
       student: studentId,
       course: courseId,
       studentName: student.name,
       courseName: course.title,
-      completionDate: progress.completedAt,
+      completionDate: progress.completionDate,
       issuedBy: req.user._id,
-      notes: notes || ''
+      notes: notes || '',
+      certificateUrl: certificateUrl,
+      status: certificateUrl ? 'issued' : 'pending'
     });
 
     await certificate.save();
@@ -192,9 +226,27 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating certificate:', error);
+    
+    // Return more detailed error message
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Certificate validation failed',
+        error: error.message
+      });
+    }
+    
+    if (error.name === 'MongoServerError' && error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Certificate already exists for this student and course'
+      });
+    }
+    
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });

@@ -13,8 +13,9 @@ const certificateSchema = new mongoose.Schema({
   },
   certificateNumber: {
     type: String,
-    required: true,
-    unique: true
+    required: false, // Will be auto-generated in pre-save hook
+    unique: true,
+    sparse: true // Allows multiple null values
   },
   studentName: {
     type: String,
@@ -63,11 +64,17 @@ const certificateSchema = new mongoose.Schema({
 
 // Generate unique certificate number
 certificateSchema.pre('save', async function(next) {
-  if (this.isNew) {
-    const count = await this.constructor.countDocuments();
-    this.certificateNumber = `CERT-${String(count + 1).padStart(6, '0')}-${new Date().getFullYear()}`;
+  if (this.isNew && !this.certificateNumber) {
+    try {
+      const count = await this.constructor.countDocuments();
+      this.certificateNumber = `CERT-${String(count + 1).padStart(6, '0')}-${new Date().getFullYear()}`;
+      next();
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    next();
   }
-  next();
 });
 
 // Static method to get certificates by student

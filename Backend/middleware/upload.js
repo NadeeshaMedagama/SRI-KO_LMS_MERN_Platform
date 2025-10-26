@@ -41,13 +41,35 @@ const upload = multer({
 // Middleware for single file upload
 const uploadSingle = upload.single('avatar');
 
+// File filter for documents (PDF and images)
+const documentFilter = (req, file, cb) => {
+  // Allow images and PDFs
+  if (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image and PDF files are allowed!'), false);
+  }
+};
+
+// Configure multer for certificates with document filter
+const certificateUpload = multer({
+  storage: storage,
+  fileFilter: documentFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  }
+});
+
+// Middleware for certificate file upload
+const uploadCertificate = certificateUpload.single('certificate');
+
 // Error handling middleware
 const handleUploadError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
         success: false,
-        message: 'File too large. Maximum size is 5MB.'
+        message: 'File too large. Maximum size is 10MB.'
       });
     }
     if (err.code === 'LIMIT_UNEXPECTED_FILE') {
@@ -64,12 +86,20 @@ const handleUploadError = (err, req, res, next) => {
       message: 'Only image files are allowed!'
     });
   }
+
+  if (err.message === 'Only image and PDF files are allowed!') {
+    return res.status(400).json({
+      success: false,
+      message: 'Only image and PDF files are allowed!'
+    });
+  }
   
   next(err);
 };
 
 module.exports = {
   uploadSingle,
+  uploadCertificate,
   handleUploadError
 };
 
