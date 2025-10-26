@@ -67,7 +67,7 @@ const progressSchema = new mongoose.Schema(
 progressSchema.index({ student: 1, course: 1 }, { unique: true });
 
 // Calculate overall progress
-progressSchema.methods.calculateProgress = function (course) {
+progressSchema.methods.calculateProgress = function(course) {
   if (!course || !course.curriculum) return 0;
 
   const totalLessons = course.curriculum.reduce(

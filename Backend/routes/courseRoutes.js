@@ -320,9 +320,14 @@ router.post('/:id/enroll', protect, authorize('student'), async (req, res) => {
     });
 
     // Add course to user's enrolled courses
-    await User.findByIdAndUpdate(req.user.id, {
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, {
       $push: { enrolledCourses: req.params.id },
-    });
+    }, { new: true });
+
+    console.log('✅ Enrollment successful - User ID:', req.user.id);
+    console.log('✅ Enrollment successful - Course ID:', req.params.id);
+    console.log('✅ Enrollment successful - User enrolledCourses count:', updatedUser.enrolledCourses?.length || 0);
+    console.log('✅ Enrollment successful - All enrolled courses:', updatedUser.enrolledCourses);
 
     res.status(200).json({
       success: true,
@@ -334,9 +339,11 @@ router.post('/:id/enroll', protect, authorize('student'), async (req, res) => {
       },
     });
   } catch (error) {
+    console.error('❌ Enrollment error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
+      error: error.message,
     });
   }
 });
@@ -465,5 +472,69 @@ router.post(
     }
   },
 );
+
+// @desc    Mark course as completed
+// @route   POST /api/courses/:id/complete
+// @access  Private/Student
+router.post('/:id/complete', protect, authorize('student'), async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Course not found',
+      });
+    }
+
+    // Check if user is enrolled
+    const isEnrolled = course.enrolledStudents.includes(req.user.id);
+    if (!isEnrolled) {
+      return res.status(400).json({
+        success: false,
+        message: 'You are not enrolled in this course',
+      });
+    }
+
+    // Find or create progress record
+    let progress = await Progress.findOne({
+      student: req.user.id,
+      course: req.params.id,
+    });
+
+    if (!progress) {
+      return res.status(404).json({
+        success: false,
+        message: 'Progress record not found',
+      });
+    }
+
+    // Check if already completed
+    if (progress.isCompleted) {
+      return res.status(400).json({
+        success: false,
+        message: 'Course is already marked as completed',
+      });
+    }
+
+    // Mark as completed
+    progress.isCompleted = true;
+    progress.completionDate = new Date();
+    progress.overallProgress = 100;
+    await progress.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Course marked as completed successfully',
+      progress,
+    });
+  } catch (error) {
+    console.error('Error completing course:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
 
 module.exports = router;

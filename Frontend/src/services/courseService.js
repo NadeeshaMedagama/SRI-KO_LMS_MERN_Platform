@@ -165,9 +165,74 @@ export const courseService = {
   // Add course review
   addReview: async (courseId, reviewData) => {
     try {
-      // This would need to be added to apiService if not already present
-      throw new Error('Add review functionality needs to be implemented in apiService');
+      console.log('Adding review for course:', courseId);
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+      
+      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5000'}/api/courses/${courseId}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(reviewData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Review response:', data);
+      
+      return {
+        success: data.success,
+        course: data.course,
+        message: data.message
+      };
     } catch (error) {
+      console.error('Review error:', error);
+      throw error;
+    }
+  },
+
+  // Mark course as completed
+  completeCourse: async (courseId) => {
+    try {
+      console.log('Completing course:', courseId);
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+      
+      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5000'}/api/courses/${courseId}/complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Course completion response:', data);
+      
+      return {
+        success: data.success,
+        progress: data.progress,
+        message: data.message
+      };
+    } catch (error) {
+      console.error('Course completion error:', error);
       throw error;
     }
   },

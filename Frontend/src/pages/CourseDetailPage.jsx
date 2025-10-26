@@ -28,12 +28,43 @@ const CourseDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [reviewForm, setReviewForm] = useState({
+    rating: 0,
+    comment: '',
+  });
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [completing, setCompleting] = useState(false);
+  const [courseCompleted, setCourseCompleted] = useState(false);
 
   useEffect(() => {
     if (id) {
       fetchCourseDetails();
+      checkCourseCompletion();
     }
-  }, [id]);
+  }, [id, user?.id]);
+
+  const checkCourseCompletion = async () => {
+    if (!isAuthenticated || !user?.id || !id) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5000'}/api/users/dashboard`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const courseProgress = data.progressData?.find(p => p.courseId === id);
+        setCourseCompleted(courseProgress?.isCompleted || false);
+      }
+    } catch (error) {
+      console.error('Error checking course completion:', error);
+    }
+  };
 
   const fetchCourseDetails = async () => {
     try {
@@ -78,6 +109,70 @@ const CourseDetailPage = () => {
     }
   };
 
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    
+    if (!isAuthenticated) {
+      toast.error('Please login to submit a review');
+      navigate('/login');
+      return;
+    }
+
+    if (reviewForm.rating === 0) {
+      toast.error('Please select a rating');
+      return;
+    }
+
+    try {
+      setSubmittingReview(true);
+      const response = await courseService.addReview(id, {
+        rating: reviewForm.rating,
+        comment: reviewForm.comment,
+      });
+      
+      if (response.success) {
+        toast.success('Review submitted successfully!');
+        setReviewForm({ rating: 0, comment: '' });
+        // Refresh course details to get updated reviews and rating
+        fetchCourseDetails();
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast.error(error.message || 'Failed to submit review');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const handleCompleteCourse = async () => {
+    if (!isAuthenticated) {
+      toast.error('Please login to complete this course');
+      navigate('/login');
+      return;
+    }
+
+    if (!isEnrolled) {
+      toast.error('You must be enrolled in this course to complete it');
+      return;
+    }
+
+    try {
+      setCompleting(true);
+      const response = await courseService.completeCourse(id);
+      
+      if (response.success) {
+        toast.success('Course marked as completed! You are now eligible for a certificate.');
+        setCourseCompleted(true);
+        checkCourseCompletion();
+      }
+    } catch (error) {
+      console.error('Error completing course:', error);
+      toast.error(error.message || 'Failed to complete course');
+    } finally {
+      setCompleting(false);
+    }
+  };
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-LK', {
       style: 'currency',
@@ -114,6 +209,8 @@ const CourseDetailPage = () => {
   };
 
   const isEnrolled = course?.enrolledStudents?.some(student => student._id === user?.id);
+  
+  const hasReviewed = course?.reviews?.some(review => review.user?._id === user?.id || review.user?.toString() === user?.id);
 
   if (loading) {
     return (
@@ -382,6 +479,49 @@ const CourseDetailPage = () => {
                 ) : (
                   <p className="text-gray-600">Curriculum details will be available soon.</p>
                 )}
+                
+                {/* Complete Course Button - Only show for enrolled users */}
+                {isEnrolled && (
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    {courseCompleted ? (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="flex items-center">
+                          <CheckCircleIcon className="h-8 w-8 text-green-600 mr-4" />
+                          <div>
+                            <h4 className="text-lg font-semibold text-green-900">Course Completed!</h4>
+                            <p className="text-sm text-green-700">Congratulations! You have completed this course and are now eligible for a certificate.</p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-lg font-semibold text-blue-900">Ready to Complete?</h4>
+                            <p className="text-sm text-blue-700 mt-1">Mark this course as completed to be eligible for a certificate.</p>
+                          </div>
+                          <button
+                            onClick={handleCompleteCourse}
+                            disabled={completing}
+                            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                          >
+                            {completing ? (
+                              <div className="flex items-center">
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                Completing...
+                              </div>
+                            ) : (
+                              <>
+                                <CheckCircleIcon className="h-5 w-5 inline mr-2" />
+                                Complete Course
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -426,6 +566,90 @@ const CourseDetailPage = () => {
                     </span>
                   </div>
                 </div>
+
+                {/* Review Submission Form */}
+                {isAuthenticated && isEnrolled && !hasReviewed && (
+                  <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                    <h4 className="text-md font-semibold text-gray-900 mb-4">Write a Review</h4>
+                    <form onSubmit={handleSubmitReview} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Rating <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex items-center space-x-2">
+                          {[1, 2, 3, 4, 5].map((rating) => (
+                            <button
+                              key={rating}
+                              type="button"
+                              onClick={() => setReviewForm({ ...reviewForm, rating })}
+                              className="focus:outline-none"
+                            >
+                              <StarIcon
+                                className={`h-8 w-8 transition-colors ${
+                                  rating <= reviewForm.rating
+                                    ? 'text-yellow-400 fill-current'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            </button>
+                          ))}
+                          <span className="ml-2 text-sm text-gray-600">
+                            {reviewForm.rating > 0 && `${reviewForm.rating} star${reviewForm.rating !== 1 ? 's' : ''}`}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Comment (optional)
+                        </label>
+                        <textarea
+                          value={reviewForm.comment}
+                          onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                          rows={4}
+                          maxLength={500}
+                          placeholder="Share your thoughts about this course..."
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          {reviewForm.comment.length}/500 characters
+                        </p>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={submittingReview || reviewForm.rating === 0}
+                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {submittingReview ? (
+                          <div className="flex items-center justify-center">
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Submitting...
+                          </div>
+                        ) : (
+                          'Submit Review'
+                        )}
+                      </button>
+                    </form>
+                  </div>
+                )}
+
+                {isAuthenticated && isEnrolled && hasReviewed && (
+                  <div className="border border-green-200 rounded-lg p-4 bg-green-50">
+                    <div className="flex items-center">
+                      <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2" />
+                      <p className="text-sm text-green-800">You have already reviewed this course.</p>
+                    </div>
+                  </div>
+                )}
+
+                {isAuthenticated && !isEnrolled && (
+                  <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                    <p className="text-sm text-blue-800">
+                      Enroll in this course to submit a review.
+                    </p>
+                  </div>
+                )}
 
                 {course.reviews && course.reviews.length > 0 ? (
                   <div className="space-y-4">
