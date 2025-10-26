@@ -32,6 +32,7 @@ const AdminCourseManagementPage = () => {
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [instructors, setInstructors] = useState([]);
 
   // Form states
   const [courseForm, setCourseForm] = useState({
@@ -59,8 +60,45 @@ const AdminCourseManagementPage = () => {
   const levels = ['beginner', 'intermediate', 'advanced'];
 
   useEffect(() => {
+    fetchInstructors();
+  }, []);
+
+  useEffect(() => {
     fetchCourses();
   }, [currentPage, categoryFilter, statusFilter, searchTerm]);
+
+  const fetchInstructors = async () => {
+    try {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      if (!token) {
+        return;
+      }
+
+      const workingApiUrl = await getWorkingApiUrl();
+      const params = new URLSearchParams({
+        page: 1,
+        limit: 100,
+        role: 'instructor',
+      });
+
+      const response = await fetch(`${workingApiUrl}/admin/users?${params}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.users) {
+          setInstructors(data.users);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching instructors:', error);
+    }
+  };
 
   const fetchCourses = async () => {
     try {
@@ -648,6 +686,26 @@ const AdminCourseManagementPage = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Instructor
+                  </label>
+                  <select
+                    value={courseForm.instructor}
+                    onChange={e =>
+                      setCourseForm({ ...courseForm, instructor: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select an instructor</option>
+                    {instructors.map(instructor => (
+                      <option key={instructor._id} value={instructor._id}>
+                        {instructor.name} ({instructor.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -798,6 +856,26 @@ const AdminCourseManagementPage = () => {
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Instructor
+                  </label>
+                  <select
+                    value={courseForm.instructor}
+                    onChange={e =>
+                      setCourseForm({ ...courseForm, instructor: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select an instructor</option>
+                    {instructors.map(instructor => (
+                      <option key={instructor._id} value={instructor._id}>
+                        {instructor.name} ({instructor.email})
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="flex items-center">
                   <input

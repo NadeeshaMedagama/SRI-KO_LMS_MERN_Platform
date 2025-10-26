@@ -177,6 +177,41 @@ export const paymentService = {
       throw error;
     }
   },
+
+  // Admin: Update payment status
+  updatePaymentStatus: async (paymentId, status, notes = '') => {
+    try {
+      console.log('🔍 Updating payment status...', { paymentId, status, notes });
+      
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const apiUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/admin/payments/${paymentId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status, notes }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Payment status updated:', data);
+      
+      return data;
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      throw error;
+    }
+  },
 };
 
 export default subscriptionService;

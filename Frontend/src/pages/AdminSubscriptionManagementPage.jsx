@@ -38,6 +38,7 @@ const AdminSubscriptionManagementPage = () => {
     pages: 1,
     total: 0,
   });
+  const [updatingPayments, setUpdatingPayments] = useState(new Set());
 
   useEffect(() => {
     fetchDashboardData();
@@ -91,9 +92,10 @@ const AdminSubscriptionManagementPage = () => {
     }
   };
 
-  const fetchAllPayments = async (page = 1) => {
+  const fetchAllPayments = async (page = 1, filtersToUse = filters) => {
     try {
-      const response = await paymentService.getAllPayments(page, 20, filters);
+      console.log('📊 Fetching payments with filters:', filtersToUse);
+      const response = await paymentService.getAllPayments(page, 20, filtersToUse);
       if (response.success) {
         setAllPayments(response.payments || []);
         setPagination(response.pagination || { current: 1, pages: 1, total: 0 });
@@ -119,17 +121,50 @@ const AdminSubscriptionManagementPage = () => {
   };
 
   const applyFilters = () => {
-    fetchAllPayments(1);
+    console.log('🔍 Applying filters:', filters);
+    fetchAllPayments(1, filters);
   };
 
   const clearFilters = () => {
-    setFilters({
+    const emptyFilters = {
       status: '',
       plan: '',
       startDate: '',
       endDate: '',
-    });
-    fetchAllPayments(1);
+    };
+    setFilters(emptyFilters);
+    fetchAllPayments(1, emptyFilters);
+  };
+
+  const handleStatusChange = async (paymentId, newStatus) => {
+    if (!paymentId || !newStatus) {
+      toast.error('Invalid payment or status');
+      return;
+    }
+
+    try {
+      setUpdatingPayments(prev => new Set(prev).add(paymentId));
+      
+      // Update payment status via the service
+      await paymentService.updatePaymentStatus(paymentId, newStatus);
+      
+      toast.success(`Payment status updated to ${newStatus}`);
+      
+      // Refresh the payments list
+      await fetchAllPayments(pagination.current);
+      
+      // Also refresh the dashboard data to update stats
+      await fetchDashboardData();
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      toast.error(error.message || 'Failed to update payment status');
+    } finally {
+      setUpdatingPayments(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(paymentId);
+        return newSet;
+      });
+    }
   };
 
   const formatCurrency = (amount) => {
@@ -439,6 +474,9 @@ const AdminSubscriptionManagementPage = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Method
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -473,6 +511,30 @@ const AdminSubscriptionManagementPage = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {payment.paymentMethod?.replace('_', ' ').toUpperCase()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <select
+                        value={payment.status}
+                        onChange={(e) => handleStatusChange(payment._id, e.target.value)}
+                        disabled={updatingPayments.has(payment._id)}
+                        className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ 
+                          color: payment.status === 'completed' ? '#059669' : 
+                                 payment.status === 'pending' ? '#D97706' :
+                                 payment.status === 'failed' ? '#DC2626' : 
+                                 '#6B7280'
+                        }}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="completed">Completed</option>
+                        <option value="failed">Failed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="refunded">Refunded</option>
+                      </select>
+                      {updatingPayments.has(payment._id) && (
+                        <span className="ml-2 text-xs text-gray-500">Updating...</span>
+                      )}
                     </td>
                   </tr>
                 ))}
