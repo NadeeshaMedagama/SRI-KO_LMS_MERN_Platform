@@ -74,30 +74,110 @@ router.get('/recent-payments', protect, authorize('admin'), async (req, res) => 
 router.get('/all-payments', protect, authorize('admin'), async (req, res) => {
   try {
     const Payment = require('../models/Payment');
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const skip = (page - 1) * limit;
+    const { page = 1, limit = 20, status, plan, startDate, endDate } = req.query;
 
-    const payments = await Payment.find()
+    // Build filter object
+    const filter = {};
+    if (status) filter.status = status;
+    if (plan) filter.plan = plan;
+    if (startDate && endDate) {
+      filter.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    console.log('📊 Admin fetching payments with filter:', filter);
+
+    const payments = await Payment.find(filter)
       .populate('user', 'name email')
       .populate('subscription', 'plan billingCycle')
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
 
-    const total = await Payment.countDocuments();
+    const total = await Payment.countDocuments(filter);
+
+    console.log(`📊 Found ${payments.length} payments (total: ${total})`);
 
     res.json({
       success: true,
       payments,
       pagination: {
-        current: page,
+        current: parseInt(page),
         pages: Math.ceil(total / limit),
         total,
       },
     });
   } catch (error) {
     console.error('Error fetching all payments:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
+// @desc    Update payment status (Admin only)
+// @route   PUT /api/admin/payments/:id/status
+// @access  Private/Admin
+router.put('/payments/:id/status', protect, authorize('admin'), async (req, res) => {
+  try {
+    const Payment = require('../models/Payment');
+    const { status, notes } = req.body;
+
+    // Validate status
+    const validStatuses = ['pending', 'processing', 'completed', 'failed', 'cancelled', 'refunded'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid payment status',
+      });
+    }
+
+    // Find and update payment
+    const payment = await Payment.findById(req.params.id);
+    
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Payment not found',
+      });
+    }
+
+    // Update status
+    const oldStatus = payment.status;
+    payment.status = status;
+    
+    if (notes) {
+      payment.notes = notes;
+    }
+
+    // Set paidDate if status is completed
+    if (status === 'completed' && oldStatus !== 'completed') {
+      payment.paidDate = new Date();
+      // Generate receipt number if not exists
+      if (!payment.receiptNumber) {
+        payment.generateReceiptNumber();
+      }
+    }
+
+    // Set refund date if status is refunded
+    if (status === 'refunded' && oldStatus !== 'refunded') {
+      payment.refundDate = new Date();
+    }
+
+    await payment.save();
+
+    console.log(`✅ Admin updated payment ${req.params.id} status: ${oldStatus} → ${status}`);
+
+    res.json({
+      success: true,
+      payment,
+      message: `Payment status updated to ${status}`,
+    });
+  } catch (error) {
+    console.error('Error updating payment status:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',

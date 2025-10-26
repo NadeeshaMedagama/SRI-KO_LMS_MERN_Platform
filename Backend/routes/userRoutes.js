@@ -51,16 +51,18 @@ router.get('/', protect, authorize('admin'), async (req, res) => {
 router.get('/dashboard', protect, async (req, res) => {
   try {
     const userId = req.user.id;
+    
+    console.log('📊 Dashboard API: Fetching data for user:', userId);
 
-    // Get user with enrolled courses
-    const user = await User.findById(userId).populate({
-      path: 'enrolledCourses',
-      populate: {
-        path: 'instructor',
-        select: 'name email avatar'
-      }
-    });
-
+    // Get user with enrolled courses - first get user to check enrolledCourses array
+    const baseUser = await User.findById(userId);
+    
+    console.log('📊 Base user enrolledCourses count:', baseUser.enrolledCourses?.length || 0);
+    console.log('📊 Base user enrolledCourses IDs:', baseUser.enrolledCourses);
+    
+    // Get user with enrolled courses populated
+    let user = await User.findById(userId);
+    
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -68,13 +70,45 @@ router.get('/dashboard', protect, async (req, res) => {
       });
     }
 
+    // Try to populate enrolled courses
+    if (user.enrolledCourses && user.enrolledCourses.length > 0) {
+      try {
+        // Get course IDs
+        const courseIds = user.enrolledCourses.map(id => id._id || id);
+        console.log('📊 Fetching courses with IDs:', courseIds);
+        
+        // Get courses directly with all fields
+        const courses = await Course.find({ _id: { $in: courseIds } })
+          .populate('instructor', 'name email avatar');
+        
+        console.log('📊 Found courses:', courses.length);
+        if (courses.length > 0) {
+          console.log('📊 First course:', courses[0].title);
+        }
+        
+        user.enrolledCourses = courses;
+      } catch (populateError) {
+        console.error('⚠️ Error populating enrolledCourses:', populateError);
+        // Keep the original user data even if populate fails
+        user.enrolledCourses = user.enrolledCourses || [];
+      }
+    } else {
+      console.log('⚠️ No enrolled courses found for user');
+      user.enrolledCourses = [];
+    }
+
+    console.log('📊 Dashboard API: User enrolledCourses count:', user.enrolledCourses?.length || 0);
+    console.log('📊 Dashboard API: User enrolledCourses:', user.enrolledCourses);
+
     // Get progress for all enrolled courses
     const progressData = await Progress.find({ student: userId })
       .populate('course', 'title thumbnail category level duration price')
       .sort({ lastAccessed: -1 });
 
+    console.log('📊 Dashboard API: Progress data count:', progressData?.length || 0);
+
     // Calculate statistics
-    const totalEnrolledCourses = user.enrolledCourses.length;
+    const totalEnrolledCourses = user.enrolledCourses?.length || 0;
     const totalCompletedLessons = progressData.reduce((total, progress) => {
       return total + progress.completedLessons.length;
     }, 0);
@@ -102,14 +136,31 @@ router.get('/dashboard', protect, async (req, res) => {
       }));
 
     // Format enrolled courses with progress
-    const enrolledCoursesWithProgress = user.enrolledCourses.map(course => {
-      const progress = progressData.find(p => p.course && p.course._id.toString() === course._id.toString());
+    console.log('📊 Starting to format enrolled courses...');
+    console.log('📊 User enrolledCourses before formatting:', user.enrolledCourses?.length || 0);
+    
+    const enrolledCoursesWithProgress = (user.enrolledCourses || []).map(course => {
+      // Skip if course is null or undefined (possible if course was deleted)
+      if (!course || !course._id) {
+        console.warn('⚠️ Found invalid course in enrolledCourses:', course);
+        return null;
+      }
+      
+      console.log('📊 Processing course:', course._id, course.title);
+      
+      const progress = progressData.find(p => {
+        if (!p.course || !p.course._id) return false;
+        if (!course._id) return false;
+        return p.course._id.toString() === course._id.toString();
+      });
+      
+      console.log('📊 Found progress for course:', !!progress);
       
       // Calculate total lessons in course
       const totalLessons = course.curriculum ? 
         course.curriculum.reduce((total, week) => total + (week.lessons ? week.lessons.length : 0), 0) : 0;
       
-      return {
+      const formattedCourse = {
         _id: course._id,
         title: course.title || 'Untitled Course',
         description: course.description || '',
@@ -119,7 +170,7 @@ router.get('/dashboard', protect, async (req, res) => {
         price: course.price || 0,
         thumbnail: course.thumbnail || '',
         instructor: course.instructor || { name: 'Unknown Instructor' },
-        enrolledAt: course.enrolledAt || course.createdAt,
+        enrolledAt: course.createdAt, // Use course createdAt since enrolledAt doesn't exist
         progress: progress ? {
           overallProgress: progress.overallProgress || 0,
           completedLessons: progress.completedLessons ? progress.completedLessons.length : 0,
@@ -142,42 +193,55 @@ router.get('/dashboard', protect, async (req, res) => {
           currentWeek: 1
         }
       };
-    });
+      
+      console.log('📊 Formatted course:', formattedCourse.title);
+      return formattedCourse;
+    }).filter(course => course !== null); // Filter out null courses
+    
+    console.log('📊 Dashboard API: Final enrolledCoursesWithProgress count:', enrolledCoursesWithProgress.length);
+    console.log('📊 Dashboard API: Sample enrolled course:', enrolledCoursesWithProgress[0]?.title || 'None');
+    
+    // Verify the response structure
+    const responseData = {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        role: user.role
+      },
+      statistics: {
+        totalEnrolledCourses,
+        totalCompletedLessons,
+        completedCourses,
+        certificatesEarned,
+        totalTimeSpent
+      },
+      enrolledCourses: enrolledCoursesWithProgress,
+      recentActivity,
+      progressData: progressData
+        .filter(progress => progress.course)
+        .map(progress => ({
+          courseId: progress.course._id,
+          courseTitle: progress.course.title || 'Untitled Course',
+          completedLessons: progress.completedLessons || [],
+          overallProgress: progress.overallProgress || 0,
+          timeSpent: progress.timeSpent || 0,
+          lastAccessed: progress.lastAccessed,
+          isCompleted: progress.isCompleted || false,
+          completionDate: progress.completionDate,
+          certificate: progress.certificate || '',
+          currentWeek: progress.currentWeek || 1
+        }))
+    };
+    
+    console.log('📊 Dashboard API: Response data structure:');
+    console.log('  - enrolledCourses count:', responseData.enrolledCourses.length);
+    console.log('  - statistics:', JSON.stringify(responseData.statistics, null, 2));
 
     res.status(200).json({
       success: true,
-      data: {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar,
-          role: user.role
-        },
-        statistics: {
-          totalEnrolledCourses,
-          totalCompletedLessons,
-          completedCourses,
-          certificatesEarned,
-          totalTimeSpent
-        },
-        enrolledCourses: enrolledCoursesWithProgress,
-        recentActivity,
-        progressData: progressData
-          .filter(progress => progress.course) // Filter out progress entries without course data
-          .map(progress => ({
-            courseId: progress.course._id,
-            courseTitle: progress.course.title || 'Untitled Course',
-            completedLessons: progress.completedLessons || [],
-            overallProgress: progress.overallProgress || 0,
-            timeSpent: progress.timeSpent || 0,
-            lastAccessed: progress.lastAccessed,
-            isCompleted: progress.isCompleted || false,
-            completionDate: progress.completionDate,
-            certificate: progress.certificate || '',
-            currentWeek: progress.currentWeek || 1
-          }))
-      }
+      data: responseData
     });
   } catch (error) {
     console.error('Dashboard data error:', error);
