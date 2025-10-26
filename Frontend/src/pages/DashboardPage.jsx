@@ -6,6 +6,7 @@ import apiUrl, { getWorkingApiUrl } from '../config/apiConfig';
 import apiService from '../services/apiService';
 import announcementService from '../services/announcementService';
 import discussionForumService from '../services/discussionForumService';
+import certificateService from '../services/certificateService';
 import {
   BookOpenIcon,
   CheckCircleIcon,
@@ -19,6 +20,7 @@ import {
   SpeakerWaveIcon,
   ExclamationTriangleIcon,
   XMarkIcon,
+  DocumentArrowDownIcon,
 } from '@heroicons/react/24/outline';
 
 const DashboardPage = () => {
@@ -26,6 +28,7 @@ const DashboardPage = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
   const [forums, setForums] = useState([]);
+  const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [unenrollingCourse, setUnenrollingCourse] = useState(null);
   const [showUnenrollModal, setShowUnenrollModal] = useState(false);
@@ -35,7 +38,19 @@ const DashboardPage = () => {
     fetchDashboardData();
     fetchAnnouncements();
     fetchForums();
+    fetchCertificates();
   }, []);
+
+  const fetchCertificates = async () => {
+    try {
+      const response = await certificateService.getMyCertificates();
+      if (response && response.success) {
+        setCertificates(response.certificates || []);
+      }
+    } catch (error) {
+      console.error('Error fetching certificates:', error);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -54,17 +69,27 @@ const DashboardPage = () => {
       
       console.log('📊 Dashboard Response:');
       console.log('  - Status:', response.status);
-      console.log('  - Data:', response.data);
+      console.log('  - Full Response:', response);
 
-      if (response.data.success) {
+      if (response.data && response.data.success) {
         console.log('✅ Dashboard Data:', response.data.data);
+        console.log('✅ Enrolled Courses:', response.data.data?.enrolledCourses);
+        console.log('✅ Total Courses:', response.data.data?.enrolledCourses?.length || 0);
+        
+        if (!response.data.data) {
+          console.error('❌ Dashboard data is undefined!');
+          toast.error('Failed to load dashboard data - Invalid response');
+          return;
+        }
+        
         setDashboardData(response.data.data);
       } else {
-        console.error('❌ Dashboard API Error:', response.data.message);
-        toast.error(response.data.message || 'Failed to load dashboard data');
+        console.error('❌ Dashboard API Error:', response.data?.message || 'Unknown error');
+        toast.error(response.data?.message || 'Failed to load dashboard data');
       }
     } catch (error) {
       console.error('❌ Dashboard Error:', error);
+      console.error('❌ Error details:', error.response?.data);
       if (error.response?.status === 401) {
         toast.error('Authentication failed. Please login again.');
         // Token will be cleared by apiService interceptor
@@ -250,7 +275,12 @@ const DashboardPage = () => {
     );
   }
 
-  const { statistics, enrolledCourses, recentActivity } = dashboardData;
+  const { statistics = {}, enrolledCourses = [], recentActivity = [] } = dashboardData;
+  
+  console.log('📍 Dashboard Page Render:');
+  console.log('  - Enrolled Courses Count:', enrolledCourses.length);
+  console.log('  - Enrolled Courses:', enrolledCourses);
+  console.log('  - Statistics:', statistics);
 
   return (
     <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -275,7 +305,7 @@ const DashboardPage = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Enrolled Courses</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {statistics.totalEnrolledCourses}
+                  {statistics.totalEnrolledCourses || 0}
                 </p>
               </div>
             </div>
@@ -289,7 +319,7 @@ const DashboardPage = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Completed Lessons</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {statistics.totalCompletedLessons}
+                  {statistics.totalCompletedLessons || 0}
                 </p>
               </div>
             </div>
@@ -303,7 +333,7 @@ const DashboardPage = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Certificates Earned</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {statistics.certificatesEarned}
+                  {statistics.certificatesEarned || 0}
                 </p>
               </div>
             </div>
@@ -317,7 +347,7 @@ const DashboardPage = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Time Spent</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {formatTime(statistics.totalTimeSpent)}
+                  {formatTime(statistics.totalTimeSpent || 0)}
                 </p>
               </div>
             </div>
@@ -373,42 +403,46 @@ const DashboardPage = () => {
                     </p>
 
                     {/* Progress Bar */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium text-gray-700">Progress</span>
-                        <span className="text-sm text-gray-500">
-                          {course.progress.completedLessons}/{course.progress.totalLessons} lessons
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${course.progress.overallProgress}%` }}
-                        ></div>
-                      </div>
-                      <div className="flex items-center justify-between mt-1">
-                        <span className="text-xs text-gray-500">
-                          {course.progress.overallProgress}% complete
-                        </span>
-                        {course.progress.isCompleted && (
-                          <span className="text-xs text-green-600 font-medium">
-                            ✓ Completed
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                    {course.progress && (
+                      <>
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium text-gray-700">Progress</span>
+                            <span className="text-sm text-gray-500">
+                              {course.progress.completedLessons || 0}/{course.progress.totalLessons || 0} lessons
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${course.progress.overallProgress || 0}%` }}
+                            ></div>
+                          </div>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="text-xs text-gray-500">
+                              {course.progress.overallProgress || 0}% complete
+                            </span>
+                            {course.progress.isCompleted && (
+                              <span className="text-xs text-green-600 font-medium">
+                                ✓ Completed
+                              </span>
+                            )}
+                          </div>
+                        </div>
 
-                    {/* Course Stats */}
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                      <div className="flex items-center">
-                        <ClockIcon className="h-4 w-4 mr-1" />
-                        {formatTime(course.progress.timeSpent)}
-                      </div>
-                      <div className="flex items-center">
-                        <CalendarIcon className="h-4 w-4 mr-1" />
-                        {course.progress.lastAccessed ? formatDate(course.progress.lastAccessed) : 'Never'}
-                      </div>
-                    </div>
+                        {/* Course Stats */}
+                        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                          <div className="flex items-center">
+                            <ClockIcon className="h-4 w-4 mr-1" />
+                            {formatTime(course.progress.timeSpent || 0)}
+                          </div>
+                          <div className="flex items-center">
+                            <CalendarIcon className="h-4 w-4 mr-1" />
+                            {course.progress.lastAccessed ? formatDate(course.progress.lastAccessed) : 'Never'}
+                          </div>
+                        </div>
+                      </>
+                    )}
 
                     {/* Instructor */}
                     <div className="flex items-center mb-4">
@@ -425,7 +459,7 @@ const DashboardPage = () => {
                         className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
                       >
                         <PlayIcon className="h-4 w-4 mr-2" />
-                        {course.progress.isCompleted ? 'Review Course' : 'Continue Learning'}
+                        {course.progress?.isCompleted ? 'Review Course' : 'Continue Learning'}
                       </Link>
                       <button 
                         onClick={() => handleUnenrollClick(course)}
@@ -447,7 +481,7 @@ const DashboardPage = () => {
                     </div>
 
                     {/* Certificate Badge */}
-                    {course.progress.certificate && (
+                    {course.progress?.certificate && (
                       <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
                         <div className="flex items-center">
                           <TrophyIcon className="h-4 w-4 text-yellow-600 mr-2" />
@@ -622,6 +656,58 @@ const DashboardPage = () => {
                     </svg>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No discussion forums</h3>
                     <p className="text-gray-600">There are no active discussion forums at the moment.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Achievements - Certificates */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Achievements</h2>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                {certificates && certificates.length > 0 ? (
+                  <div className="divide-y divide-gray-200">
+                    {certificates.map((certificate) => (
+                      <div key={certificate._id} className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-start">
+                            <div className="flex-shrink-0">
+                              <div className="flex items-center justify-center h-12 w-12 bg-yellow-100 rounded-lg">
+                                <TrophyIcon className="h-8 w-8 text-yellow-600" />
+                              </div>
+                            </div>
+                            <div className="ml-4">
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {certificate.courseName}
+                              </h3>
+                              <p className="text-sm text-gray-600 mt-1">
+                                Certificate #{certificate.certificateNumber}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Issued: {new Date(certificate.issuedDate).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          {certificate.certificateUrl && (
+                            <a
+                              href={`${window?.configs?.apiUrl || 'http://localhost:5000'}${certificate.certificateUrl}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
+                              View Certificate
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-12 text-center">
+                    <TrophyIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No certificates yet</h3>
+                    <p className="text-gray-600">Complete courses to earn certificates!</p>
                   </div>
                 )}
               </div>
