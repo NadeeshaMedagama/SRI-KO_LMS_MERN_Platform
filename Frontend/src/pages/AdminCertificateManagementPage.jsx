@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import certificateService from '../services/certificateService';
 import courseService from '../services/courseService';
+import { getWorkingApiUrl } from '../config/apiConfig';
 
 const AdminCertificateManagementPage = () => {
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,10 @@ const AdminCertificateManagementPage = () => {
   });
   const [showEligibleStudents, setShowEligibleStudents] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState('');
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [certificateFile, setCertificateFile] = useState(null);
+  const [notes, setNotes] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -103,25 +108,72 @@ const AdminCertificateManagementPage = () => {
     }
   };
 
-  const handleCreateCertificate = async (studentId, courseId, notes = '') => {
+  const handleCreateCertificateClick = (student, course) => {
+    setSelectedStudent({ student, course });
+    setShowUploadModal(true);
+  };
+
+  const handleCancelUpload = () => {
+    setShowUploadModal(false);
+    setSelectedStudent(null);
+    setCertificateFile(null);
+    setNotes('');
+  };
+
+  const handleCreateCertificate = async () => {
+    if (!selectedStudent) return;
+
     try {
       setLoading(true);
-      const response = await certificateService.createCertificate({
-        studentId,
-        courseId,
-        notes
+
+      const formData = new FormData();
+      formData.append('studentId', selectedStudent.student._id);
+      formData.append('courseId', selectedStudent.course._id);
+      formData.append('notes', notes);
+      
+      if (certificateFile) {
+        formData.append('certificate', certificateFile);
+      }
+
+      // Try to get token from both locations (adminToken or token)
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      if (!token) {
+        toast.error('Authentication required');
+        console.error('No token found in localStorage');
+        return;
+      }
+
+      // Get working API URL (handles local/Choreo differences)
+      const workingApiUrl = await getWorkingApiUrl();
+      console.log('🌐 Using API URL:', workingApiUrl);
+
+      // The workingApiUrl already includes /api prefix, so we don't need to add it again
+      const response = await fetch(`${workingApiUrl}/certificates`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
       });
 
-      if (response.success) {
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
         toast.success('Certificate created successfully');
         fetchCertificates();
         fetchData(); // Refresh stats
         fetchEligibleStudents(selectedCourse); // Refresh eligible students
+        handleCancelUpload();
       } else {
-        toast.error(response.message || 'Failed to create certificate');
+        toast.error(data.message || 'Failed to create certificate');
       }
     } catch (error) {
-      toast.error('Failed to create certificate');
+      toast.error(error.message || 'Failed to create certificate');
       console.error('Error creating certificate:', error);
     } finally {
       setLoading(false);
@@ -426,7 +478,7 @@ const AdminCertificateManagementPage = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
-                        onClick={() => handleCreateCertificate(item.student._id, item.course._id)}
+                        onClick={() => handleCreateCertificateClick(item.student, item.course)}
                         className="text-blue-600 hover:text-blue-900 mr-3"
                         disabled={loading}
                       >
@@ -542,6 +594,68 @@ const AdminCertificateManagementPage = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Upload Certificate Modal */}
+      {showUploadModal && selectedStudent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Certificate</h3>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">
+                <strong>Student:</strong> {selectedStudent.student.name}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Course:</strong> {selectedStudent.course.title}
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Certificate File (Image or PDF)
+              </label>
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => setCertificateFile(e.target.files[0])}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Supported formats: JPG, PNG, PDF (Max 10MB)
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Notes (optional)
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Additional notes about this certificate..."
+              />
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={handleCancelUpload}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateCertificate}
+                disabled={loading || !certificateFile}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Uploading...' : 'Upload & Create'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

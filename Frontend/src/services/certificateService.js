@@ -103,6 +103,19 @@ const certificateService = {
       console.error('Error deleting certificate:', error);
       throw error;
     }
+  },
+
+  // Get user's certificates
+  getMyCertificates: async () => {
+    try {
+      console.log('🔍 Getting my certificates...');
+      const response = await apiService.getMyCertificates();
+      console.log('📊 My certificates received:', response);
+      return response;
+    } catch (error) {
+      console.error('Error getting my certificates:', error);
+      throw error;
+    }
   }
 };
 

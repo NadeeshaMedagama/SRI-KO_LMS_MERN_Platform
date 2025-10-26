@@ -256,7 +256,19 @@ class ApiService {
   }
 
   async getAllPayments(page: number = 1, limit: number = 20, filters: any = {}): Promise<any> {
-    const params = { page, limit, ...filters };
+    // Clean filters to avoid sending empty strings which can be misinterpreted server-side
+    const cleanedFilters: any = {};
+    if (filters && typeof filters === 'object') {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== '' && value !== undefined && value !== null) {
+          cleanedFilters[key] = value;
+        }
+      });
+    }
+    const params = { page, limit, ...cleanedFilters };
+    
+    console.log('📊 Fetching payments with cleaned filters:', cleanedFilters);
+    
     try {
       // Try admin all-payments endpoint first
       const response: AxiosResponse<{ success: boolean; payments: Payment[]; pagination: any }> = await this.api.get('/admin/all-payments', { params });
@@ -386,6 +398,11 @@ class ApiService {
 
   async deleteCertificate(certificateId: string): Promise<any> {
     const response: AxiosResponse<{ success: boolean; message: string }> = await this.api.delete(`/certificates/${certificateId}`);
+    return response.data;
+  }
+
+  async getMyCertificates(): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; certificates: any[] }> = await this.api.get('/certificates/my-certificates');
     return response.data;
   }
 
