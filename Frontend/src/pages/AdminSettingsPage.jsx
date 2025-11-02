@@ -217,13 +217,25 @@ const AdminSettingsPage = () => {
   };
 
   const updateSettings = (section, field, value) => {
-    setSettings(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value,
-      },
-    }));
+    // Handle both top-level fields (2 params) and nested fields (3 params)
+    if (arguments.length === 2) {
+      // Top-level field: updateSettings('fieldName', value)
+      const fieldName = section;
+      const fieldValue = field;
+      setSettings(prev => ({
+        ...prev,
+        [fieldName]: fieldValue,
+      }));
+    } else {
+      // Nested field: updateSettings('section', 'field', value)
+      setSettings(prev => ({
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [field]: value,
+        },
+      }));
+    }
     setHasChanges(true);
   };
 
@@ -271,9 +283,9 @@ const AdminSettingsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+      {/* Header - Fixed */}
+      <div className="bg-white shadow-sm border-b flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
@@ -323,11 +335,11 @@ const AdminSettingsPage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          {/* Tabs */}
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8 px-6" aria-label="Tabs">
+      <div className="flex-1 overflow-hidden flex flex-col max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex-1 flex flex-col overflow-hidden">
+          {/* Tabs - Fixed */}
+          <div className="border-b border-gray-200 flex-shrink-0">
+            <nav className="-mb-px flex space-x-8 px-6 overflow-x-auto" aria-label="Tabs">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -348,8 +360,8 @@ const AdminSettingsPage = () => {
             </nav>
           </div>
 
-          {/* Tab Content */}
-          <div className="p-6">
+          {/* Tab Content - Scrollable */}
+          <div className="p-6 overflow-y-auto flex-1">
             {activeTab === 'site' && (
               <div className="space-y-6">
                 <h3 className="text-lg font-medium text-gray-900">Site Information</h3>
@@ -555,10 +567,11 @@ const AdminSettingsPage = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
                     <select
-                      value={settings.paymentSettings?.currency || 'USD'}
+                      value={settings.paymentSettings?.currency || 'LKR'}
                       onChange={(e) => updateSettings('paymentSettings', 'currency', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
+                      <option value="LKR">LKR (Sri Lankan Rupee)</option>
                       <option value="USD">USD</option>
                       <option value="EUR">EUR</option>
                       <option value="GBP">GBP</option>
