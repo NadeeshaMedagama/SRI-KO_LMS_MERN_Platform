@@ -277,9 +277,44 @@ const DashboardPage = () => {
 
   const { statistics = {}, enrolledCourses = [], recentActivity = [] } = dashboardData;
   
+  // Filter completed courses - check both isCompleted flag and if all lessons are completed
+  const completedCourses = enrolledCourses.filter(course => {
+    const progress = course.progress;
+    if (!progress) return false;
+    // Course is completed if:
+    // 1. isCompleted flag is true, OR
+    // 2. All lessons are completed (completedLessons === totalLessons) and totalLessons > 0
+    return progress.isCompleted || 
+           (progress.completedLessons === progress.totalLessons && progress.totalLessons > 0);
+  });
+  
+  // Filter in-progress courses (enrolled but not completed)
+  const inProgressCourses = enrolledCourses.filter(course => {
+    const progress = course.progress;
+    if (!progress) return true; // If no progress, show as in-progress
+    return !progress.isCompleted && 
+           !(progress.completedLessons === progress.totalLessons && progress.totalLessons > 0);
+  });
+  
+  // Calculate total completed lessons from enrolledCourses as fallback
+  // This ensures we always show the correct count even if backend statistic is 0
+  const calculatedCompletedLessons = enrolledCourses.reduce((total, course) => {
+    const completedCount = course.progress?.completedLessons || 0;
+    return total + completedCount;
+  }, 0);
+  
+  // Use the calculated value if it's different from statistics (fallback)
+  const totalCompletedLessons = calculatedCompletedLessons > 0 && statistics.totalCompletedLessons === 0 
+    ? calculatedCompletedLessons 
+    : (statistics.totalCompletedLessons || calculatedCompletedLessons);
+  
   console.log('📍 Dashboard Page Render:');
   console.log('  - Enrolled Courses Count:', enrolledCourses.length);
-  console.log('  - Enrolled Courses:', enrolledCourses);
+  console.log('  - Completed Courses Count:', completedCourses.length);
+  console.log('  - In Progress Courses Count:', inProgressCourses.length);
+  console.log('  - Statistics.totalCompletedLessons:', statistics.totalCompletedLessons);
+  console.log('  - Calculated Completed Lessons:', calculatedCompletedLessons);
+  console.log('  - Final Total Completed Lessons:', totalCompletedLessons);
   console.log('  - Statistics:', statistics);
 
   return (
@@ -319,7 +354,7 @@ const DashboardPage = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Completed Lessons</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {statistics.totalCompletedLessons || 0}
+                  {totalCompletedLessons}
                 </p>
               </div>
             </div>
@@ -354,6 +389,123 @@ const DashboardPage = () => {
           </div>
         </div>
 
+        {/* Completed Courses Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Completed Courses</h2>
+            <span className="text-sm text-gray-500">
+              {completedCourses.length} {completedCourses.length === 1 ? 'course' : 'courses'} completed
+            </span>
+          </div>
+
+          {completedCourses.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {completedCourses.map((course) => (
+                  <div key={course._id} className="bg-white rounded-lg shadow-sm border border-green-200 overflow-hidden">
+                    {/* Course Thumbnail */}
+                    <div className="h-48 bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center relative">
+                      {course.thumbnail ? (
+                        <img
+                          src={course.thumbnail}
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <BookOpenIcon className="h-16 w-16 text-white" />
+                      )}
+                      {/* Completed Badge */}
+                      <div className="absolute top-4 right-4 bg-green-600 text-white px-3 py-1 rounded-full flex items-center text-sm font-medium">
+                        <CheckCircleIcon className="h-4 w-4 mr-1" />
+                        Completed
+                      </div>
+                    </div>
+
+                    {/* Course Content */}
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(course.category)}`}>
+                          {course.category}
+                        </span>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLevelColor(course.level)}`}>
+                          {course.level}
+                        </span>
+                      </div>
+
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                        {course.title}
+                      </h3>
+
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        {course.description}
+                      </p>
+
+                      {/* Completion Stats */}
+                      <div className="mb-4 p-3 bg-green-50 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-700">Progress</span>
+                          <span className="text-sm font-bold text-green-600">100%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                          <div
+                            className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                            style={{ width: '100%' }}
+                          ></div>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-gray-600">
+                          <span>{course.progress?.completedLessons || 0} / {course.progress?.totalLessons || 0} lessons</span>
+                          {course.progress?.certificate && (
+                            <span className="text-green-600 font-medium flex items-center">
+                              <TrophyIcon className="h-3 w-3 mr-1" />
+                              Certificate
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Completion Date */}
+                      {course.progress?.completionDate && (
+                        <div className="mb-4 flex items-center text-sm text-gray-500">
+                          <CalendarIcon className="h-4 w-4 mr-2" />
+                          Completed on {formatDate(course.progress.completionDate)}
+                        </div>
+                      )}
+
+                      {/* Instructor */}
+                      <div className="flex items-center mb-4">
+                        <UserIcon className="h-4 w-4 text-gray-400 mr-2" />
+                        <span className="text-sm text-gray-600">
+                          {course.instructor?.name || 'Unknown Instructor'}
+                        </span>
+                      </div>
+
+                      {/* Action Button */}
+                      <Link
+                        to={`/courses/${course._id}`}
+                        className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
+                      >
+                        <PlayIcon className="h-4 w-4 mr-2" />
+                        Review Course
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center mb-8">
+              <CheckCircleIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No completed courses yet</h3>
+              <p className="text-gray-600 mb-6">Complete courses to see them here!</p>
+              <Link
+                to="/courses"
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                <BookOpenIcon className="h-4 w-4 mr-2" />
+                Continue Learning
+              </Link>
+            </div>
+          )}
+        </div>
+
         {/* Enrolled Courses Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
@@ -366,9 +518,9 @@ const DashboardPage = () => {
             </Link>
           </div>
 
-          {enrolledCourses.length > 0 ? (
+          {inProgressCourses.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {enrolledCourses.map((course) => (
+              {inProgressCourses.map((course) => (
                 <div key={course._id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                   {/* Course Thumbnail */}
                   <div className="h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
