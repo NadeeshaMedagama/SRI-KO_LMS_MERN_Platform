@@ -5,6 +5,7 @@ const Course = require('../models/Course');
 const Announcement = require('../models/Announcement');
 const DiscussionForum = require('../models/DiscussionForum');
 const Notification = require('../models/Notification');
+const Payment = require('../models/Payment');
 const { protect, authorize } = require('../middleware/auth');
 const {
   validateUserRegistration,
@@ -13,6 +14,112 @@ const {
 } = require('../middleware/validation');
 
 const router = express.Router();
+
+// Helper function to get monthly statistics
+async function getMonthlyStatistics(year) {
+  try {
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    // Get start and end dates for the year
+    const startDate = new Date(year, 0, 1); // January 1st
+    const endDate = new Date(year, 11, 31, 23, 59, 59, 999); // December 31st
+
+    // Get monthly user registrations
+    const monthlyUsers = await User.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: startDate,
+            $lte: endDate
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { '_id.month': 1 }
+      }
+    ]);
+
+    // Get monthly revenue from completed payments
+    const monthlyRevenue = await Payment.aggregate([
+      {
+        $match: {
+          status: 'completed',
+          paymentDate: {
+            $gte: startDate,
+            $lte: endDate
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$paymentDate' },
+            month: { $month: '$paymentDate' }
+          },
+          totalAmount: { $sum: '$amount' }
+        }
+      },
+      {
+        $sort: { '_id.month': 1 }
+      }
+    ]);
+
+    // Create maps for quick lookup
+    const userMap = new Map();
+    monthlyUsers.forEach(item => {
+      const key = `${item._id.year}-${item._id.month}`;
+      userMap.set(key, item.count);
+    });
+
+    const revenueMap = new Map();
+    monthlyRevenue.forEach(item => {
+      const key = `${item._id.year}-${item._id.month}`;
+      revenueMap.set(key, item.totalAmount);
+    });
+
+    // Build statistics for all 12 months
+    const stats = [];
+    for (let month = 1; month <= 12; month++) {
+      const key = `${year}-${month}`;
+      const users = userMap.get(key) || 0;
+      const revenue = revenueMap.get(key) || 0;
+
+      stats.push({
+        month: monthNames[month - 1],
+        year: year,
+        users: users,
+        revenue: revenue
+      });
+    }
+
+    return stats;
+  } catch (error) {
+    console.error('Error getting monthly statistics:', error);
+    // Return empty stats for all months if there's an error
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return monthNames.map((month, index) => ({
+      month: month,
+      year: year,
+      users: 0,
+      revenue: 0
+    }));
+  }
+}
 
 // @desc    Get payment statistics for admin dashboard
 // @route   GET /api/admin/payment-stats
@@ -774,21 +881,11 @@ router.get('/analytics', protect, authorize('admin'), async (req, res) => {
       },
     ];
 
-    // Get monthly statistics (simplified)
-    const monthlyStats = [
-      {
-        month: 'January',
-        year: 2024,
-        users: 150,
-        revenue: 5000,
-      },
-      {
-        month: 'February',
-        year: 2024,
-        users: 200,
-        revenue: 7500,
-      },
-    ];
+    // Get monthly statistics from database
+    const currentYear = new Date().getFullYear();
+    console.log(`📊 Fetching monthly statistics for year: ${currentYear}`);
+    const monthlyStats = await getMonthlyStatistics(currentYear);
+    console.log(`📊 Monthly statistics retrieved: ${monthlyStats.length} months`);
 
     res.status(200).json({
       success: true,
