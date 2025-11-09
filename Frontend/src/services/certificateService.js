@@ -116,6 +116,19 @@ const certificateService = {
       console.error('Error getting my certificates:', error);
       throw error;
     }
+  },
+
+  // Mark certificate as viewed (first time only)
+  markCertificateAsViewed: async (certificateId) => {
+    try {
+      console.log('🔍 Marking certificate as viewed...', { certificateId });
+      const response = await apiService.markCertificateAsViewed(certificateId);
+      console.log('📊 Certificate marked as viewed:', response);
+      return response;
+    } catch (error) {
+      console.error('Error marking certificate as viewed:', error);
+      throw error;
+    }
   }
 };
 
