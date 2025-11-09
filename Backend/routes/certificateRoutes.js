@@ -31,6 +31,80 @@ router.get('/my-certificates', protect, async (req, res) => {
   }
 });
 
+// @desc    Mark certificate as viewed by student (first time only)
+// @route   POST /api/certificates/:id/mark-viewed
+// @access  Private (Student)
+router.post('/:id/mark-viewed', protect, async (req, res) => {
+  try {
+    const certificate = await Certificate.findById(req.params.id);
+
+    if (!certificate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Certificate not found'
+      });
+    }
+
+    // Verify that the certificate belongs to the requesting user
+    if (certificate.student.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to access this certificate'
+      });
+    }
+
+    // Only update if this is the first time viewing
+    if (!certificate.viewedByStudent) {
+      console.log(`📜 Certificate ${certificate.certificateNumber} viewed for the first time by student ${req.user.name}`);
+
+      certificate.viewedByStudent = true;
+      certificate.firstViewedDate = new Date();
+
+      // Automatically update status to 'delivered' only if current status is 'sent'
+      if (certificate.status === 'sent') {
+        certificate.status = 'delivered';
+        console.log(`✅ Certificate status automatically updated to 'delivered'`);
+      }
+
+      await certificate.save();
+
+      // Populate the certificate with related data
+      await certificate.populate([
+        { path: 'student', select: 'name email' },
+        { path: 'course', select: 'title description' },
+        { path: 'issuedBy', select: 'name email' }
+      ]);
+
+      return res.json({
+        success: true,
+        message: 'Certificate marked as viewed and status updated to delivered',
+        certificate,
+        firstView: true
+      });
+    }
+
+    // If already viewed, just return success without updating
+    await certificate.populate([
+      { path: 'student', select: 'name email' },
+      { path: 'course', select: 'title description' },
+      { path: 'issuedBy', select: 'name email' }
+    ]);
+
+    res.json({
+      success: true,
+      message: 'Certificate already viewed',
+      certificate,
+      firstView: false
+    });
+  } catch (error) {
+    console.error('Error marking certificate as viewed:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
 // @desc    Get all certificates with pagination and filters
 // @route   GET /api/certificates
 // @access  Private/Admin
@@ -178,17 +252,28 @@ router.post('/', protect, authorize('admin'), uploadCertificate, handleUploadErr
     }
 
     // Check if certificate already exists
+    // Note: This check should not find deleted certificates since we use hard delete (findByIdAndDelete)
     const existingCertificate = await Certificate.findOne({
       student: studentId,
       course: courseId
     });
 
     if (existingCertificate) {
+      console.error('⚠️ Certificate already exists:', {
+        certificateId: existingCertificate._id,
+        certificateNumber: existingCertificate.certificateNumber,
+        student: studentId,
+        course: courseId,
+        status: existingCertificate.status
+      });
       return res.status(400).json({
         success: false,
-        message: 'Certificate already exists for this student and course'
+        message: 'Certificate already exists for this student and course',
+        existingCertificateId: existingCertificate._id
       });
     }
+
+    console.log('✅ No existing certificate found, proceeding with creation...');
 
     // Get certificate URL if file was uploaded
     let certificateUrl = '';
@@ -387,23 +472,45 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
     const certificate = await Certificate.findById(req.params.id);
 
     if (!certificate) {
+      console.error('❌ Certificate not found for deletion:', req.params.id);
       return res.status(404).json({
         success: false,
         message: 'Certificate not found'
       });
     }
 
-    await Certificate.findByIdAndDelete(req.params.id);
+    console.log('🗑️ Deleting certificate:', {
+      certificateId: certificate._id,
+      certificateNumber: certificate.certificateNumber,
+      student: certificate.student,
+      course: certificate.course,
+      status: certificate.status
+    });
+
+    const deletedCertificate = await Certificate.findByIdAndDelete(req.params.id);
+
+    if (deletedCertificate) {
+      console.log('✅ Certificate deleted successfully:', deletedCertificate.certificateNumber);
+
+      // Verify deletion by checking if it still exists
+      const checkDeleted = await Certificate.findById(req.params.id);
+      if (checkDeleted) {
+        console.error('⚠️ Warning: Certificate still exists after deletion attempt!');
+      } else {
+        console.log('✅ Deletion verified - certificate no longer exists in database');
+      }
+    }
 
     res.json({
       success: true,
       message: 'Certificate deleted successfully'
     });
   } catch (error) {
-    console.error('Error deleting certificate:', error);
+    console.error('❌ Error deleting certificate:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
