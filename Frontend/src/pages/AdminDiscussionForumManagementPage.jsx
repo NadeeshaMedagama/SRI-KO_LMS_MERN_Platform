@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import discussionForumService from '../services/discussionForumService';
+import {
+  PencilIcon,
+  TrashIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  BookmarkIcon,
+  BookmarkSlashIcon
+} from '@heroicons/react/24/outline';
 
 const AdminDiscussionForumManagementPage = () => {
   const [loading, setLoading] = useState(false);
@@ -636,34 +644,38 @@ const AdminDiscussionForumManagementPage = () => {
                     {new Date(forum.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleEditForum(forum)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-blue-600 hover:text-blue-800"
+                        title="Edit"
                         disabled={loading}
                       >
-                        Edit
+                        <PencilIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleTogglePin(forum._id)}
-                        className="text-yellow-600 hover:text-yellow-900"
+                        className={`${forum.isPinned ? 'text-yellow-600 hover:text-yellow-800' : 'text-gray-400 hover:text-gray-600'}`}
+                        title={forum.isPinned ? 'Unpin' : 'Pin'}
                         disabled={loading}
                       >
-                        {forum.isPinned ? 'Unpin' : 'Pin'}
+                        {forum.isPinned ? <BookmarkIcon className="h-4 w-4" /> : <BookmarkSlashIcon className="h-4 w-4" />}
                       </button>
                       <button
                         onClick={() => handleToggleActive(forum._id)}
-                        className={`${forum.isActive ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
+                        className={`${forum.isActive ? 'text-green-600 hover:text-green-800' : 'text-gray-400 hover:text-gray-600'}`}
+                        title={forum.isActive ? 'Deactivate' : 'Activate'}
                         disabled={loading}
                       >
-                        {forum.isActive ? 'Deactivate' : 'Activate'}
+                        {forum.isActive ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
                       </button>
                       <button
                         onClick={() => handleDeleteForum(forum._id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-600 hover:text-red-800"
+                        title="Delete"
                         disabled={loading}
                       >
-                        Delete
+                        <TrashIcon className="h-4 w-4" />
                       </button>
                     </div>
                   </td>

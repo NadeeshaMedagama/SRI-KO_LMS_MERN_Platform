@@ -406,6 +406,11 @@ class ApiService {
     return response.data;
   }
 
+  async markCertificateAsViewed(certificateId: string): Promise<any> {
+    const response: AxiosResponse<{ success: boolean; certificate: any; firstView: boolean; message: string }> = await this.api.post(`/certificates/${certificateId}/mark-viewed`);
+    return response.data;
+  }
+
   // Announcement endpoints
   async getActiveAnnouncements(): Promise<any> {
     const response: AxiosResponse<{ success: boolean; announcements: any[] }> = await this.api.get('/announcements');

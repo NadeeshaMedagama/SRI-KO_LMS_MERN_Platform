@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import announcementService from '../services/announcementService';
+import {
+  PencilIcon,
+  TrashIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  BookmarkIcon,
+  BookmarkSlashIcon
+} from '@heroicons/react/24/outline';
 
 const AdminAnnouncementManagementPage = () => {
   const [loading, setLoading] = useState(false);
@@ -668,34 +676,38 @@ const AdminAnnouncementManagementPage = () => {
                     {new Date(announcement.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleEditAnnouncement(announcement)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-blue-600 hover:text-blue-800"
+                        title="Edit"
                         disabled={loading}
                       >
-                        Edit
+                        <PencilIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleTogglePin(announcement._id)}
-                        className="text-yellow-600 hover:text-yellow-900"
+                        className={`${announcement.isPinned ? 'text-yellow-600 hover:text-yellow-800' : 'text-gray-400 hover:text-gray-600'}`}
+                        title={announcement.isPinned ? 'Unpin' : 'Pin'}
                         disabled={loading}
                       >
-                        {announcement.isPinned ? 'Unpin' : 'Pin'}
+                        {announcement.isPinned ? <BookmarkIcon className="h-4 w-4" /> : <BookmarkSlashIcon className="h-4 w-4" />}
                       </button>
                       <button
                         onClick={() => handleToggleActive(announcement._id)}
-                        className={`${announcement.isActive ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
+                        className={`${announcement.isActive ? 'text-green-600 hover:text-green-800' : 'text-gray-400 hover:text-gray-600'}`}
+                        title={announcement.isActive ? 'Deactivate' : 'Activate'}
                         disabled={loading}
                       >
-                        {announcement.isActive ? 'Deactivate' : 'Activate'}
+                        {announcement.isActive ? <EyeIcon className="h-4 w-4" /> : <EyeSlashIcon className="h-4 w-4" />}
                       </button>
                       <button
                         onClick={() => handleDeleteAnnouncement(announcement._id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-600 hover:text-red-800"
+                        title="Delete"
                         disabled={loading}
                       >
-                        Delete
+                        <TrashIcon className="h-4 w-4" />
                       </button>
                     </div>
                   </td>

@@ -150,22 +150,52 @@ router.get('/dashboard', protect, async (req, res) => {
     const totalEnrolledCourses = user.enrolledCourses?.length || 0;
     
     // Calculate total completed lessons - use validProgressData
-    // Ensure we properly handle the completedLessons array
-    const totalCompletedLessons = validProgressData.reduce((total, progress) => {
+    // If completedLessons array is populated, count those
+    // If course is marked as completed but completedLessons is empty, count all lessons in the course
+    const totalCompletedLessons = await validProgressData.reduce(async (totalPromise, progress) => {
+      const total = await totalPromise;
       let lessonCount = 0;
-      if (progress.completedLessons) {
-        // Check if it's an array
-        if (Array.isArray(progress.completedLessons)) {
-          lessonCount = progress.completedLessons.length;
-        } else if (typeof progress.completedLessons === 'number') {
-          // If it's already a number (from previous formatting)
-          lessonCount = progress.completedLessons;
+
+      if (progress.completedLessons && Array.isArray(progress.completedLessons) && progress.completedLessons.length > 0) {
+        // If completedLessons array has items, use that count
+        lessonCount = progress.completedLessons.length;
+        console.log(`  - Course "${progress.course?.title || 'Unknown'}": ${lessonCount} completed lessons (from array)`);
+      } else if (progress.isCompleted) {
+        // If course is marked as completed but completedLessons is empty,
+        // fetch the course and count all lessons
+        try {
+          const courseId = progress.course._id || progress.course;
+          const fullCourse = await Course.findById(courseId).select('curriculum');
+          if (fullCourse && fullCourse.curriculum) {
+            lessonCount = fullCourse.curriculum.reduce((sum, week) => {
+              return sum + (week.lessons ? week.lessons.length : 0);
+            }, 0);
+            console.log(`  - Course "${progress.course?.title || 'Unknown'}": ${lessonCount} completed lessons (course completed, calculated from curriculum)`);
+          }
+        } catch (err) {
+          console.error(`  - Error fetching course for completed lesson count:`, err.message);
         }
+      } else if (progress.overallProgress === 100) {
+        // If overallProgress is 100% but not marked as completed
+        try {
+          const courseId = progress.course._id || progress.course;
+          const fullCourse = await Course.findById(courseId).select('curriculum');
+          if (fullCourse && fullCourse.curriculum) {
+            lessonCount = fullCourse.curriculum.reduce((sum, week) => {
+              return sum + (week.lessons ? week.lessons.length : 0);
+            }, 0);
+            console.log(`  - Course "${progress.course?.title || 'Unknown'}": ${lessonCount} completed lessons (100% progress, calculated from curriculum)`);
+          }
+        } catch (err) {
+          console.error(`  - Error fetching course for 100% progress:`, err.message);
+        }
+      } else {
+        console.log(`  - Course "${progress.course?.title || 'Unknown'}": 0 completed lessons`);
       }
-      console.log(`  - Course progress "${progress.course?.title || 'Unknown'}": ${lessonCount} completed lessons (type: ${typeof progress.completedLessons}, isArray: ${Array.isArray(progress.completedLessons)})`);
+
       return total + lessonCount;
-    }, 0);
-    
+    }, Promise.resolve(0));
+
     // Count completed courses - use validProgressData
     const completedCourses = validProgressData.filter(progress => progress.isCompleted).length;
     
@@ -228,14 +258,17 @@ router.get('/dashboard', protect, async (req, res) => {
       const totalLessons = course.curriculum ? 
         course.curriculum.reduce((total, week) => total + (week.lessons ? week.lessons.length : 0), 0) : 0;
       
-      // Calculate completed lessons count - handle both array and number formats
+      // Calculate completed lessons count
+      // Priority: 1) completedLessons array if populated
+      //          2) All lessons if course is completed or 100% progress
+      //          3) Zero otherwise
       let completedLessonsCount = 0;
-      if (progress && progress.completedLessons) {
-        if (Array.isArray(progress.completedLessons)) {
-          completedLessonsCount = progress.completedLessons.length;
-        } else if (typeof progress.completedLessons === 'number') {
-          completedLessonsCount = progress.completedLessons;
-        }
+      if (progress && progress.completedLessons && Array.isArray(progress.completedLessons) && progress.completedLessons.length > 0) {
+        // Use the actual completedLessons array
+        completedLessonsCount = progress.completedLessons.length;
+      } else if (progress && (progress.isCompleted || progress.overallProgress === 100)) {
+        // If course is completed but completedLessons array is empty, count all lessons
+        completedLessonsCount = totalLessons;
       }
       
       // Determine if course is completed:
