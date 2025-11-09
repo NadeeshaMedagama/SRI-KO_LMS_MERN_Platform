@@ -57,6 +57,13 @@ const certificateSchema = new mongoose.Schema({
   notes: {
     type: String,
     default: ''
+  },
+  viewedByStudent: {
+    type: Boolean,
+    default: false
+  },
+  firstViewedDate: {
+    type: Date
   }
 }, {
   timestamps: true
@@ -66,10 +73,30 @@ const certificateSchema = new mongoose.Schema({
 certificateSchema.pre('save', async function(next) {
   if (this.isNew && !this.certificateNumber) {
     try {
-      const count = await this.constructor.countDocuments();
-      this.certificateNumber = `CERT-${String(count + 1).padStart(6, '0')}-${new Date().getFullYear()}`;
+      const currentYear = new Date().getFullYear();
+
+      // Find the highest certificate number for the current year
+      const lastCertificate = await this.constructor.findOne({
+        certificateNumber: { $regex: `^CERT-\\d{6}-${currentYear}$` }
+      }).sort({ certificateNumber: -1 });
+
+      let nextNumber = 1;
+
+      if (lastCertificate && lastCertificate.certificateNumber) {
+        // Extract the number from the last certificate (format: CERT-XXXXXX-YYYY)
+        const match = lastCertificate.certificateNumber.match(/CERT-(\d{6})-/);
+        if (match && match[1]) {
+          nextNumber = parseInt(match[1], 10) + 1;
+        }
+      }
+
+      // Generate new certificate number
+      this.certificateNumber = `CERT-${String(nextNumber).padStart(6, '0')}-${currentYear}`;
+
+      console.log(`📜 Generated certificate number: ${this.certificateNumber}`);
       next();
     } catch (error) {
+      console.error('❌ Error generating certificate number:', error);
       next(error);
     }
   } else {
