@@ -242,6 +242,36 @@ const DashboardPage = () => {
     setCourseToUnenroll(null);
   };
 
+  const handleViewCertificate = async (certificate) => {
+    try {
+      // Mark certificate as viewed (updates status to 'delivered' on first view)
+      const response = await certificateService.markCertificateAsViewed(certificate._id);
+
+      if (response.firstView) {
+        console.log('📜 Certificate viewed for the first time - status updated to delivered');
+        toast.success('Certificate opened! Status updated to delivered.');
+
+        // Update local state to reflect the change
+        setCertificates(prevCerts =>
+          prevCerts.map(cert =>
+            cert._id === certificate._id
+              ? { ...cert, status: 'delivered', viewedByStudent: true, firstViewedDate: new Date() }
+              : cert
+          )
+        );
+      }
+
+      // Open certificate in new tab
+      const certificateUrl = `${window?.configs?.apiUrl || 'http://localhost:5000'}${certificate.certificateUrl}`;
+      window.open(certificateUrl, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error('Error viewing certificate:', error);
+      // Still open the certificate even if marking as viewed fails
+      const certificateUrl = `${window?.configs?.apiUrl || 'http://localhost:5000'}${certificate.certificateUrl}`;
+      window.open(certificateUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -323,10 +353,10 @@ const DashboardPage = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {user?.name}!
+            Welcome Back, {user?.name}!
           </h1>
           <p className="mt-2 text-gray-600">
-            Here&apos;s your learning dashboard
+            Here&apos;s Your Learning Dashboard
           </p>
         </div>
 
@@ -841,15 +871,13 @@ const DashboardPage = () => {
                             </div>
                           </div>
                           {certificate.certificateUrl && (
-                            <a
-                              href={`${window?.configs?.apiUrl || 'http://localhost:5000'}${certificate.certificateUrl}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              onClick={() => handleViewCertificate(certificate)}
                               className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                             >
                               <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
                               View Certificate
-                            </a>
+                            </button>
                           )}
                         </div>
                       </div>
