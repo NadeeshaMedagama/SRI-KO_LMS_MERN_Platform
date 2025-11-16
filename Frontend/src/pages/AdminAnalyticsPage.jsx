@@ -17,6 +17,9 @@ import {
   ArrowUpIcon,
   // ArrowDownIcon,
 } from '@heroicons/react/24/outline';
+import UserGrowthChart from '../components/charts/UserGrowthChart';
+import RevenueChart from '../components/charts/RevenueChart';
+import UserCourseComparisonChart from '../components/charts/UserCourseComparisonChart';
 
 const AdminAnalyticsPage = () => {
   const [loading, setLoading] = useState(true);
@@ -38,10 +41,18 @@ const AdminAnalyticsPage = () => {
   });
   const [dateRange, setDateRange] = useState('30');
   const [selectedMetric, setSelectedMetric] = useState('users');
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  // Generate year options (current year and 2 years back)
+  const yearOptions = [];
+  const currentYear = new Date().getFullYear();
+  for (let i = 0; i < 3; i++) {
+    yearOptions.push(currentYear - i);
+  }
 
   useEffect(() => {
     fetchAnalytics();
-  }, [dateRange]);
+  }, [dateRange, selectedYear]); // Auto-refresh when year or date range changes
 
   const fetchAnalytics = async () => {
     try {
@@ -54,9 +65,17 @@ const AdminAnalyticsPage = () => {
       }
 
       const workingApiUrl = await getWorkingApiUrl();
-      console.log('Fetching analytics from:', `${workingApiUrl}/admin/analytics?period=${dateRange}`);
 
-      const response = await fetch(`${workingApiUrl}/admin/analytics?period=${dateRange}`, {
+      // Build query parameters
+      let queryParams = `period=${dateRange}`;
+      if (selectedYear !== 'all') {
+        queryParams += `&year=${selectedYear}`;
+      }
+
+      const apiEndpoint = `${workingApiUrl}/admin/analytics?${queryParams}`;
+      console.log('Fetching analytics from:', apiEndpoint);
+
+      const response = await fetch(apiEndpoint, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -189,9 +208,24 @@ const AdminAnalyticsPage = () => {
             </div>
             <div className="flex space-x-3">
               <select
+                value={selectedYear}
+                onChange={e => {
+                  const value = e.target.value;
+                  setSelectedYear(value === 'all' ? 'all' : Number(value));
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              >
+                {yearOptions.map(year => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+                <option value="all">All Time</option>
+              </select>
+              <select
                 value={dateRange}
                 onChange={e => setDateRange(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
                 <option value="7">Last 7 days</option>
                 <option value="30">Last 30 days</option>
@@ -322,16 +356,11 @@ const AdminAnalyticsPage = () => {
                 </button>
               </div>
             </div>
-            <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-              <div className="text-center">
-                <ChartBarIcon className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-                <p className="text-gray-500">
-                  Chart visualization would go here
-                </p>
-                <p className="text-sm text-gray-400">
-                  Integration with Chart.js or similar library
-                </p>
-              </div>
+            <div className="h-64">
+              <UserGrowthChart
+                data={analytics.userGrowth}
+                selectedMetric={selectedMetric}
+              />
             </div>
           </div>
 
@@ -346,15 +375,33 @@ const AdminAnalyticsPage = () => {
                 Last {dateRange} days
               </div>
             </div>
-            <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-              <div className="text-center">
-                <CurrencyDollarIcon className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-                <p className="text-gray-500">Revenue chart would go here</p>
-                <p className="text-sm text-gray-400">
-                  Integration with Chart.js or similar library
-                </p>
-              </div>
+            <div className="h-64">
+              <RevenueChart
+                data={analytics.revenueData}
+                formatCurrency={formatCurrency}
+              />
             </div>
+          </div>
+        </div>
+
+        {/* User & Course Comparison Chart - New Addition */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                User & Course Growth Comparison
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Side-by-side comparison of user registrations and course enrollments
+              </p>
+            </div>
+            <div className="flex items-center text-sm text-gray-500">
+              <ChartBarIcon className="w-4 h-4 mr-1" />
+              Comparative Analysis
+            </div>
+          </div>
+          <div className="h-80">
+            <UserCourseComparisonChart data={analytics.monthlyStats} />
           </div>
         </div>
 
