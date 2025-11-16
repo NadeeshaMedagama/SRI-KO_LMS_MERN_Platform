@@ -15,7 +15,151 @@ const {
 
 const router = express.Router();
 
-// Helper function to get monthly statistics
+// Helper function to get rolling monthly statistics (handles year transitions automatically)
+async function getRollingMonthlyStatistics(startDate, endDate) {
+  try {
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    // Get monthly user registrations within date range
+    const monthlyUsers = await User.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: startDate,
+            $lte: endDate
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { '_id.year': 1, '_id.month': 1 }
+      }
+    ]);
+
+    // Get monthly course creations within date range
+    const monthlyCourses = await Course.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: startDate,
+            $lte: endDate
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { '_id.year': 1, '_id.month': 1 }
+      }
+    ]);
+
+    // Get monthly revenue from completed payments within date range
+    const monthlyRevenue = await Payment.aggregate([
+      {
+        $match: {
+          status: 'completed',
+          paymentDate: {
+            $gte: startDate,
+            $lte: endDate
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$paymentDate' },
+            month: { $month: '$paymentDate' }
+          },
+          totalAmount: { $sum: '$amount' }
+        }
+      },
+      {
+        $sort: { '_id.year': 1, '_id.month': 1 }
+      }
+    ]);
+
+    // Create maps for quick lookup
+    const userMap = new Map();
+    monthlyUsers.forEach(item => {
+      const key = `${item._id.year}-${item._id.month}`;
+      userMap.set(key, item.count);
+    });
+
+    const courseMap = new Map();
+    monthlyCourses.forEach(item => {
+      const key = `${item._id.year}-${item._id.month}`;
+      courseMap.set(key, item.count);
+    });
+
+    const revenueMap = new Map();
+    monthlyRevenue.forEach(item => {
+      const key = `${item._id.year}-${item._id.month}`;
+      revenueMap.set(key, item.totalAmount);
+    });
+
+    // Build statistics for all months in the date range
+    const stats = [];
+    const currentDate = new Date(startDate);
+    const endMonth = endDate.getMonth();
+    const endYear = endDate.getFullYear();
+
+    // Iterate through all months in the range
+    while (currentDate <= endDate) {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1; // 1-based month
+      const key = `${year}-${month}`;
+
+      const users = userMap.get(key) || 0;
+      const courses = courseMap.get(key) || 0;
+      const revenue = revenueMap.get(key) || 0;
+
+      stats.push({
+        month: monthNames[month - 1],
+        year: year,
+        users: users,
+        courses: courses,
+        revenue: revenue,
+        label: `${monthNames[month - 1].substring(0, 3)} ${year.toString().substring(2)}`, // e.g., "Jan 24"
+        date: `${year}-${String(month).padStart(2, '0')}`
+      });
+
+      // Move to next month
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      currentDate.setDate(1); // Reset to first day of month to avoid date overflow issues
+
+      // Break if we've passed the end date
+      if (currentDate.getFullYear() > endYear ||
+          (currentDate.getFullYear() === endYear && currentDate.getMonth() > endMonth)) {
+        break;
+      }
+    }
+
+    return stats;
+  } catch (error) {
+    console.error('Error getting rolling monthly statistics:', error);
+    return [];
+  }
+}
+
+// Helper function to get monthly statistics for a specific year (kept for backward compatibility)
 async function getMonthlyStatistics(year) {
   try {
     const monthNames = [
@@ -29,6 +173,30 @@ async function getMonthlyStatistics(year) {
 
     // Get monthly user registrations
     const monthlyUsers = await User.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: startDate,
+            $lte: endDate
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { '_id.month': 1 }
+      }
+    ]);
+
+    // Get monthly course creations
+    const monthlyCourses = await Course.aggregate([
       {
         $match: {
           createdAt: {
@@ -83,6 +251,12 @@ async function getMonthlyStatistics(year) {
       userMap.set(key, item.count);
     });
 
+    const courseMap = new Map();
+    monthlyCourses.forEach(item => {
+      const key = `${item._id.year}-${item._id.month}`;
+      courseMap.set(key, item.count);
+    });
+
     const revenueMap = new Map();
     monthlyRevenue.forEach(item => {
       const key = `${item._id.year}-${item._id.month}`;
@@ -94,13 +268,16 @@ async function getMonthlyStatistics(year) {
     for (let month = 1; month <= 12; month++) {
       const key = `${year}-${month}`;
       const users = userMap.get(key) || 0;
+      const courses = courseMap.get(key) || 0;
       const revenue = revenueMap.get(key) || 0;
 
       stats.push({
         month: monthNames[month - 1],
         year: year,
         users: users,
-        revenue: revenue
+        courses: courses,
+        revenue: revenue,
+        label: monthNames[month - 1].substring(0, 3) // Short month name for charts
       });
     }
 
@@ -116,7 +293,9 @@ async function getMonthlyStatistics(year) {
       month: month,
       year: year,
       users: 0,
-      revenue: 0
+      courses: 0,
+      revenue: 0,
+      label: month.substring(0, 3)
     }));
   }
 }
@@ -847,8 +1026,51 @@ router.put(
 // @access  Private/Admin
 router.get('/analytics', protect, authorize('admin'), async (req, res) => {
   try {
-    // const period = req.query.period || '30';
-    // const days = parseInt(period);
+    const period = req.query.period || '30';
+    const yearFilter = req.query.year; // Optional year filter
+    const days = parseInt(period);
+
+    // Calculate rolling date range from current date (automatically handles year transitions)
+    let endDate = new Date();
+    endDate.setHours(23, 59, 59, 999);
+
+    let startDate = new Date();
+
+    // If year filter is provided and not "all", use that year's range
+    if (yearFilter && yearFilter !== 'all') {
+      const selectedYear = parseInt(yearFilter);
+      startDate = new Date(selectedYear, 0, 1, 0, 0, 0, 0); // Jan 1 of selected year
+      endDate = new Date(selectedYear, 11, 31, 23, 59, 59, 999); // Dec 31 of selected year
+      console.log(`📊 Fetching analytics for year: ${selectedYear}`);
+    } else if (yearFilter === 'all') {
+      // For "All Time", get data from the earliest record to now
+      const earliestUser = await User.findOne().sort({ createdAt: 1 }).select('createdAt');
+      const earliestCourse = await Course.findOne().sort({ createdAt: 1 }).select('createdAt');
+      const earliestPayment = await Payment.findOne().sort({ paymentDate: 1 }).select('paymentDate');
+
+      // Find the earliest date among all records
+      const dates = [];
+      if (earliestUser) dates.push(new Date(earliestUser.createdAt));
+      if (earliestCourse) dates.push(new Date(earliestCourse.createdAt));
+      if (earliestPayment) dates.push(new Date(earliestPayment.paymentDate));
+
+      if (dates.length > 0) {
+        startDate = new Date(Math.min(...dates));
+        startDate.setHours(0, 0, 0, 0);
+      } else {
+        // If no records exist, default to 1 year ago
+        startDate = new Date();
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        startDate.setHours(0, 0, 0, 0);
+      }
+
+      console.log(`📊 Fetching ALL TIME analytics (${startDate.toISOString()} to ${endDate.toISOString()})`);
+    } else {
+      // Use rolling date range (last X days from today)
+      startDate.setDate(startDate.getDate() - days);
+      startDate.setHours(0, 0, 0, 0);
+      console.log(`📊 Fetching analytics for period: ${days} days (${startDate.toISOString()} to ${endDate.toISOString()})`);
+    }
 
     // Get overview statistics
     const totalUsers = await User.countDocuments();
@@ -881,11 +1103,26 @@ router.get('/analytics', protect, authorize('admin'), async (req, res) => {
       },
     ];
 
-    // Get monthly statistics from database
-    const currentYear = new Date().getFullYear();
-    console.log(`📊 Fetching monthly statistics for year: ${currentYear}`);
-    const monthlyStats = await getMonthlyStatistics(currentYear);
-    console.log(`📊 Monthly statistics retrieved: ${monthlyStats.length} months`);
+    // Get monthly statistics using rolling date range (handles year transitions automatically)
+    const monthlyStats = await getRollingMonthlyStatistics(startDate, endDate);
+    console.log(`📊 Monthly statistics retrieved: ${monthlyStats.length} periods`);
+
+    // Format data for User Growth chart (both users and courses)
+    const userGrowth = monthlyStats.map(stat => ({
+      label: stat.label,
+      month: stat.month,
+      users: stat.users,
+      courses: stat.courses,
+      date: stat.date
+    }));
+
+    // Format data for Revenue chart
+    const revenueData = monthlyStats.map(stat => ({
+      label: stat.label,
+      month: stat.month,
+      revenue: stat.revenue,
+      date: stat.date
+    }));
 
     res.status(200).json({
       success: true,
@@ -898,8 +1135,8 @@ router.get('/analytics', protect, authorize('admin'), async (req, res) => {
           completedCourses: publishedCourses,
           averageRating: 4.5,
         },
-        userGrowth: [],
-        revenueData: [],
+        userGrowth,
+        revenueData,
         courseStats: [],
         topCourses,
         userEngagement: [],
