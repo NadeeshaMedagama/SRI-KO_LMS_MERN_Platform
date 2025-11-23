@@ -492,7 +492,7 @@ const AdminNotificationManagementPage = () => {
             <select
               value={filters.type}
               onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               <option value="">All Types</option>
               <option value="general">General</option>
@@ -516,7 +516,7 @@ const AdminNotificationManagementPage = () => {
             <select
               value={filters.priority}
               onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               <option value="">All Priorities</option>
               <option value="low">Low</option>
@@ -531,7 +531,7 @@ const AdminNotificationManagementPage = () => {
             <select
               value={filters.targetAudience}
               onChange={(e) => setFilters({ ...filters, targetAudience: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               <option value="">All Audiences</option>
               <option value="all">All</option>
@@ -548,7 +548,7 @@ const AdminNotificationManagementPage = () => {
             <select
               value={filters.isActive}
               onChange={(e) => setFilters({ ...filters, isActive: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               <option value="">All Status</option>
               <option value="true">Active</option>
