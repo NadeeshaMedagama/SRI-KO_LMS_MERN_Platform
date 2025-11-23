@@ -401,7 +401,7 @@ const AdminSubscriptionManagementPage = () => {
                 <select
                   value={filters.status}
                   onChange={(e) => handleFilterChange('status', e.target.value)}
-                  className="text-sm border border-gray-300 rounded-md px-3 py-1"
+                  className="text-sm border border-gray-300 rounded-md px-3 py-1 cursor-pointer"
                 >
                   <option value="">All Status</option>
                   <option value="completed">Completed</option>
@@ -413,7 +413,7 @@ const AdminSubscriptionManagementPage = () => {
                 <select
                   value={filters.plan}
                   onChange={(e) => handleFilterChange('plan', e.target.value)}
-                  className="text-sm border border-gray-300 rounded-md px-3 py-1"
+                  className="text-sm border border-gray-300 rounded-md px-3 py-1 cursor-pointer"
                 >
                   <option value="">All Plans</option>
                   <option value="starter">Starter</option>
@@ -517,7 +517,7 @@ const AdminSubscriptionManagementPage = () => {
                         value={payment.status}
                         onChange={(e) => handleStatusChange(payment._id, e.target.value)}
                         disabled={updatingPayments.has(payment._id)}
-                        className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         style={{ 
                           color: payment.status === 'completed' ? '#059669' : 
                                  payment.status === 'pending' ? '#D97706' :
