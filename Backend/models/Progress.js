@@ -66,6 +66,22 @@ const progressSchema = new mongoose.Schema(
 // Index for efficient queries
 progressSchema.index({ student: 1, course: 1 }, { unique: true });
 
+// Pre-save middleware to automatically set completionDate when course is completed
+progressSchema.pre('save', function(next) {
+  // If isCompleted is being set to true and completionDate is not already set
+  if (this.isCompleted && !this.completionDate) {
+    this.completionDate = new Date();
+    console.log(`✅ Auto-set completionDate for course completion`);
+  }
+
+  // If isCompleted changed from true to false, clear the completionDate
+  if (this.isModified('isCompleted') && !this.isCompleted) {
+    this.completionDate = undefined;
+  }
+
+  next();
+});
+
 // Calculate overall progress
 progressSchema.methods.calculateProgress = function(course) {
   if (!course || !course.curriculum) return 0;

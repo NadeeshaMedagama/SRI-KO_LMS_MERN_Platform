@@ -481,11 +481,22 @@ router.get('/stats', protect, authorize('admin'), async (req, res) => {
     const activeUsers = await User.countDocuments({ isActive: true });
     // const publishedCourses = await Course.countDocuments({ isPublished: true });
 
-    // Calculate total revenue (simplified - you might want to add a Payment model)
-    const courses = await Course.find({ isPublished: true });
-    const totalRevenue = courses.reduce((sum, course) => {
-      return sum + course.price * (course.enrolledStudents?.length || 0);
-    }, 0);
+    // Calculate total revenue from completed payments
+    const completedPayments = await Payment.aggregate([
+      {
+        $match: {
+          status: 'completed'
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$amount' }
+        }
+      }
+    ]);
+
+    const totalRevenue = completedPayments.length > 0 ? completedPayments[0].totalRevenue : 0;
 
     // Get completed courses count (simplified)
     const completedCourses = await Course.countDocuments({ isPublished: true });
@@ -1026,6 +1037,7 @@ router.put(
 // @access  Private/Admin
 router.get('/analytics', protect, authorize('admin'), async (req, res) => {
   try {
+    console.log('🔥🔥🔥 ANALYTICS ENDPOINT CALLED - USING NEW PERCENTAGE CALCULATION 🔥🔥🔥');
     const period = req.query.period || '30';
     const yearFilter = req.query.year; // Optional year filter
     const days = parseInt(period);
@@ -1078,11 +1090,208 @@ router.get('/analytics', protect, authorize('admin'), async (req, res) => {
     const activeUsers = await User.countDocuments({ isActive: true });
     const publishedCourses = await Course.countDocuments({ isPublished: true });
 
-    // Calculate total revenue
-    const courses = await Course.find({ isPublished: true });
-    const totalRevenue = courses.reduce((sum, course) => {
-      return sum + course.price * (course.enrolledStudents?.length || 0);
-    }, 0);
+    // Calculate total revenue from completed payments
+    const completedPayments = await Payment.aggregate([
+      {
+        $match: {
+          status: 'completed'
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$amount' }
+        }
+      }
+    ]);
+
+    const totalRevenue = completedPayments.length > 0 ? completedPayments[0].totalRevenue : 0;
+
+    // Get new items added in the current period (last X days)
+    const newUsersInPeriod = await User.countDocuments({
+      createdAt: { $gte: startDate, $lte: endDate }
+    });
+
+    const newCoursesInPeriod = await Course.countDocuments({
+      createdAt: { $gte: startDate, $lte: endDate }
+    });
+
+    const newActiveUsersInPeriod = await User.countDocuments({
+      isActive: true,
+      createdAt: { $gte: startDate, $lte: endDate }
+    });
+
+    // Get revenue from current period
+    const currentPeriodRevenue = await Payment.aggregate([
+      {
+        $match: {
+          status: 'completed',
+          paymentDate: { $gte: startDate, $lte: endDate }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$amount' }
+        }
+      }
+    ]);
+
+    const revenueInPeriod = currentPeriodRevenue.length > 0 ? currentPeriodRevenue[0].totalRevenue : 0;
+
+    // Calculate previous period dates (same duration as current period)
+    const periodDuration = endDate - startDate;
+    const prevPeriodEndDate = new Date(startDate.getTime() - 1); // End of previous period
+    const prevPeriodStartDate = new Date(prevPeriodEndDate.getTime() - periodDuration);
+
+    // Get counts from previous period for comparison
+    const prevPeriodUsers = await User.countDocuments({
+      createdAt: { $gte: prevPeriodStartDate, $lte: prevPeriodEndDate }
+    });
+
+    const prevPeriodCourses = await Course.countDocuments({
+      createdAt: { $gte: prevPeriodStartDate, $lte: prevPeriodEndDate }
+    });
+
+    const prevPeriodActiveUsers = await User.countDocuments({
+      isActive: true,
+      createdAt: { $gte: prevPeriodStartDate, $lte: prevPeriodEndDate }
+    });
+
+    const prevPeriodRevenueData = await Payment.aggregate([
+      {
+        $match: {
+          status: 'completed',
+          paymentDate: { $gte: prevPeriodStartDate, $lte: prevPeriodEndDate }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$amount' }
+        }
+      }
+    ]);
+
+    const prevPeriodRevenue = prevPeriodRevenueData.length > 0 ? prevPeriodRevenueData[0].totalRevenue : 0;
+
+    // Calculate growth percentages: ((current - previous) / previous) * 100
+    const calculateGrowthPercentage = (currentPeriod, previousPeriod) => {
+      if (previousPeriod === 0) {
+        // If there were no items in previous period but there are now, return 100% growth
+        return currentPeriod > 0 ? 100 : 0;
+      }
+      return Number((((currentPeriod - previousPeriod) / previousPeriod) * 100).toFixed(1));
+    };
+
+    const usersGrowth = calculateGrowthPercentage(newUsersInPeriod, prevPeriodUsers);
+    const coursesGrowth = calculateGrowthPercentage(newCoursesInPeriod, prevPeriodCourses);
+    const revenueGrowth = calculateGrowthPercentage(revenueInPeriod, prevPeriodRevenue);
+    const activeUsersGrowth = calculateGrowthPercentage(newActiveUsersInPeriod, prevPeriodActiveUsers);
+
+    // Debug logging
+    console.log('📊 Analytics Growth Calculation Debug:');
+    console.log(`   Current Period: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    console.log(`   Previous Period: ${prevPeriodStartDate.toISOString()} to ${prevPeriodEndDate.toISOString()}`);
+    console.log(`   Users: Current=${newUsersInPeriod}, Previous=${prevPeriodUsers}, Growth=${usersGrowth}%`);
+    console.log(`   Courses: Current=${newCoursesInPeriod}, Previous=${prevPeriodCourses}, Growth=${coursesGrowth}%`);
+    console.log(`   Revenue: Current=${revenueInPeriod}, Previous=${prevPeriodRevenue}, Growth=${revenueGrowth}%`);
+    console.log(`   Active Users: Current=${newActiveUsersInPeriod}, Previous=${prevPeriodActiveUsers}, Growth=${activeUsersGrowth}%`);
+
+    // Calculate Daily Active Users (users who logged in today)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const dailyActiveUsers = await User.countDocuments({
+      lastLogin: { $gte: today, $lt: tomorrow }
+    });
+
+    // Calculate Daily Active Users for yesterday for comparison
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const yesterdayActiveUsers = await User.countDocuments({
+      lastLogin: { $gte: yesterday, $lt: today }
+    });
+
+    const dailyActiveUsersGrowth = calculateGrowthPercentage(dailyActiveUsers, yesterdayActiveUsers);
+
+    // Calculate Course Completions this month (ALL USERS - including students, instructors, and admins)
+    const monthStart = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+    const monthEnd = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const Progress = require('../models/Progress');
+
+    // Count ALL completions this month (regardless of user role)
+    // This ensures instructors and admins who complete courses are also counted
+    const courseCompletionsThisMonth = await Progress.countDocuments({
+      isCompleted: true,
+      completionDate: { $gte: monthStart, $lte: monthEnd }
+    });
+
+    // Calculate course completions for previous month for comparison (ALL USERS)
+    const prevMonthStart = new Date(monthStart);
+    prevMonthStart.setMonth(prevMonthStart.getMonth() - 1);
+    const prevMonthEnd = new Date(monthStart);
+    prevMonthEnd.setTime(prevMonthEnd.getTime() - 1);
+
+    const courseCompletionsPrevMonth = await Progress.countDocuments({
+      isCompleted: true,
+      completionDate: { $gte: prevMonthStart, $lte: prevMonthEnd }
+    });
+
+    const courseCompletionsGrowth = calculateGrowthPercentage(courseCompletionsThisMonth, courseCompletionsPrevMonth);
+
+    console.log('📊 Course Completions Calculation:');
+    console.log(`   This Month (${monthStart.toISOString().split('T')[0]} to ${monthEnd.toISOString().split('T')[0]}): ${courseCompletionsThisMonth}`);
+    console.log(`   Previous Month (${prevMonthStart.toISOString().split('T')[0]} to ${prevMonthEnd.toISOString().split('T')[0]}): ${courseCompletionsPrevMonth}`);
+    console.log(`   Growth: ${courseCompletionsGrowth > 0 ? '+' : ''}${courseCompletionsGrowth}%`);
+
+    // Calculate Average Rating across all courses
+    const ratingStats = await Course.aggregate([
+      {
+        $match: {
+          isPublished: true,
+          averageRating: { $gt: 0 }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          averageRating: { $avg: '$averageRating' },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const currentAverageRating = ratingStats.length > 0 ? ratingStats[0].averageRating : 0;
+
+    // Calculate previous period's average rating (30 days ago)
+    const ratingPrevPeriod = await Course.aggregate([
+      {
+        $match: {
+          isPublished: true,
+          averageRating: { $gt: 0 },
+          updatedAt: { $lte: prevPeriodEndDate }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          averageRating: { $avg: '$averageRating' }
+        }
+      }
+    ]);
+
+    const prevAverageRating = ratingPrevPeriod.length > 0 ? ratingPrevPeriod[0].averageRating : currentAverageRating;
+    const averageRatingChange = Number((currentAverageRating - prevAverageRating).toFixed(1));
+
+    console.log('📊 User Activity Metrics:');
+    console.log(`   Daily Active Users: ${dailyActiveUsers} (${dailyActiveUsersGrowth > 0 ? '+' : ''}${dailyActiveUsersGrowth}%)`);
+    console.log(`   Course Completions This Month (All Users): ${courseCompletionsThisMonth} (${courseCompletionsGrowth > 0 ? '+' : ''}${courseCompletionsGrowth}%)`);
+    console.log(`   Average Rating: ${currentAverageRating.toFixed(1)} (${averageRatingChange > 0 ? '+' : ''}${averageRatingChange})`);
 
     // Get top courses
     const topCourses = await Course.find({ isPublished: true })
@@ -1124,6 +1333,12 @@ router.get('/analytics', protect, authorize('admin'), async (req, res) => {
       date: stat.date
     }));
 
+    console.log('🚀 SENDING ANALYTICS RESPONSE:');
+    console.log(`   usersGrowth: ${usersGrowth}%`);
+    console.log(`   coursesGrowth: ${coursesGrowth}%`);
+    console.log(`   revenueGrowth: ${revenueGrowth}%`);
+    console.log(`   activeUsersGrowth: ${activeUsersGrowth}%`);
+
     res.status(200).json({
       success: true,
       analytics: {
@@ -1133,7 +1348,19 @@ router.get('/analytics', protect, authorize('admin'), async (req, res) => {
           totalRevenue,
           activeUsers,
           completedCourses: publishedCourses,
-          averageRating: 4.5,
+          averageRating: Number(currentAverageRating.toFixed(1)),
+          usersGrowth,
+          coursesGrowth,
+          revenueGrowth,
+          activeUsersGrowth,
+        },
+        userActivity: {
+          dailyActiveUsers,
+          dailyActiveUsersGrowth,
+          courseCompletionsThisMonth,
+          courseCompletionsGrowth,
+          averageRating: Number(currentAverageRating.toFixed(1)),
+          averageRatingChange,
         },
         userGrowth,
         revenueData,
