@@ -168,14 +168,24 @@ router.get('/eligible-students', protect, authorize('admin'), async (req, res) =
       isCompleted: true,
       ...(courseId && { course: courseId })
     })
-    .populate('student', 'name email')
+    .populate({
+      path: 'student',
+      select: 'name email role',
+      match: { role: 'student' } // Only include actual students, not instructors/admins
+    })
     .populate('course', 'title description')
     .sort({ completionDate: -1 });
 
     // Filter out students who already have certificates for these courses
+    // Also filter out null students (instructors/admins excluded by populate match)
     const eligibleStudents = [];
     
     for (const progress of completedProgress) {
+      // Skip if student is null (instructor/admin filtered out by populate match)
+      if (!progress.student) {
+        continue;
+      }
+
       const existingCertificate = await Certificate.findOne({
         student: progress.student._id,
         course: progress.course._id
