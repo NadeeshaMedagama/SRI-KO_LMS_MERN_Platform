@@ -31,6 +31,18 @@ const AdminAnalyticsPage = () => {
       activeUsers: 0,
       completedCourses: 0,
       averageRating: 0,
+      usersGrowth: 0,
+      coursesGrowth: 0,
+      revenueGrowth: 0,
+      activeUsersGrowth: 0,
+    },
+    userActivity: {
+      dailyActiveUsers: 0,
+      dailyActiveUsersGrowth: 0,
+      courseCompletionsThisMonth: 0,
+      courseCompletionsGrowth: 0,
+      averageRating: 0,
+      averageRatingChange: 0,
     },
     userGrowth: [],
     revenueData: [],
@@ -66,8 +78,8 @@ const AdminAnalyticsPage = () => {
 
       const workingApiUrl = await getWorkingApiUrl();
 
-      // Build query parameters
-      let queryParams = `period=${dateRange}`;
+      // Build query parameters with cache buster
+      let queryParams = `period=${dateRange}&_t=${Date.now()}`;  // Add timestamp to prevent caching
       if (selectedYear !== 'all') {
         queryParams += `&year=${selectedYear}`;
       }
@@ -81,15 +93,22 @@ const AdminAnalyticsPage = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
+        cache: 'no-cache',  // Disable caching
       });
 
       console.log('Analytics response status:', response.status);
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Analytics response data:', data);
+        console.log('📊 Analytics response data:', data);
+        console.log('🔍 GROWTH VALUES RECEIVED FROM BACKEND:');
+        console.log('   usersGrowth:', data.analytics?.overview?.usersGrowth);
+        console.log('   coursesGrowth:', data.analytics?.overview?.coursesGrowth);
+        console.log('   revenueGrowth:', data.analytics?.overview?.revenueGrowth);
+        console.log('   activeUsersGrowth:', data.analytics?.overview?.activeUsersGrowth);
+
         if (data.success) {
-          setAnalytics(data.analytics || {
+          const analyticsData = data.analytics || {
             overview: {
               totalUsers: 0,
               totalCourses: 0,
@@ -97,6 +116,18 @@ const AdminAnalyticsPage = () => {
               activeUsers: 0,
               completedCourses: 0,
               averageRating: 0,
+              usersGrowth: 0,
+              coursesGrowth: 0,
+              revenueGrowth: 0,
+              activeUsersGrowth: 0,
+            },
+            userActivity: {
+              dailyActiveUsers: 0,
+              dailyActiveUsersGrowth: 0,
+              courseCompletionsThisMonth: 0,
+              courseCompletionsGrowth: 0,
+              averageRating: 0,
+              averageRatingChange: 0,
             },
             userGrowth: [],
             revenueData: [],
@@ -104,8 +135,17 @@ const AdminAnalyticsPage = () => {
             topCourses: [],
             userEngagement: [],
             monthlyStats: [],
-          });
-          console.log('Analytics loaded:', data.analytics);
+          };
+
+          console.log('✅ Setting analytics state with:', analyticsData);
+          console.log('   overview.usersGrowth:', analyticsData.overview.usersGrowth);
+          console.log('   overview.coursesGrowth:', analyticsData.overview.coursesGrowth);
+          console.log('   overview.revenueGrowth:', analyticsData.overview.revenueGrowth);
+          console.log('   overview.activeUsersGrowth:', analyticsData.overview.activeUsersGrowth);
+          console.log('   userActivity:', analyticsData.userActivity);
+
+          setAnalytics(analyticsData);
+          console.log('Analytics loaded successfully');
         } else {
           console.error('Analytics API returned error:', data.message);
           toast.error(data.message || 'Failed to fetch analytics data');
@@ -173,6 +213,14 @@ const AdminAnalyticsPage = () => {
     if (change < 0)
       return <ArrowTrendingDownIcon className="w-4 h-4 text-red-500" />;
     return <div className="w-4 h-4 bg-gray-300 rounded-full" />;
+  };
+
+  const formatGrowth = growth => {
+    const value = Number(growth) || 0;
+    const sign = value >= 0 ? '+' : '';
+    const colorClass = value >= 0 ? 'text-green-600' : 'text-red-600';
+    console.log(`📊 formatGrowth called with: ${growth} -> formatted: ${sign}${value.toFixed(1)}%`);
+    return { text: `${sign}${value.toFixed(1)}%`, colorClass };
   };
 
   // const getTrendColor = (change) => {
@@ -262,8 +310,10 @@ const AdminAnalyticsPage = () => {
                   {formatNumber(analytics.overview.totalUsers)}
                 </p>
                 <div className="flex items-center mt-1">
-                  {getTrendIcon(5.2)}
-                  <span className="text-sm text-green-600 ml-1">+5.2%</span>
+                  {getTrendIcon(analytics.overview.usersGrowth)}
+                  <span className={`text-sm ml-1 ${formatGrowth(analytics.overview.usersGrowth).colorClass}`}>
+                    {formatGrowth(analytics.overview.usersGrowth).text}
+                  </span>
                 </div>
               </div>
               <UsersIcon className="h-8 w-8 text-blue-600" />
@@ -280,8 +330,10 @@ const AdminAnalyticsPage = () => {
                   {formatNumber(analytics.overview.totalCourses)}
                 </p>
                 <div className="flex items-center mt-1">
-                  {getTrendIcon(12.5)}
-                  <span className="text-sm text-green-600 ml-1">+12.5%</span>
+                  {getTrendIcon(analytics.overview.coursesGrowth)}
+                  <span className={`text-sm ml-1 ${formatGrowth(analytics.overview.coursesGrowth).colorClass}`}>
+                    {formatGrowth(analytics.overview.coursesGrowth).text}
+                  </span>
                 </div>
               </div>
               <AcademicCapIcon className="h-8 w-8 text-green-600" />
@@ -298,8 +350,10 @@ const AdminAnalyticsPage = () => {
                   {formatCurrency(analytics.overview.totalRevenue)}
                 </p>
                 <div className="flex items-center mt-1">
-                  {getTrendIcon(8.7)}
-                  <span className="text-sm text-green-600 ml-1">+8.7%</span>
+                  {getTrendIcon(analytics.overview.revenueGrowth)}
+                  <span className={`text-sm ml-1 ${formatGrowth(analytics.overview.revenueGrowth).colorClass}`}>
+                    {formatGrowth(analytics.overview.revenueGrowth).text}
+                  </span>
                 </div>
               </div>
               <CurrencyDollarIcon className="h-8 w-8 text-yellow-600" />
@@ -316,8 +370,10 @@ const AdminAnalyticsPage = () => {
                   {formatNumber(analytics.overview.activeUsers)}
                 </p>
                 <div className="flex items-center mt-1">
-                  {getTrendIcon(3.1)}
-                  <span className="text-sm text-green-600 ml-1">+3.1%</span>
+                  {getTrendIcon(analytics.overview.activeUsersGrowth)}
+                  <span className={`text-sm ml-1 ${formatGrowth(analytics.overview.activeUsersGrowth).colorClass}`}>
+                    {formatGrowth(analytics.overview.activeUsersGrowth).text}
+                  </span>
                 </div>
               </div>
               <ArrowTrendingUpIcon className="h-8 w-8 text-purple-600" />
@@ -490,11 +546,13 @@ const AdminAnalyticsPage = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-semibold text-gray-900">
-                      {formatNumber(analytics.overview.activeUsers)}
+                      {formatNumber(analytics.userActivity?.dailyActiveUsers || 0)}
                     </p>
                     <div className="flex items-center">
-                      <ArrowUpIcon className="h-3 w-3 text-green-500 mr-1" />
-                      <span className="text-sm text-green-600">+12%</span>
+                      {getTrendIcon(analytics.userActivity?.dailyActiveUsersGrowth || 0)}
+                      <span className={`text-sm ml-1 ${formatGrowth(analytics.userActivity?.dailyActiveUsersGrowth || 0).colorClass}`}>
+                        {formatGrowth(analytics.userActivity?.dailyActiveUsersGrowth || 0).text}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -515,11 +573,13 @@ const AdminAnalyticsPage = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-semibold text-gray-900">
-                      {formatNumber(analytics.overview.completedCourses)}
+                      {formatNumber(analytics.userActivity?.courseCompletionsThisMonth || 0)}
                     </p>
                     <div className="flex items-center">
-                      <ArrowUpIcon className="h-3 w-3 text-green-500 mr-1" />
-                      <span className="text-sm text-green-600">+8%</span>
+                      {getTrendIcon(analytics.userActivity?.courseCompletionsGrowth || 0)}
+                      <span className={`text-sm ml-1 ${formatGrowth(analytics.userActivity?.courseCompletionsGrowth || 0).colorClass}`}>
+                        {formatGrowth(analytics.userActivity?.courseCompletionsGrowth || 0).text}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -540,11 +600,17 @@ const AdminAnalyticsPage = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-semibold text-gray-900">
-                      {analytics.overview.averageRating?.toFixed(1) || 'N/A'}
+                      {analytics.userActivity?.averageRating?.toFixed(1) || 'N/A'}
                     </p>
                     <div className="flex items-center">
-                      <ArrowUpIcon className="h-3 w-3 text-green-500 mr-1" />
-                      <span className="text-sm text-green-600">+0.2</span>
+                      {getTrendIcon(analytics.userActivity?.averageRatingChange || 0)}
+                      <span className={`text-sm ml-1 ${
+                        (analytics.userActivity?.averageRatingChange || 0) >= 0
+                          ? 'text-green-600'
+                          : 'text-red-600'
+                      }`}>
+                        {(analytics.userActivity?.averageRatingChange || 0) >= 0 ? '+' : ''}{(analytics.userActivity?.averageRatingChange || 0).toFixed(1)}
+                      </span>
                     </div>
                   </div>
                 </div>
