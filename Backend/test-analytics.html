@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: #f9f9f9;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        .percentage {
+            font-size: 18px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+        .error {
+            color: red;
+            padding: 10px;
+            background: #ffebee;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        pre {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            font-size: 14px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Analytics API Direct Test</h1>
+
+        <div class="input-group">
+            <label for="token">Admin Token (Get from localStorage.getItem('adminToken')):</label>
+            <input type="text" id="token" placeholder="Paste your admin token here">
+        </div>
+
+        <div class="input-group">
+            <label for="apiUrl">API URL:</label>
+            <input type="text" id="apiUrl" value="http://localhost:5000/api" placeholder="http://localhost:5000/api">
+        </div>
+
+        <button onclick="testAnalytics()">Test Analytics API</button>
+        <button onclick="clearDisplay()">Clear</button>
+
+        <div id="result"></div>
+
+        <div id="display" style="display: none; margin-top: 30px;">
+            <h2>📊 Analytics Overview</h2>
+
+            <div class="card">
+                <h3>👥 Total Users</h3>
+                <div class="value" id="totalUsers">-</div>
+                <div class="percentage" id="usersGrowth">-</div>
+            </div>
+
+            <div class="card">
+                <h3>📚 Total Courses</h3>
+                <div class="value" id="totalCourses">-</div>
+                <div class="percentage" id="coursesGrowth">-</div>
+            </div>
+
+            <div class="card">
+                <h3>💰 Total Revenue</h3>
+                <div class="value" id="totalRevenue">-</div>
+                <div class="percentage" id="revenueGrowth">-</div>
+            </div>
+
+            <div class="card">
+                <h3>🟢 Active Users</h3>
+                <div class="value" id="activeUsers">-</div>
+                <div class="percentage" id="activeUsersGrowth">-</div>
+            </div>
+
+            <h3>Raw JSON Response:</h3>
+            <pre id="rawJson"></pre>
+        </div>
+    </div>
+
+    <script>
+        async function testAnalytics() {
+            const token = document.getElementById('token').value.trim();
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const resultDiv = document.getElementById('result');
+            const displayDiv = document.getElementById('display');
+
+            if (!token) {
+                resultDiv.innerHTML = '<div class="error">❌ Please enter an admin token!</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div>⏳ Testing API...</div>';
+
+            try {
+                const response = await fetch(`${apiUrl}/admin/analytics?period=30`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    cache: 'no-cache',  // Force no cache
+                });
+
+                console.log('Response status:', response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Response data:', data);
+
+                    if (data.success && data.analytics) {
+                        const overview = data.analytics.overview;
+
+                        // Display values
+                        document.getElementById('totalUsers').textContent = overview.totalUsers;
+                        document.getElementById('usersGrowth').textContent = `+${overview.usersGrowth}%`;
+
+                        document.getElementById('totalCourses').textContent = overview.totalCourses;
+                        document.getElementById('coursesGrowth').textContent = `+${overview.coursesGrowth}%`;
+
+                        document.getElementById('totalRevenue').textContent = `LKR ${overview.totalRevenue.toFixed(2)}`;
+                        document.getElementById('revenueGrowth').textContent = `+${overview.revenueGrowth}%`;
+
+                        document.getElementById('activeUsers').textContent = overview.activeUsers;
+                        document.getElementById('activeUsersGrowth').textContent = `+${overview.activeUsersGrowth}%`;
+
+                        document.getElementById('rawJson').textContent = JSON.stringify(data, null, 2);
+
+                        resultDiv.innerHTML = '<div class="success">✅ Successfully fetched analytics data!</div>';
+                        displayDiv.style.display = 'block';
+
+                        // Check for 100% issue
+                        if (overview.usersGrowth === 100 && overview.coursesGrowth === 100) {
+                            resultDiv.innerHTML += '<div class="error">⚠️ WARNING: All percentages are 100%! This means the backend is still returning old values.</div>';
+                        } else if (overview.usersGrowth === 9.5 && overview.coursesGrowth === 12.5) {
+                            resultDiv.innerHTML += '<div class="success">✅ CORRECT! Backend is returning the expected values (9.5%, 12.5%, etc.)</div>';
+                        }
+                    } else {
+                        resultDiv.innerHTML = `<div class="error">❌ API returned error: ${data.message}</div>`;
+                    }
+                } else {
+                    const errorData = await response.json();
+                    resultDiv.innerHTML = `<div class="error">❌ API error (${response.status}): ${errorData.message}</div>`;
+                    console.error('API error:', errorData);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Failed to connect: ${error.message}</div>`;
+                console.error('Connection error:', error);
+            }
+        }
+
+        function clearDisplay() {
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('display').style.display = 'none';
+        }
+
+        // Try to auto-fill token from localStorage if running in same domain
+        window.addEventListener('load', () => {
+            try {
+                const savedToken = localStorage.getItem('adminToken') || localStorage.getItem('token');
+                if (savedToken) {
+                    document.getElementById('token').value = savedToken;
+                    console.log('✅ Auto-filled token from localStorage');
+                }
+            } catch (e) {
+                console.log('ℹ️ Could not access localStorage (different domain)');
+            }
+        });
+    </script>
+</body>
+</html>
+
