@@ -307,23 +307,19 @@ const DashboardPage = () => {
 
   const { statistics = {}, enrolledCourses = [], recentActivity = [] } = dashboardData;
   
-  // Filter completed courses - check both isCompleted flag and if all lessons are completed
+  // Filter completed courses - only use the isCompleted flag
   const completedCourses = enrolledCourses.filter(course => {
     const progress = course.progress;
     if (!progress) return false;
-    // Course is completed if:
-    // 1. isCompleted flag is true, OR
-    // 2. All lessons are completed (completedLessons === totalLessons) and totalLessons > 0
-    return progress.isCompleted || 
-           (progress.completedLessons === progress.totalLessons && progress.totalLessons > 0);
+    // Course is completed only if isCompleted flag is true
+    return progress.isCompleted === true;
   });
   
   // Filter in-progress courses (enrolled but not completed)
   const inProgressCourses = enrolledCourses.filter(course => {
     const progress = course.progress;
     if (!progress) return true; // If no progress, show as in-progress
-    return !progress.isCompleted && 
-           !(progress.completedLessons === progress.totalLessons && progress.totalLessons > 0);
+    return progress.isCompleted !== true;
   });
   
   // Calculate total completed lessons from enrolledCourses as fallback
