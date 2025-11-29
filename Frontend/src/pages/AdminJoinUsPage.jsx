@@ -337,7 +337,7 @@ const AdminJoinUsPage = () => {
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm cursor-pointer"
               >
                 <option value="">All Statuses</option>
                 <option value="pending">Pending</option>
@@ -351,7 +351,7 @@ const AdminJoinUsPage = () => {
               <select
                 value={filters.sortBy}
                 onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm cursor-pointer"
               >
                 <option value="submittedAt">Submission Date</option>
                 <option value="name">Name</option>
@@ -364,7 +364,7 @@ const AdminJoinUsPage = () => {
               <select
                 value={filters.sortOrder}
                 onChange={(e) => setFilters({ ...filters, sortOrder: e.target.value })}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm cursor-pointer"
               >
                 <option value="desc">Descending</option>
                 <option value="asc">Ascending</option>
