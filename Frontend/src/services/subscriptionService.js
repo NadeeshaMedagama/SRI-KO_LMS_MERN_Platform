@@ -5,9 +5,14 @@ export const subscriptionService = {
   // Get available subscription plans
   getPlans: async () => {
     try {
+      console.log('📡 Calling apiService.getSubscriptionPlans()...');
       const plans = await apiService.getSubscriptionPlans();
-      return { success: true, data: plans };
+      console.log('📦 Received plans from API:', plans);
+      const result = { success: true, data: plans };
+      console.log('✅ Returning from getPlans():', result);
+      return result;
     } catch (error) {
+      console.error('❌ Error in getPlans():', error);
       throw error;
     }
   },
@@ -25,9 +30,40 @@ export const subscriptionService = {
   // Create a new subscription
   createSubscription: async (plan, billingCycle) => {
     try {
-      const subscription = await apiService.createSubscription(plan);
-      return { success: true, data: subscription };
+      console.log('🔐 Checking authentication...');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      // Get API URL - window.configs.apiUrl does NOT include /api for localhost
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      const apiUrl = `${baseUrl}/api`;
+      console.log(`📡 Calling API: POST ${apiUrl}/subscriptions/create`);
+      console.log('📦 Request body:', { plan, billingCycle });
+
+      const response = await fetch(`${apiUrl}/subscriptions/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ plan, billingCycle }),
+      });
+
+      const data = await response.json();
+      console.log('📨 API Response:', data);
+      console.log('📊 Response status:', response.status);
+
+      if (!response.ok) {
+        console.error('❌ API Error:', data);
+        throw new Error(data.message || 'Failed to create subscription');
+      }
+
+      console.log('✅ Subscription created successfully');
+      return { success: true, subscription: data.subscription };
     } catch (error) {
+      console.error('❌ Error in createSubscription:', error);
       throw error;
     }
   },
@@ -86,20 +122,64 @@ export const subscriptionService = {
 // Payment API - Using the comprehensive apiService
 export const paymentService = {
   // Create a new payment
-  createPayment: async (subscriptionId, paymentMethod, amount, gatewayResponse) => {
+  createPayment: async (subscriptionId, paymentMethod, amount, gatewayResponse = {}) => {
     try {
-      const payment = await apiService.createPayment(subscriptionId, amount);
-      return { success: true, data: payment };
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      // Get API URL - window.configs.apiUrl does NOT include /api for localhost
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      const apiUrl = `${baseUrl}/api`;
+      const response = await fetch(`${apiUrl}/payments/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ subscriptionId, paymentMethod, amount, gatewayResponse }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create payment');
+      }
+
+      return { success: true, payment: data.payment };
     } catch (error) {
       throw error;
     }
   },
 
   // Mark payment as completed
-  completePayment: async (paymentId, gatewayTransactionId, gatewayResponse) => {
+  completePayment: async (paymentId, gatewayTransactionId, gatewayResponse = {}) => {
     try {
-      const payment = await apiService.verifyPayment(paymentId);
-      return { success: true, data: payment };
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      // Get API URL - window.configs.apiUrl does NOT include /api for localhost
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      const apiUrl = `${baseUrl}/api`;
+      const response = await fetch(`${apiUrl}/payments/${paymentId}/complete`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ gatewayTransactionId, gatewayResponse }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to complete payment');
+      }
+
+      return { success: true, payment: data.payment };
     } catch (error) {
       throw error;
     }
@@ -188,8 +268,10 @@ export const paymentService = {
         throw new Error('Authentication required');
       }
 
-      const apiUrl = window?.configs?.apiUrl || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/admin/payments/${paymentId}/status`, {
+      // Get API URL - window.configs.apiUrl does NOT include /api for localhost
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      const apiUrl = `${baseUrl}/api`;
+      const response = await fetch(`${apiUrl}/admin/payments/${paymentId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

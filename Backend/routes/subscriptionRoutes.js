@@ -47,7 +47,7 @@ router.get('/plans', async (req, res) => {
 
     res.json({
       success: true,
-      plans,
+      data: plans,
     });
   } catch (error) {
     console.error('Error fetching plans:', error);
