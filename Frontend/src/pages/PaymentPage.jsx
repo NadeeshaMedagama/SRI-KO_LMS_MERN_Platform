@@ -44,18 +44,70 @@ const PaymentPage = () => {
   const fetchSubscriptionData = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Fetching subscription data...');
+      console.log('📋 Plan from URL:', plan);
+      console.log('📋 Billing cycle from URL:', billingCycle);
+
       const response = await subscriptionService.getPlans();
-      const selectedPlan = response.plans.find(p => p.name === plan);
-      
+      console.log('✅ Plans received:', response);
+      console.log('📦 Plans data:', response?.data);
+
+      if (!response) {
+        console.error('❌ No response from getPlans()');
+        toast.error('Failed to load subscription plans - no response');
+        navigate('/pricing');
+        return;
+      }
+
+      if (!response.data) {
+        console.error('❌ Response has no data field:', response);
+        toast.error('Failed to load subscription plans - invalid response');
+        navigate('/pricing');
+        return;
+      }
+
+      if (!Array.isArray(response.data)) {
+        console.error('❌ Response data is not an array:', typeof response.data, response.data);
+        toast.error('Failed to load subscription plans - invalid data format');
+        navigate('/pricing');
+        return;
+      }
+
+      if (response.data.length === 0) {
+        console.error('❌ No plans available');
+        toast.error('No subscription plans available');
+        navigate('/pricing');
+        return;
+      }
+
+      console.log(`📋 Looking for plan "${plan}" in ${response.data.length} plans...`);
+
+      const selectedPlan = response.data.find(p => {
+        console.log(`🔎 Comparing: "${p?.name}" === "${plan}" ? ${p?.name === plan}`);
+        return p && p.name && p.name === plan;
+      });
+
+      console.log('🎯 Selected plan:', selectedPlan);
+
       if (selectedPlan) {
+        console.log('✅ Plan found! Setting subscription...');
         setSubscription(selectedPlan);
       } else {
-        toast.error('Invalid plan selected');
+        const availablePlans = response.data.map(p => p?.name || 'unknown').join(', ');
+        console.error(`❌ Plan "${plan}" not found. Available plans: ${availablePlans}`);
+        toast.error(`Invalid plan selected: "${plan}". Available: ${availablePlans}`);
         navigate('/pricing');
       }
     } catch (error) {
-      toast.error('Failed to load subscription details');
-      console.error('Error:', error);
+      console.error('❌ Error fetching subscription details:', error);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      if (error.response) {
+        console.error('Error response:', error.response);
+      }
+      toast.error(`Failed to load subscription details: ${error.message}`);
+      // Don't navigate away on error - stay to see the logs
     } finally {
       setLoading(false);
     }
@@ -81,6 +133,18 @@ const PaymentPage = () => {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const fillDemoCardDetails = () => {
+    setPaymentDetails(prev => ({
+      ...prev,
+      cardNumber: '4532 1234 5678 9010',
+      expiryDate: '12/25',
+      cvv: '123',
+      cardName: 'Demo User',
+      phone: '+94 77 123 4567',
+    }));
+    toast.success('Demo card details filled!');
   };
 
   const validatePaymentDetails = () => {
@@ -119,6 +183,11 @@ const PaymentPage = () => {
     try {
       setProcessing(true);
       
+      console.log('💳 Starting payment process...');
+      console.log('📋 Plan:', plan);
+      console.log('📋 Billing Cycle:', billingCycle);
+      console.log('💰 Amount:', subscription.pricing[billingCycle]);
+
       // Simulate payment processing
       // In a real application, you would integrate with a payment gateway like Stripe, PayPal, etc.
       const paymentData = {
@@ -131,10 +200,15 @@ const PaymentPage = () => {
         billingCycle: billingCycle,
       };
 
+      console.log('📦 Creating subscription with:', { plan, billingCycle });
+
       // Create subscription first
       const subscriptionResponse = await subscriptionService.createSubscription(plan, billingCycle);
       
+      console.log('✅ Subscription created:', subscriptionResponse);
+
       if (subscriptionResponse.success) {
+        console.log('📦 Creating payment record...');
         // Create payment record
         const paymentResponse = await paymentService.createPayment(
           subscriptionResponse.subscription._id,
@@ -142,10 +216,14 @@ const PaymentPage = () => {
           subscription.pricing[billingCycle]
         );
 
+        console.log('✅ Payment record created:', paymentResponse);
+
         if (paymentResponse.success) {
+          console.log('⏳ Processing payment...');
           // Simulate successful payment processing
           await new Promise(resolve => setTimeout(resolve, 2000));
           
+          console.log('✅ Completing payment...');
           // Mark payment as completed
           await paymentService.completePayment(
             paymentResponse.payment._id,
@@ -158,7 +236,11 @@ const PaymentPage = () => {
         }
       }
     } catch (error) {
-      console.error('Payment error:', error);
+      console.error('❌ Payment error:', error);
+      console.error('Error details:', error.message);
+      if (error.response) {
+        console.error('Server response:', error.response);
+      }
       toast.error(error.message || 'Payment failed. Please try again.');
     } finally {
       setProcessing(false);
@@ -337,6 +419,23 @@ const PaymentPage = () => {
             {/* Payment Form Fields */}
             {paymentMethod === 'credit_card' && (
               <div className="space-y-4 mb-6">
+                {/* Demo Card Button */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-yellow-800">Testing Mode</p>
+                      <p className="text-xs text-yellow-600">Use demo card details for testing</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={fillDemoCardDetails}
+                      className="px-3 py-1.5 bg-yellow-600 text-white text-sm rounded-md hover:bg-yellow-700 transition-colors"
+                    >
+                      Fill Demo Card
+                    </button>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Card Number

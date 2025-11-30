@@ -288,8 +288,24 @@ class ApiService {
 
   // Subscription endpoints
   async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
-    const response: AxiosResponse<{ success: boolean; data: SubscriptionPlan[] }> = await this.api.get('/subscriptions/plans');
-    return response.data.data || [];
+    try {
+      console.log('🔍 apiService: Fetching subscription plans from:', this.api.defaults.baseURL + '/subscriptions/plans');
+      const response: AxiosResponse<{ success: boolean; data: SubscriptionPlan[] }> = await this.api.get('/subscriptions/plans');
+      console.log('✅ apiService: Raw response:', response.data);
+
+      if (!response.data || !response.data.data) {
+        console.error('❌ apiService: Invalid response format:', response.data);
+        throw new Error('Invalid API response format');
+      }
+
+      console.log('✅ apiService: Returning plans:', response.data.data);
+      return response.data.data;
+    } catch (error: any) {
+      console.error('❌ apiService: Error fetching plans:', error);
+      console.error('❌ apiService: Error message:', error.message);
+      console.error('❌ apiService: Error response:', error.response?.data);
+      throw error;
+    }
   }
 
   async createSubscription(planId: string): Promise<Subscription> {
