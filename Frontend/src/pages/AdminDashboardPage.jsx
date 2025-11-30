@@ -261,8 +261,8 @@ const AdminDashboardPage = () => {
       style: 'currency',
       currency: 'LKR',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(amount);
+      maximumFractionDigits: 0,
+    }).format(Math.round(amount));
   };
 
   const getRoleBadgeColor = role => {
