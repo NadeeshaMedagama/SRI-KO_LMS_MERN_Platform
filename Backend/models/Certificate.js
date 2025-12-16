@@ -4,80 +4,80 @@ const certificateSchema = new mongoose.Schema({
   student: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
   },
   course: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Course',
-    required: true
+    required: true,
   },
   certificateNumber: {
     type: String,
     required: false, // Will be auto-generated in pre-save hook
     unique: true,
-    sparse: true // Allows multiple null values
+    sparse: true, // Allows multiple null values
   },
   studentName: {
     type: String,
-    required: true
+    required: true,
   },
   courseName: {
     type: String,
-    required: true
+    required: true,
   },
   completionDate: {
     type: Date,
-    required: true
+    required: true,
   },
   issuedDate: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   issuedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
   },
   status: {
     type: String,
     enum: ['pending', 'issued', 'sent', 'delivered'],
-    default: 'pending'
+    default: 'pending',
   },
   certificateUrl: {
     type: String,
-    default: ''
+    default: '',
   },
   emailSent: {
     type: Boolean,
-    default: false
+    default: false,
   },
   emailSentDate: {
-    type: Date
+    type: Date,
   },
   notes: {
     type: String,
-    default: ''
+    default: '',
   },
   viewedByStudent: {
     type: Boolean,
-    default: false
+    default: false,
   },
   firstViewedDate: {
-    type: Date
-  }
+    type: Date,
+  },
 }, {
-  timestamps: true
+  timestamps: true,
 });
 
 // Generate unique certificate number
-certificateSchema.pre('save', async function(next) {
+certificateSchema.pre('save', async function (next) {
   if (this.isNew && !this.certificateNumber) {
     try {
       const currentYear = new Date().getFullYear();
 
       // Find the highest certificate number for the current year
       const lastCertificate = await this.constructor.findOne({
-        certificateNumber: { $regex: `^CERT-\\d{6}-${currentYear}$` }
+        certificateNumber: { $regex: `^CERT-\\d{6}-${currentYear}$` },
       }).sort({ certificateNumber: -1 });
 
       let nextNumber = 1;
@@ -105,7 +105,7 @@ certificateSchema.pre('save', async function(next) {
 });
 
 // Static method to get certificates by student
-certificateSchema.statics.getByStudent = async function(studentId) {
+certificateSchema.statics.getByStudent = async function (studentId) {
   return await this.find({ student: studentId })
     .populate('course', 'title description')
     .populate('issuedBy', 'name email')
@@ -113,7 +113,7 @@ certificateSchema.statics.getByStudent = async function(studentId) {
 };
 
 // Static method to get certificates by course
-certificateSchema.statics.getByCourse = async function(courseId) {
+certificateSchema.statics.getByCourse = async function (courseId) {
   return await this.find({ course: courseId })
     .populate('student', 'name email')
     .populate('issuedBy', 'name email')
@@ -121,7 +121,7 @@ certificateSchema.statics.getByCourse = async function(courseId) {
 };
 
 // Static method to get all certificates with pagination
-certificateSchema.statics.getAllCertificates = async function(page = 1, limit = 20, filters = {}) {
+certificateSchema.statics.getAllCertificates = async function (page = 1, limit = 20, filters = {}) {
   const skip = (page - 1) * limit;
   const query = {};
 
@@ -160,13 +160,13 @@ certificateSchema.statics.getAllCertificates = async function(page = 1, limit = 
     pagination: {
       current: page,
       pages: Math.ceil(total / limit),
-      total
-    }
+      total,
+    },
   };
 };
 
 // Static method to get certificate statistics
-certificateSchema.statics.getCertificateStats = async function() {
+certificateSchema.statics.getCertificateStats = async function () {
   const total = await this.countDocuments();
   const pending = await this.countDocuments({ status: 'pending' });
   const issued = await this.countDocuments({ status: 'issued' });
@@ -180,19 +180,19 @@ certificateSchema.statics.getCertificateStats = async function() {
       $match: {
         issuedDate: {
           $gte: new Date(`${currentYear}-01-01`),
-          $lt: new Date(`${currentYear + 1}-01-01`)
-        }
-      }
+          $lt: new Date(`${currentYear + 1}-01-01`),
+        },
+      },
     },
     {
       $group: {
         _id: { $month: '$issuedDate' },
-        count: { $sum: 1 }
-      }
+        count: { $sum: 1 },
+      },
     },
     {
-      $sort: { _id: 1 }
-    }
+      $sort: { _id: 1 },
+    },
   ]);
 
   // Get certificates by course
@@ -200,29 +200,29 @@ certificateSchema.statics.getCertificateStats = async function() {
     {
       $group: {
         _id: '$course',
-        count: { $sum: 1 }
-      }
+        count: { $sum: 1 },
+      },
     },
     {
       $lookup: {
         from: 'courses',
         localField: '_id',
         foreignField: '_id',
-        as: 'courseInfo'
-      }
+        as: 'courseInfo',
+      },
     },
     {
-      $unwind: '$courseInfo'
+      $unwind: '$courseInfo',
     },
     {
       $project: {
         courseName: '$courseInfo.title',
-        count: 1
-      }
+        count: 1,
+      },
     },
     {
-      $sort: { count: -1 }
-    }
+      $sort: { count: -1 },
+    },
   ]);
 
   return {
@@ -232,7 +232,7 @@ certificateSchema.statics.getCertificateStats = async function() {
     sent,
     delivered,
     monthlyStats,
-    courseStats
+    courseStats,
   };
 };
 
