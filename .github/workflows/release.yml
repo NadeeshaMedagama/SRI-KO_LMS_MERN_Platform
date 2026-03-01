@@ -147,6 +147,15 @@ jobs:
 
             ### 📥 Installation
             Download the archives below and follow the [README](https://github.com/${{ github.repository }}/blob/main/README.md) for setup instructions.
+
+            ### 🏪 GitHub Marketplace Action
+            ```yaml
+            - uses: ${{ github.repository }}@${{ env.RELEASE_TAG }}
+              with:
+                node-version: '18'
+                build-frontend: 'true'
+                build-backend: 'true'
+            ```
           files: |
             sri-ko-lms-backend-${{ env.RELEASE_TAG }}.tar.gz
             sri-ko-lms-frontend-${{ env.RELEASE_TAG }}.tar.gz
