@@ -10,6 +10,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   # ───────────────────────────────────────────
@@ -21,6 +22,9 @@ jobs:
     if: github.actor == 'dependabot[bot]'
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Fetch Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v2
@@ -34,13 +38,39 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Add label for major updates
+      - name: Ensure labels exist
         if: steps.metadata.outputs.update-type == 'version-update:semver-major'
         run: |
-          # Create labels if they don't exist yet
-          gh label create "major-update" --color "D93F0B" --description "Major version dependency update" --force 2>/dev/null || true
-          gh label create "needs-review" --color "FBCA04" --description "Requires manual review" --force 2>/dev/null || true
-          gh pr edit "$PR_URL" --add-label "major-update" --add-label "needs-review"
+          # Create labels — use the API directly so it works regardless of gh CLI version
+          gh api repos/${{ github.repository }}/labels \
+            -f name="major-update" \
+            -f color="D93F0B" \
+            -f description="Major version dependency update" \
+            --silent 2>/dev/null \
+          || gh api repos/${{ github.repository }}/labels/major-update \
+            -X PATCH \
+            -f color="D93F0B" \
+            -f description="Major version dependency update" \
+            --silent 2>/dev/null \
+          || true
+
+          gh api repos/${{ github.repository }}/labels \
+            -f name="needs-review" \
+            -f color="FBCA04" \
+            -f description="Requires manual review" \
+            --silent 2>/dev/null \
+          || gh api repos/${{ github.repository }}/labels/needs-review \
+            -X PATCH \
+            -f color="FBCA04" \
+            -f description="Requires manual review" \
+            --silent 2>/dev/null \
+          || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add labels for major updates
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        run: gh pr edit "$PR_URL" --add-label "major-update" --add-label "needs-review"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
