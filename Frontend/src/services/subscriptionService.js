@@ -37,7 +37,7 @@ export const subscriptionService = {
       }
 
       // Get API URL - window.configs.apiUrl does NOT include /api for localhost
-      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5001';
       const apiUrl = `${baseUrl}/api`;
       console.log(`📡 Calling API: POST ${apiUrl}/subscriptions/create`);
       console.log('📦 Request body:', { plan, billingCycle });
@@ -130,7 +130,7 @@ export const paymentService = {
       }
 
       // Get API URL - window.configs.apiUrl does NOT include /api for localhost
-      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5001';
       const apiUrl = `${baseUrl}/api`;
       const response = await fetch(`${apiUrl}/payments/create`, {
         method: 'POST',
@@ -162,7 +162,7 @@ export const paymentService = {
       }
 
       // Get API URL - window.configs.apiUrl does NOT include /api for localhost
-      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5001';
       const apiUrl = `${baseUrl}/api`;
       const response = await fetch(`${apiUrl}/payments/${paymentId}/complete`, {
         method: 'PUT',
@@ -269,7 +269,7 @@ export const paymentService = {
       }
 
       // Get API URL - window.configs.apiUrl does NOT include /api for localhost
-      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5000';
+      const baseUrl = window?.configs?.apiUrl || 'http://localhost:5001';
       const apiUrl = `${baseUrl}/api`;
       const response = await fetch(`${apiUrl}/admin/payments/${paymentId}/status`, {
         method: 'PUT',
