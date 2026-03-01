@@ -262,12 +262,12 @@ const DashboardPage = () => {
       }
 
       // Open certificate in new tab
-      const certificateUrl = `${window?.configs?.apiUrl || 'http://localhost:5000'}${certificate.certificateUrl}`;
+      const certificateUrl = `${window?.configs?.apiUrl || 'http://localhost:5001'}${certificate.certificateUrl}`;
       window.open(certificateUrl, '_blank', 'noopener,noreferrer');
     } catch (error) {
       console.error('Error viewing certificate:', error);
       // Still open the certificate even if marking as viewed fails
-      const certificateUrl = `${window?.configs?.apiUrl || 'http://localhost:5000'}${certificate.certificateUrl}`;
+      const certificateUrl = `${window?.configs?.apiUrl || 'http://localhost:5001'}${certificate.certificateUrl}`;
       window.open(certificateUrl, '_blank', 'noopener,noreferrer');
     }
   };
