@@ -1,5 +1,9 @@
 # CodeQL Security Analysis
 # Performs static analysis to find security vulnerabilities
+#
+# IMPORTANT: Code scanning must be enabled in your repository settings:
+#   Settings → Code security and analysis → Code scanning → Set up → Enable
+#   https://github.com/NadeeshaMedagama/SRI-KO_LMS_MERN_Platform/settings/security_analysis
 
 name: CodeQL Security Analysis
 
@@ -12,15 +16,16 @@ on:
     # Run every Monday at 9:00 AM UTC
     - cron: "0 9 * * 1"
 
+# Workflow-level permissions – required for SARIF upload
+permissions:
+  security-events: write
+  actions: read
+  contents: read
+
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
-
-    permissions:
-      security-events: write
-      actions: read
-      contents: read
 
     strategy:
       fail-fast: false
@@ -45,7 +50,25 @@ jobs:
         uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
+        id: analyze
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
+          output: sarif-results
+          upload: failure-only
 
+      - name: Upload SARIF results
+        if: always() && steps.analyze.outcome == 'success'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: sarif-results
+          category: "/language:${{ matrix.language }}"
+        continue-on-error: true
+
+      - name: Upload SARIF as artifact (fallback)
+        if: always() && steps.analyze.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-sarif-${{ matrix.language }}
+          path: sarif-results
+          retention-days: 30
