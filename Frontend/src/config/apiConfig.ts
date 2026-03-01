@@ -2,7 +2,7 @@
 // Otherwise fall back to local backend URL
 const baseUrl = window?.configs?.apiUrl
   ? window.configs.apiUrl
-  : "http://localhost:5000"; // local backend without /api prefix
+  : "http://localhost:5001"; // local backend without /api prefix
 
 // Handle API URL structure with multiple fallback options
 let apiUrl;
@@ -47,8 +47,8 @@ export const getWorkingApiUrl = async (): Promise<string> => {
     apiUrl,
     `${baseUrl}/api`,
     baseUrl,
-    'http://localhost:5000/api',
-    'http://localhost:5000'
+    'http://localhost:5001/api',
+    'http://localhost:5001'
   ];
 
   console.log('🔍 Testing possible API URLs:', possibleUrls);
