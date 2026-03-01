@@ -234,7 +234,7 @@ const ProfilePage = () => {
                   <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
                     {profileData.avatar ? (
                       <img
-                        src={profileData.avatar.startsWith('http') ? profileData.avatar : `${window?.configs?.apiUrl || 'http://localhost:5000'}${profileData.avatar}`}
+                        src={profileData.avatar.startsWith('http') ? profileData.avatar : `${window?.configs?.apiUrl || 'http://localhost:5001'}${profileData.avatar}`}
                         alt="Profile"
                         className="w-20 h-20 rounded-full object-cover"
                         onError={(e) => {
