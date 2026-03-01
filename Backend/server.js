@@ -58,7 +58,7 @@ const settingsRoutes = require('./routes/settingsRoutes');
 const fs = require('fs');
 const https = require('https');
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const httpsFlag = (process.env.HTTPS_ENABLE || 'false');
 const HTTPS_ENABLE = (httpsFlag || 'false').toLowerCase() === 'true';
 const SSL_KEY_PATH = process.env.SSL_KEY_PATH;
