@@ -6,10 +6,24 @@ name: Release
 on:
   push:
     tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag (e.g. v1.2.3)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
   packages: write
+
+env:
+  RELEASE_TAG: ${{ inputs.tag_name || github.ref_name }}
 
 jobs:
   # ───────────────────────────────────────────
@@ -44,7 +58,7 @@ jobs:
 
       - name: Create Backend archive
         run: |
-          tar -czf sri-ko-lms-backend-${{ github.ref_name }}.tar.gz \
+          tar -czf sri-ko-lms-backend-${{ env.RELEASE_TAG }}.tar.gz \
             --exclude='node_modules' \
             --exclude='config.env' \
             --exclude='config.production.env' \
@@ -54,15 +68,15 @@ jobs:
 
       - name: Create Frontend archive
         run: |
-          tar -czf sri-ko-lms-frontend-${{ github.ref_name }}.tar.gz Frontend/dist/
+          tar -czf sri-ko-lms-frontend-${{ env.RELEASE_TAG }}.tar.gz Frontend/dist/
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-artifacts
           path: |
-            sri-ko-lms-backend-${{ github.ref_name }}.tar.gz
-            sri-ko-lms-frontend-${{ github.ref_name }}.tar.gz
+            sri-ko-lms-backend-${{ env.RELEASE_TAG }}.tar.gz
+            sri-ko-lms-frontend-${{ env.RELEASE_TAG }}.tar.gz
 
   # ───────────────────────────────────────────
   # Create GitHub Release
@@ -118,8 +132,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Release ${{ env.RELEASE_TAG }}
           body: |
             ${{ steps.changelog.outputs.changelog }}
 
@@ -127,17 +141,17 @@ jobs:
 
             ### 📦 Docker Images
             ```bash
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/sri-ko-lms-backend:${{ github.ref_name }}
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/sri-ko-lms-frontend:${{ github.ref_name }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/sri-ko-lms-backend:${{ env.RELEASE_TAG }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/sri-ko-lms-frontend:${{ env.RELEASE_TAG }}
             ```
 
             ### 📥 Installation
             Download the archives below and follow the [README](https://github.com/${{ github.repository }}/blob/main/README.md) for setup instructions.
           files: |
-            sri-ko-lms-backend-${{ github.ref_name }}.tar.gz
-            sri-ko-lms-frontend-${{ github.ref_name }}.tar.gz
+            sri-ko-lms-backend-${{ env.RELEASE_TAG }}.tar.gz
+            sri-ko-lms-frontend-${{ env.RELEASE_TAG }}.tar.gz
           draft: false
-          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
+          prerelease: ${{ inputs.prerelease || contains(env.RELEASE_TAG, '-rc') || contains(env.RELEASE_TAG, '-beta') || contains(env.RELEASE_TAG, '-alpha') }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
