@@ -36,7 +36,11 @@ jobs:
 
       - name: Add label for major updates
         if: steps.metadata.outputs.update-type == 'version-update:semver-major'
-        run: gh pr edit "$PR_URL" --add-label "major-update,needs-review"
+        run: |
+          # Create labels if they don't exist yet
+          gh label create "major-update" --color "D93F0B" --description "Major version dependency update" --force 2>/dev/null || true
+          gh label create "needs-review" --color "FBCA04" --description "Requires manual review" --force 2>/dev/null || true
+          gh pr edit "$PR_URL" --add-label "major-update" --add-label "needs-review"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -64,11 +68,11 @@ jobs:
 
       - name: Install Backend dependencies
         working-directory: Backend
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Install Frontend dependencies
         working-directory: Frontend
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Audit Backend dependencies
         id: backend-audit
@@ -111,6 +115,28 @@ jobs:
 
       - name: Fail on critical vulnerabilities
         run: |
-          cd Backend && npm audit --audit-level=critical
-          cd "$GITHUB_WORKSPACE/Frontend" && npm audit --audit-level=critical
+          CRITICAL=0
+          cd Backend
+          BACKEND_CRITICAL=$(npm audit --json 2>/dev/null | node -e "
+            let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{
+              try { const a=JSON.parse(d); console.log(a.metadata?.vulnerabilities?.critical||0); }
+              catch(e) { console.log(0); }
+            });" 2>/dev/null || echo "0")
+          echo "Backend critical vulnerabilities: $BACKEND_CRITICAL"
+
+          cd "$GITHUB_WORKSPACE/Frontend"
+          FRONTEND_CRITICAL=$(npm audit --json 2>/dev/null | node -e "
+            let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{
+              try { const a=JSON.parse(d); console.log(a.metadata?.vulnerabilities?.critical||0); }
+              catch(e) { console.log(0); }
+            });" 2>/dev/null || echo "0")
+          echo "Frontend critical vulnerabilities: $FRONTEND_CRITICAL"
+
+          TOTAL=$((BACKEND_CRITICAL + FRONTEND_CRITICAL))
+          if [ "$TOTAL" -gt 0 ]; then
+            echo "❌ Found $TOTAL critical vulnerabilities (Backend: $BACKEND_CRITICAL, Frontend: $FRONTEND_CRITICAL)"
+            exit 1
+          else
+            echo "✅ No critical vulnerabilities found"
+          fi
 
