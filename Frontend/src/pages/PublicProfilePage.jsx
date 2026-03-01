@@ -123,7 +123,7 @@ const PublicProfilePage = () => {
                 <div className="w-24 h-24 bg-white rounded-full border-4 border-white shadow-lg flex items-center justify-center overflow-hidden">
                   {userData.avatar ? (
                     <img
-                      src={userData.avatar.startsWith('http') ? userData.avatar : `${window?.configs?.apiUrl || 'http://localhost:5000'}${userData.avatar}`}
+                      src={userData.avatar.startsWith('http') ? userData.avatar : `${window?.configs?.apiUrl || 'http://localhost:5001'}${userData.avatar}`}
                       alt="Profile"
                       className="w-24 h-24 rounded-full object-cover"
                     />
