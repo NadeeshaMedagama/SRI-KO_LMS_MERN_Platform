@@ -48,7 +48,7 @@ const CourseDetailPage = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5000'}/api/users/dashboard`, {
+      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5001'}/api/users/dashboard`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
