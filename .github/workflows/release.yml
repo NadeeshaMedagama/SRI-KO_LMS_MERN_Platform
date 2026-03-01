@@ -1,0 +1,144 @@
+# Release Workflow
+# Creates GitHub releases with changelog when a version tag is pushed
+
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # ───────────────────────────────────────────
+  # Build release artifacts
+  # ───────────────────────────────────────────
+  build:
+    name: Build Release Artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Backend dependencies
+        working-directory: Backend
+        run: npm ci
+
+      - name: Install Frontend dependencies
+        working-directory: Frontend
+        run: npm ci
+
+      - name: Build Frontend
+        working-directory: Frontend
+        run: npm run build
+
+      - name: Create Backend archive
+        run: |
+          tar -czf sri-ko-lms-backend-${{ github.ref_name }}.tar.gz \
+            --exclude='node_modules' \
+            --exclude='config.env' \
+            --exclude='config.production.env' \
+            --exclude='config.test.env' \
+            --exclude='uploads/*' \
+            Backend/
+
+      - name: Create Frontend archive
+        run: |
+          tar -czf sri-ko-lms-frontend-${{ github.ref_name }}.tar.gz Frontend/dist/
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            sri-ko-lms-backend-${{ github.ref_name }}.tar.gz
+            sri-ko-lms-frontend-${{ github.ref_name }}.tar.gz
+
+  # ───────────────────────────────────────────
+  # Create GitHub Release
+  # ───────────────────────────────────────────
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -z "$PREV_TAG" ]; then
+            echo "changelog<<EOF" >> $GITHUB_OUTPUT
+            echo "## 🎉 Initial Release" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "### Features" >> $GITHUB_OUTPUT
+            git log --oneline --pretty=format:"- %s" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "changelog<<EOF" >> $GITHUB_OUTPUT
+            echo "## Changes since ${PREV_TAG}" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "### 🚀 Features" >> $GITHUB_OUTPUT
+            git log ${PREV_TAG}..HEAD --oneline --pretty=format:"- %s" --grep="feat" >> $GITHUB_OUTPUT || true
+            echo "" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "### 🐛 Bug Fixes" >> $GITHUB_OUTPUT
+            git log ${PREV_TAG}..HEAD --oneline --pretty=format:"- %s" --grep="fix" >> $GITHUB_OUTPUT || true
+            echo "" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "### 📝 Other Changes" >> $GITHUB_OUTPUT
+            git log ${PREV_TAG}..HEAD --oneline --pretty=format:"- %s" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            ${{ steps.changelog.outputs.changelog }}
+
+            ---
+
+            ### 📦 Docker Images
+            ```bash
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/sri-ko-lms-backend:${{ github.ref_name }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/sri-ko-lms-frontend:${{ github.ref_name }}
+            ```
+
+            ### 📥 Installation
+            Download the archives below and follow the [README](https://github.com/${{ github.repository }}/blob/main/README.md) for setup instructions.
+          files: |
+            sri-ko-lms-backend-${{ github.ref_name }}.tar.gz
+            sri-ko-lms-frontend-${{ github.ref_name }}.tar.gz
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
