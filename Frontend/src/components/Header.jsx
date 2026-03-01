@@ -105,7 +105,7 @@ const Header = () => {
                       <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center overflow-hidden">
                         {user?.avatar ? (
                           <img
-                            src={user.avatar.startsWith('http') ? user.avatar : `${window?.configs?.apiUrl || 'http://localhost:5000'}${user.avatar}`}
+                            src={user.avatar.startsWith('http') ? user.avatar : `${window?.configs?.apiUrl || 'http://localhost:5001'}${user.avatar}`}
                             alt="Profile"
                             className="h-8 w-8 rounded-full object-cover"
                             onLoad={(e) => {
