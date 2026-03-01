@@ -1,0 +1,234 @@
+# Marketplace Action Validation & Publish
+# Validates the action.yml and tests the composite action before release
+
+name: Validate Marketplace Action
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'action.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'action.yml'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ───────────────────────────────────────────
+  # Validate action.yml schema
+  # ───────────────────────────────────────────
+  validate-action:
+    name: Validate action.yml
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate action.yml exists
+        run: |
+          if [ ! -f "action.yml" ]; then
+            echo "❌ action.yml not found in repository root"
+            exit 1
+          fi
+          echo "✅ action.yml found"
+
+      - name: Validate action.yml structure
+        run: |
+          # Check required top-level keys
+          for key in name description runs; do
+            if ! grep -q "^${key}:" action.yml; then
+              echo "❌ Missing required key: ${key}"
+              exit 1
+            fi
+          done
+          echo "✅ All required keys present"
+
+          # Check branding for Marketplace
+          if grep -q "^branding:" action.yml; then
+            echo "✅ Branding section found (required for Marketplace)"
+          else
+            echo "❌ Missing branding section (required for GitHub Marketplace)"
+            exit 1
+          fi
+
+          # Check composite action type
+          if grep -q "using: 'composite'" action.yml || grep -q 'using: "composite"' action.yml; then
+            echo "✅ Composite action type confirmed"
+          else
+            echo "⚠️ Action type is not composite — verify runs.using value"
+          fi
+
+      - name: Validate branding icon and color
+        run: |
+          VALID_COLORS="white yellow blue green orange red purple gray-dark"
+
+          COLOR=$(grep -A1 "^branding:" action.yml | grep "color:" | awk '{print $2}' | tr -d "'" | tr -d '"')
+          ICON=$(grep -A2 "^branding:" action.yml | grep "icon:" | awk '{print $2}' | tr -d "'" | tr -d '"')
+
+          if [ -z "$COLOR" ]; then
+            echo "❌ Missing branding color"
+            exit 1
+          fi
+
+          if echo "$VALID_COLORS" | grep -qw "$COLOR"; then
+            echo "✅ Valid branding color: $COLOR"
+          else
+            echo "❌ Invalid branding color: $COLOR"
+            echo "   Valid options: $VALID_COLORS"
+            exit 1
+          fi
+
+          if [ -z "$ICON" ]; then
+            echo "❌ Missing branding icon"
+            exit 1
+          fi
+          echo "✅ Branding icon set: $ICON"
+
+  # ───────────────────────────────────────────
+  # Test the action works end-to-end
+  # ───────────────────────────────────────────
+  test-action:
+    name: Test Action (Full Build)
+    runs-on: ubuntu-latest
+    needs: validate-action
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run SRI-KO LMS Setup & Deploy action
+        uses: ./
+        id: lms-setup
+        with:
+          node-version: '18'
+          build-frontend: 'true'
+          build-backend: 'true'
+          run-lint: 'true'
+          run-audit: 'true'
+          install-command: 'npm install'
+
+      - name: Verify outputs
+        run: |
+          echo "📋 Action Outputs:"
+          echo "  Frontend build path: ${{ steps.lms-setup.outputs.frontend-build-path }}"
+          echo "  Backend path:        ${{ steps.lms-setup.outputs.backend-path }}"
+          echo "  Bundle size:         ${{ steps.lms-setup.outputs.frontend-bundle-size }}"
+          echo "  Backend audit:       ${{ steps.lms-setup.outputs.backend-audit-result }}"
+          echo "  Frontend audit:      ${{ steps.lms-setup.outputs.frontend-audit-result }}"
+
+      - name: Verify Frontend build output
+        run: |
+          if [ -d "Frontend/dist" ]; then
+            echo "✅ Frontend dist directory exists"
+            ls -la Frontend/dist/
+          else
+            echo "❌ Frontend dist directory not found"
+            exit 1
+          fi
+
+  # ───────────────────────────────────────────
+  # Test with minimal configuration
+  # ───────────────────────────────────────────
+  test-action-minimal:
+    name: Test Action (Frontend Only)
+    runs-on: ubuntu-latest
+    needs: validate-action
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run SRI-KO LMS action — Frontend only
+        uses: ./
+        with:
+          node-version: '20'
+          build-frontend: 'true'
+          build-backend: 'false'
+          run-lint: 'false'
+          run-audit: 'false'
+          install-command: 'npm install'
+
+      - name: Verify Frontend was built
+        run: |
+          if [ -d "Frontend/dist" ]; then
+            echo "✅ Frontend-only build succeeded"
+          else
+            echo "❌ Frontend build missing"
+            exit 1
+          fi
+
+  # ───────────────────────────────────────────
+  # Marketplace publish readiness check
+  # ───────────────────────────────────────────
+  marketplace-readiness:
+    name: Marketplace Readiness Check
+    runs-on: ubuntu-latest
+    needs: [test-action, test-action-minimal]
+    if: github.event_name == 'release'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Marketplace requirements
+        run: |
+          echo "🏪 GitHub Marketplace Readiness Check"
+          echo "─────────────────────────────────────"
+          PASS=true
+
+          # 1. action.yml
+          if [ -f "action.yml" ]; then
+            echo "✅ action.yml exists"
+          else
+            echo "❌ action.yml missing"
+            PASS=false
+          fi
+
+          # 2. README.md
+          if [ -f "README.md" ]; then
+            echo "✅ README.md exists"
+          else
+            echo "❌ README.md missing"
+            PASS=false
+          fi
+
+          # 3. LICENSE
+          if [ -f "LICENSE" ] || [ -f "LICENSE.md" ] || [ -f "LICENSE.txt" ]; then
+            echo "✅ LICENSE file exists"
+          else
+            echo "⚠️ LICENSE file recommended for Marketplace"
+          fi
+
+          # 4. Branding
+          if grep -q "^branding:" action.yml; then
+            echo "✅ Branding configured"
+          else
+            echo "❌ Branding missing"
+            PASS=false
+          fi
+
+          # 5. Description length
+          DESC=$(grep "^description:" action.yml | sed "s/^description: *'//" | sed "s/'$//" | sed 's/^description: *"//' | sed 's/"$//')
+          DESC_LEN=${#DESC}
+          if [ "$DESC_LEN" -gt 10 ] && [ "$DESC_LEN" -le 125 ]; then
+            echo "✅ Description length OK ($DESC_LEN chars)"
+          else
+            echo "⚠️ Description should be 10-125 chars (currently $DESC_LEN)"
+          fi
+
+          echo ""
+          if [ "$PASS" = true ]; then
+            echo "🎉 All Marketplace requirements met!"
+            echo "📝 To publish: Go to Releases → Edit → Check 'Publish this Action to the GitHub Marketplace'"
+          else
+            echo "❌ Some requirements not met — fix before publishing"
+            exit 1
+          fi
+
