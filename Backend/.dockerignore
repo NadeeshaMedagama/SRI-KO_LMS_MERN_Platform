@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log*
+config.env
+config.production.env
+config.test.env
+.env
+.git
+.gitignore
+*.md
+test-scripts
+test-analytics.html
+docs
+uploads/*
+!uploads/.gitkeep
+.eslintrc*
+.prettierrc*
+
