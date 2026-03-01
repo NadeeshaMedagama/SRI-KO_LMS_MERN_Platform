@@ -5,6 +5,18 @@ on:
     branches: [ develop, feature/*, bugfix/* ]
   pull_request:
     branches: [ develop ]
+  workflow_dispatch:
+    inputs:
+      run_performance_check:
+        description: 'Run performance check job'
+        required: false
+        type: boolean
+        default: true
+      run_code_quality:
+        description: 'Run code quality job'
+        required: false
+        type: boolean
+        default: true
 
 env:
   NODE_VERSION: '18.x'
@@ -59,6 +71,7 @@ jobs:
   code-quality:
     name: Code Quality
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_code_quality }}
 
     steps:
     - name: Checkout code
@@ -101,6 +114,7 @@ jobs:
   performance-check:
     name: Performance Check
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_performance_check }}
 
     steps:
     - name: Checkout code
