@@ -22,7 +22,7 @@ export const courseService = {
       console.log('Making API request to:', url);
       
       // Make direct API call to get the correct response format
-      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5000'}/api${url}`, {
+      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5001'}/api${url}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ export const courseService = {
       console.log('Fetching course with ID:', courseId);
       
       // Make direct API call to get the correct response format
-      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5000'}/api/courses/${courseId}`, {
+      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5001'}/api/courses/${courseId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +126,7 @@ export const courseService = {
       }
       
       // Make direct API call to enroll in course
-      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5000'}/api/courses/${courseId}/enroll`, {
+      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5001'}/api/courses/${courseId}/enroll`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ export const courseService = {
         throw new Error('Authentication required');
       }
       
-      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5000'}/api/courses/${courseId}/reviews`, {
+      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5001'}/api/courses/${courseId}/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +210,7 @@ export const courseService = {
         throw new Error('Authentication required');
       }
       
-      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5000'}/api/courses/${courseId}/complete`, {
+      const response = await fetch(`${window?.configs?.apiUrl || 'http://localhost:5001'}/api/courses/${courseId}/complete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
