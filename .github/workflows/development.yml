@@ -36,11 +36,13 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
-    - name: Install root dependencies
-      run: npm install
+    - name: Install Backend dependencies
+      working-directory: Backend
+      run: npm ci
 
-    - name: Install all dependencies
-      run: npm run install-all
+    - name: Install Frontend dependencies
+      working-directory: Frontend
+      run: npm ci
 
     - name: Lint Backend
       run: |
