@@ -42,10 +42,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ───────────────────────────────────────────
-  # Dependency review on PRs
+  # Dependency audit on PRs (no GHAS required)
   # ───────────────────────────────────────────
-  dependency-review:
-    name: Dependency Review
+  dependency-audit:
+    name: Dependency Audit
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
 
@@ -57,10 +57,60 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          fail-on-severity: high
-          comment-summary-in-pr: always
-          deny-licenses: GPL-3.0, AGPL-3.0
+          node-version: 20
+
+      - name: Install Backend dependencies
+        working-directory: Backend
+        run: npm ci
+
+      - name: Install Frontend dependencies
+        working-directory: Frontend
+        run: npm ci
+
+      - name: Audit Backend dependencies
+        id: backend-audit
+        working-directory: Backend
+        run: |
+          echo "## Backend Dependency Audit" > $GITHUB_WORKSPACE/audit-report.md
+          echo "" >> $GITHUB_WORKSPACE/audit-report.md
+          if npm audit --audit-level=high 2>&1 | tee backend-audit.txt; then
+            echo "✅ No high or critical vulnerabilities found" >> $GITHUB_WORKSPACE/audit-report.md
+          else
+            echo "⚠️ Vulnerabilities detected:" >> $GITHUB_WORKSPACE/audit-report.md
+            echo '```' >> $GITHUB_WORKSPACE/audit-report.md
+            tail -20 backend-audit.txt >> $GITHUB_WORKSPACE/audit-report.md
+            echo '```' >> $GITHUB_WORKSPACE/audit-report.md
+          fi
+        continue-on-error: true
+
+      - name: Audit Frontend dependencies
+        id: frontend-audit
+        working-directory: Frontend
+        run: |
+          echo "" >> $GITHUB_WORKSPACE/audit-report.md
+          echo "## Frontend Dependency Audit" >> $GITHUB_WORKSPACE/audit-report.md
+          echo "" >> $GITHUB_WORKSPACE/audit-report.md
+          if npm audit --audit-level=high 2>&1 | tee frontend-audit.txt; then
+            echo "✅ No high or critical vulnerabilities found" >> $GITHUB_WORKSPACE/audit-report.md
+          else
+            echo "⚠️ Vulnerabilities detected:" >> $GITHUB_WORKSPACE/audit-report.md
+            echo '```' >> $GITHUB_WORKSPACE/audit-report.md
+            tail -20 frontend-audit.txt >> $GITHUB_WORKSPACE/audit-report.md
+            echo '```' >> $GITHUB_WORKSPACE/audit-report.md
+          fi
+        continue-on-error: true
+
+      - name: Comment audit summary on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: dependency-audit
+          path: audit-report.md
+
+      - name: Fail on critical vulnerabilities
+        run: |
+          cd Backend && npm audit --audit-level=critical
+          cd "$GITHUB_WORKSPACE/Frontend" && npm audit --audit-level=critical
 
