@@ -69,8 +69,11 @@ jobs:
         run: |
           VALID_COLORS="white yellow blue green orange red purple gray-dark"
 
-          COLOR=$(grep -A1 "^branding:" action.yml | grep "color:" | awk '{print $2}' | tr -d "'" | tr -d '"')
-          ICON=$(grep -A2 "^branding:" action.yml | grep "icon:" | awk '{print $2}' | tr -d "'" | tr -d '"')
+          # Extract color and icon from the branding block (search full file for indented keys)
+          COLOR=$(grep -E "^\s+color:" action.yml | head -1 | awk '{print $2}' | tr -d "'" | tr -d '"')
+          ICON=$(grep -E "^\s+icon:" action.yml | head -1 | awk '{print $2}' | tr -d "'" | tr -d '"')
+
+          echo "Detected branding — icon: '${ICON}', color: '${COLOR}'"
 
           if [ -z "$COLOR" ]; then
             echo "❌ Missing branding color"
