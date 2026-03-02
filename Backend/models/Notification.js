@@ -184,7 +184,7 @@ notificationSchema.statics.getActiveNotifications = async function(userId, userR
     expiresAt: { $gte: now },
     $or: [
       { targetAudience: 'all' },
-      { targetAudience: userRole + 's' },
+      { targetAudience: `${userRole  }s` },
       { targetUsers: userId },
       { targetRoles: userRole }
     ]
@@ -261,9 +261,9 @@ notificationSchema.statics.getAllNotifications = async function(page = 1, limit 
 notificationSchema.statics.getNotificationStats = async function() {
   const total = await this.countDocuments();
   const active = await this.countDocuments({ isActive: true });
-  const expired = await this.countDocuments({ 
-    isActive: true, 
-    expiresAt: { $lt: new Date() } 
+  const expired = await this.countDocuments({
+    isActive: true,
+    expiresAt: { $lt: new Date() }
   });
   const pinned = await this.countDocuments({ isPinned: true });
 
@@ -356,7 +356,7 @@ notificationSchema.statics.getNotificationStats = async function() {
 // Static method to send notification to specific users
 notificationSchema.statics.sendToUsers = async function(notificationData, userIds) {
   const notifications = [];
-  
+
   for (const userId of userIds) {
     const notification = new this({
       ...notificationData,
@@ -365,14 +365,14 @@ notificationSchema.statics.sendToUsers = async function(notificationData, userId
     });
     notifications.push(notification);
   }
-  
+
   return await this.insertMany(notifications);
 };
 
 // Static method to send notification to parents
 notificationSchema.statics.sendToParents = async function(notificationData, studentIds) {
   const notifications = [];
-  
+
   for (const studentId of studentIds) {
     // Find parent of the student (assuming parent relationship exists)
     const student = await mongoose.model('User').findById(studentId).select('parentId');
@@ -381,7 +381,7 @@ notificationSchema.statics.sendToParents = async function(notificationData, stud
         ...notificationData,
         parentNotification: {
           isParentNotification: true,
-          studentId: studentId,
+          studentId,
           parentId: student.parentId
         },
         targetUsers: [student.parentId],
@@ -390,25 +390,25 @@ notificationSchema.statics.sendToParents = async function(notificationData, stud
       notifications.push(notification);
     }
   }
-  
+
   return await this.insertMany(notifications);
 };
 
 // Instance method to mark as read by a user
 notificationSchema.methods.markAsRead = async function(userId) {
   const alreadyRead = this.readBy.some(read => read.user.toString() === userId.toString());
-  
+
   if (!alreadyRead) {
     this.readBy.push({ user: userId });
     this.deliveryStats.totalRead += 1;
     await this.save();
   }
-  
+
   return this;
 };
 
 // Instance method to mark as clicked
-notificationSchema.methods.markAsClicked = async function(userId) {
+notificationSchema.methods.markAsClicked = async function(_userId) {
   this.deliveryStats.totalClicked += 1;
   await this.save();
   return this;
