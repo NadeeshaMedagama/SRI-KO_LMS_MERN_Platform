@@ -106,6 +106,7 @@ const paymentSchema = new mongoose.Schema(
 paymentSchema.index({ user: 1, status: 1 });
 paymentSchema.index({ subscription: 1 });
 paymentSchema.index({ paymentDate: -1 });
+paymentSchema.index({ paidDate: -1 });
 paymentSchema.index({ gatewayTransactionId: 1 });
 paymentSchema.index({ invoiceNumber: 1 }, { unique: true, sparse: true });
 paymentSchema.index({ receiptNumber: 1 }, { unique: true, sparse: true });
@@ -137,8 +138,10 @@ paymentSchema.virtual('paymentMethodDisplay').get(function () {
 
 // Method to mark payment as completed
 paymentSchema.methods.markCompleted = function (gatewayTransactionId, gatewayResponse) {
+  const now = new Date();
   this.status = 'completed';
-  this.paidDate = new Date();
+  this.paidDate = now;
+  this.paymentDate = now; // Sync paymentDate so revenue queries reflect actual completion time
   this.gatewayTransactionId = gatewayTransactionId;
   this.gatewayResponse = gatewayResponse;
   return this.save();
@@ -182,7 +185,7 @@ paymentSchema.methods.generateReceiptNumber = function () {
 paymentSchema.statics.getPaymentStats = async function (startDate, endDate) {
   const matchStage = {};
   if (startDate && endDate) {
-    matchStage.paymentDate = {
+    matchStage.paidDate = {
       $gte: new Date(startDate),
       $lte: new Date(endDate),
     };
@@ -232,7 +235,7 @@ paymentSchema.statics.getPaymentStats = async function (startDate, endDate) {
 paymentSchema.statics.getRevenueByPlan = async function (startDate, endDate) {
   const matchStage = { status: 'completed' };
   if (startDate && endDate) {
-    matchStage.paymentDate = {
+    matchStage.paidDate = {
       $gte: new Date(startDate),
       $lte: new Date(endDate),
     };
@@ -261,7 +264,7 @@ paymentSchema.statics.getMonthlyRevenue = async function (year) {
     {
       $match: {
         status: 'completed',
-        paymentDate: {
+        paidDate: {
           $gte: startDate,
           $lte: endDate,
         },
@@ -270,8 +273,8 @@ paymentSchema.statics.getMonthlyRevenue = async function (year) {
     {
       $group: {
         _id: {
-          month: { $month: '$paymentDate' },
-          year: { $year: '$paymentDate' },
+          month: { $month: '$paidDate' },
+          year: { $year: '$paidDate' },
         },
         totalAmount: { $sum: '$amount' },
         count: { $sum: 1 },
