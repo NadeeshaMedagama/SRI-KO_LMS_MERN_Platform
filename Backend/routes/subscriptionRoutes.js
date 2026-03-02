@@ -1,9 +1,8 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const { protect, authorize } = require('../middleware/auth');
+const { protect } = require('../middleware/auth');
 const Subscription = require('../models/Subscription');
 const Payment = require('../models/Payment');
-const User = require('../models/User');
 
 const router = express.Router();
 
@@ -172,7 +171,7 @@ router.post(
           paymentMethod: 'credit_card', // Default, will be updated during payment
           billingPeriod: {
             startDate: trialEndDate,
-            endDate: billingCycle === 'monthly' 
+            endDate: billingCycle === 'monthly'
               ? new Date(trialEndDate.getTime() + 30 * 24 * 60 * 60 * 1000)
               : new Date(trialEndDate.getTime() + 365 * 24 * 60 * 60 * 1000),
           },
@@ -189,8 +188,8 @@ router.post(
       res.status(201).json({
         success: true,
         subscription,
-        message: plan === 'starter' 
-          ? 'Starter plan activated successfully' 
+        message: plan === 'starter'
+          ? 'Starter plan activated successfully'
           : 'Trial started successfully',
       });
     } catch (error) {
