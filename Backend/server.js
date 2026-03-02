@@ -547,7 +547,7 @@ app.use('/api/admin/settings', checkDatabase, settingsRoutes);
 // Static assets in production
 if ((process.env.NODE_ENV || 'development') === 'production') {
   app.use(express.static(path.join(__dirname, '../Frontend/dist')));
-  app.get('*', (req, res) =>
+  app.get('{*path}', (req, res) =>
     res.sendFile(path.resolve(__dirname, '../Frontend', 'dist', 'index.html'))
   );
 }
@@ -563,7 +563,7 @@ app.use((err, req, res, _next) => {
 });
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use('{*path}', (req, res) => {
   res.status(404).json({
     success: false,
     message: 'Route not found',
