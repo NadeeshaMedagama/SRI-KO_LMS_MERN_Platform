@@ -73,10 +73,10 @@ router.get('/', async (req, res) => {
 router.get('/my-courses', protect, async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     // Get user's enrolled course IDs
     const user = await User.findById(userId).select('enrolledCourses');
-    
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -99,7 +99,7 @@ router.get('/my-courses', protect, async (req, res) => {
 
     res.status(200).json({
       success: true,
-      courses: courses,
+      courses,
     });
   } catch (error) {
     console.error('Error in my-courses endpoint:', error);
@@ -497,7 +497,7 @@ router.post('/:id/complete', protect, authorize('student'), async (req, res) => 
     }
 
     // Find or create progress record
-    let progress = await Progress.findOne({
+    const progress = await Progress.findOne({
       student: req.user.id,
       course: req.params.id,
     });
