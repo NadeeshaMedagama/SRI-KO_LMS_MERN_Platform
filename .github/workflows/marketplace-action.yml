@@ -110,12 +110,12 @@ jobs:
         uses: ./
         id: lms-setup
         with:
-          node-version: '18'
+          node-version: '22'
           build-frontend: 'true'
           build-backend: 'true'
           run-lint: 'true'
           run-audit: 'true'
-          install-command: 'npm install'
+          install-command: 'npm ci'
 
       - name: Verify outputs
         run: |
@@ -151,12 +151,12 @@ jobs:
       - name: Run SRI-KO LMS action — Frontend only
         uses: ./
         with:
-          node-version: '20'
+          node-version: '22'
           build-frontend: 'true'
           build-backend: 'false'
           run-lint: 'false'
           run-audit: 'false'
-          install-command: 'npm install'
+          install-command: 'npm ci'
 
       - name: Verify Frontend was built
         run: |
