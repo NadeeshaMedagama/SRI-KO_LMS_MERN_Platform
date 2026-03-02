@@ -215,7 +215,7 @@ paymentSchema.statics.getPaymentStats = async function (startDate, endDate) {
   stats.forEach(stat => {
     result.total += stat.count;
     result.totalAmount += stat.totalAmount;
-    
+
     if (stat._id === 'completed') {
       result.completed = stat.count;
       result.completedAmount = stat.totalAmount;
