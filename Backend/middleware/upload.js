@@ -15,8 +15,8 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     // Generate unique filename with timestamp
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    const uniqueSuffix = `${Date.now()  }-${  Math.round(Math.random() * 1E9)}`;
+    cb(null, `${file.fieldname  }-${  uniqueSuffix  }${path.extname(file.originalname)}`);
   }
 });
 
@@ -31,8 +31,8 @@ const fileFilter = (req, file, cb) => {
 
 // Configure multer
 const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
+  storage,
+  fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   }
@@ -53,7 +53,7 @@ const documentFilter = (req, file, cb) => {
 
 // Configure multer for certificates with document filter
 const certificateUpload = multer({
-  storage: storage,
+  storage,
   fileFilter: documentFilter,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
@@ -79,7 +79,7 @@ const handleUploadError = (err, req, res, next) => {
       });
     }
   }
-  
+
   if (err.message === 'Only image files are allowed!') {
     return res.status(400).json({
       success: false,
@@ -93,7 +93,7 @@ const handleUploadError = (err, req, res, next) => {
       message: 'Only image and PDF files are allowed!'
     });
   }
-  
+
   next(err);
 };
 
