@@ -22,9 +22,19 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, 'Please provide a password'],
+      required: false,
       minlength: [6, 'Password should be at least 6 characters'],
       select: false,
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // allows multiple nulls
+    },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
     },
     role: {
       type: String,
@@ -129,7 +139,7 @@ const userSchema = new mongoose.Schema(
 
 // Encrypt password using bcrypt
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
+  if (!this.isModified('password') || !this.password) {
     return next();
   }
 

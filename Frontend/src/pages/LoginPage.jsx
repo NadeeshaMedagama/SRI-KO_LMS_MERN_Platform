@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
@@ -8,7 +9,7 @@ const LoginPage = () => {
     password: '',
   });
 
-  const { login, loading, error } = useAuth();
+  const { login, googleLogin, loading, error } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,6 +33,18 @@ const LoginPage = () => {
     const result = await login(formData.email, formData.password);
     if (result.success) {
       // Check if user is admin and redirect to admin dashboard
+      if (result.user && result.user.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
+    }
+  };
+
+  // Handle Google credential response (one-tap / popup)
+  const handleGoogleCredentialResponse = async (credentialResponse) => {
+    const result = await googleLogin(credentialResponse.credential);
+    if (result.success) {
       if (result.user && result.user.role === 'admin') {
         navigate('/admin/dashboard', { replace: true });
       } else {
@@ -142,6 +155,29 @@ const LoginPage = () => {
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
+          </div>
+
+          {/* Divider */}
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-gray-50 px-3 text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          {/* Google Sign In */}
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleCredentialResponse}
+              onError={() => console.error('Google login failed')}
+              useOneTap={false}
+              width="368"
+              text="signin_with"
+              shape="rectangular"
+              logo_alignment="left"
+            />
           </div>
 
           {/* Admin Login Link */}

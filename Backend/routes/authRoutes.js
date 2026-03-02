@@ -1,7 +1,10 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const {
   validateUserRegistration,
   validateUserLogin,
@@ -238,6 +241,87 @@ router.post('/admin-login', validateUserLogin, handleValidationErrors, async (re
     res.status(500).json({
       success: false,
       message: 'Server error',
+    });
+  }
+});
+
+// @desc    Google OAuth login / register
+// @route   POST /api/auth/google
+// @access  Public
+router.post('/google', async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google credential token is required',
+      });
+    }
+
+    // Verify the Google ID token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name, picture } = payload;
+
+    // Find or create user
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
+
+    if (user) {
+      // Existing user - link Google account if not already linked
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.authProvider = 'google';
+        if (picture && !user.avatar) user.avatar = picture;
+        await user.save();
+      }
+    } else {
+      // New user - create account via Google
+      user = await User.create({
+        name,
+        email,
+        googleId,
+        authProvider: 'google',
+        avatar: picture || '',
+        emailVerified: true, // Google emails are verified
+        role: 'student',
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: 'Account is deactivated',
+      });
+    }
+
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    const token = generateToken(user._id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Google login successful',
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+      },
+    });
+  } catch (error) {
+    console.error('Google OAuth error:', error);
+    res.status(401).json({
+      success: false,
+      message: 'Invalid Google credential',
     });
   }
 });
