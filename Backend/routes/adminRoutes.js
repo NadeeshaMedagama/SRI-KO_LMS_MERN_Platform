@@ -72,11 +72,12 @@ async function getRollingMonthlyStatistics(startDate, endDate) {
     ]);
 
     // Get monthly revenue from completed payments within date range
+    // Use paidDate for revenue grouping so revenue appears when payment was completed, not created
     const monthlyRevenue = await Payment.aggregate([
       {
         $match: {
           status: 'completed',
-          paymentDate: {
+          paidDate: {
             $gte: startDate,
             $lte: endDate
           }
@@ -85,8 +86,8 @@ async function getRollingMonthlyStatistics(startDate, endDate) {
       {
         $group: {
           _id: {
-            year: { $year: '$paymentDate' },
-            month: { $month: '$paymentDate' }
+            year: { $year: '$paidDate' },
+            month: { $month: '$paidDate' }
           },
           totalAmount: { $sum: '$amount' }
         }
@@ -219,12 +220,12 @@ async function getMonthlyStatistics(year) {
       }
     ]);
 
-    // Get monthly revenue from completed payments
+    // Get monthly revenue from completed payments (use paidDate for accurate revenue timing)
     const monthlyRevenue = await Payment.aggregate([
       {
         $match: {
           status: 'completed',
-          paymentDate: {
+          paidDate: {
             $gte: startDate,
             $lte: endDate
           }
@@ -233,8 +234,8 @@ async function getMonthlyStatistics(year) {
       {
         $group: {
           _id: {
-            year: { $year: '$paymentDate' },
-            month: { $month: '$paymentDate' }
+            year: { $year: '$paidDate' },
+            month: { $month: '$paidDate' }
           },
           totalAmount: { $sum: '$amount' }
         }
@@ -439,9 +440,11 @@ router.put('/payments/:id/status', protect, authorize('admin'), async (req, res)
       payment.notes = notes;
     }
 
-    // Set paidDate if status is completed
+    // Set paidDate and sync paymentDate if status is completed
     if (status === 'completed' && oldStatus !== 'completed') {
-      payment.paidDate = new Date();
+      const now = new Date();
+      payment.paidDate = now;
+      payment.paymentDate = now; // Sync paymentDate so revenue queries reflect actual completion time
       // Generate receipt number if not exists
       if (!payment.receiptNumber) {
         payment.generateReceiptNumber();
@@ -1058,13 +1061,13 @@ router.get('/analytics', protect, authorize('admin'), async (req, res) => {
       // For "All Time", get data from the earliest record to now
       const earliestUser = await User.findOne().sort({ createdAt: 1 }).select('createdAt');
       const earliestCourse = await Course.findOne().sort({ createdAt: 1 }).select('createdAt');
-      const earliestPayment = await Payment.findOne().sort({ paymentDate: 1 }).select('paymentDate');
+      const earliestPayment = await Payment.findOne({ status: 'completed', paidDate: { $ne: null } }).sort({ paidDate: 1 }).select('paidDate');
 
       // Find the earliest date among all records
       const dates = [];
       if (earliestUser) dates.push(new Date(earliestUser.createdAt));
       if (earliestCourse) dates.push(new Date(earliestCourse.createdAt));
-      if (earliestPayment) dates.push(new Date(earliestPayment.paymentDate));
+      if (earliestPayment) dates.push(new Date(earliestPayment.paidDate));
 
       if (dates.length > 0) {
         startDate = new Date(Math.min(...dates));
@@ -1121,12 +1124,12 @@ router.get('/analytics', protect, authorize('admin'), async (req, res) => {
       createdAt: { $gte: startDate, $lte: endDate }
     });
 
-    // Get revenue from current period
+    // Get revenue from current period (use paidDate for accurate revenue timing)
     const currentPeriodRevenue = await Payment.aggregate([
       {
         $match: {
           status: 'completed',
-          paymentDate: { $gte: startDate, $lte: endDate }
+          paidDate: { $gte: startDate, $lte: endDate }
         }
       },
       {
@@ -1162,7 +1165,7 @@ router.get('/analytics', protect, authorize('admin'), async (req, res) => {
       {
         $match: {
           status: 'completed',
-          paymentDate: { $gte: prevPeriodStartDate, $lte: prevPeriodEndDate }
+          paidDate: { $gte: prevPeriodStartDate, $lte: prevPeriodEndDate }
         }
       },
       {
