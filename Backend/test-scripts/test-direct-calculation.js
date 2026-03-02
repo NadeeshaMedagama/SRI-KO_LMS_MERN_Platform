@@ -35,10 +35,10 @@ const testDirectCalculation = async () => {
     const days = parseInt(period);
 
     // Calculate date range (last 30 days)
-    let endDate = new Date();
+    const endDate = new Date();
     endDate.setHours(23, 59, 59, 999);
 
-    let startDate = new Date();
+    const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     startDate.setHours(0, 0, 0, 0);
 
