@@ -145,7 +145,7 @@ async function comprehensiveRevenueTest() {
     console.log('=' .repeat(70));
     console.log('✅ Admin Dashboard: Shows real revenue from completed payments');
     console.log('✅ Analytics & Reports: Shows real revenue from completed payments');
-    console.log('✅ Both pages display: LKR ' + statsTotalRevenue.toLocaleString());
+    console.log(`✅ Both pages display: LKR ${  statsTotalRevenue.toLocaleString()}`);
     console.log('=' .repeat(70));
 
   } catch (error) {
