@@ -129,7 +129,7 @@ router.put(
       if (subscription) {
         subscription.status = 'active';
         subscription.paymentStatus = 'paid';
-        
+
         // Extend subscription end date
         const now = new Date();
         if (subscription.billingCycle === 'monthly') {
@@ -138,7 +138,7 @@ router.put(
           subscription.endDate = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
         }
         subscription.nextBillingDate = subscription.endDate;
-        
+
         await subscription.save();
       }
 
