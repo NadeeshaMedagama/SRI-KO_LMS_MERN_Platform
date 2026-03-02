@@ -3,8 +3,8 @@
 ## 📋 **Setup Instructions**
 
 ### 1. **Environment Setup**
-- **Base URL**: `http://localhost:5000/api`
-- **Backend Server**: Make sure it's running on port 5000
+- **Base URL**: `http://localhost:5001/api`
+- **Backend Server**: Make sure it's running on port 5001
 - **Database**: MongoDB should be connected
 
 ### 2. **Test Users Available**
@@ -1432,14 +1432,14 @@ Expected Response:
 ### 5. **Postman Collection Setup**
 1. Create a new collection: "SRI-KO LMS API"
 2. Set up environment variables:
-   - `base_url`: `http://localhost:5000/api`
+   - `base_url`: `http://localhost:5001/api`
    - `token`: `{{jwt_token}}`
 3. Use variables in requests: `{{base_url}}/auth/login`
 4. Set up pre-request scripts to automatically set tokens
 
 ### 6. **Environment Variables**
 ```
-base_url: http://localhost:5000/api
+base_url: http://localhost:5001/api
 admin_email: admin@sriko.com
 admin_password: admin123
 student_email: instructor@example.com
@@ -1488,4 +1488,4 @@ All error responses follow this format:
 
 ---
 
-This comprehensive guide covers all the major endpoints in your SRI-KO LMS backend. Start with the health check, then authentication, and work your way through the different modules. Make sure your backend server is running on `http://localhost:5000` before testing!
+This comprehensive guide covers all the major endpoints in your SRI-KO LMS backend. Start with the health check, then authentication, and work your way through the different modules. Make sure your backend server is running on `http://localhost:5001` before testing!
