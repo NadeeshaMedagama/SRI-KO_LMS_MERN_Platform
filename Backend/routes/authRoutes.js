@@ -260,10 +260,18 @@ router.post('/google', async (req, res) => {
     }
 
     // Verify the Google ID token
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    let ticket;
+    try {
+      ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+    } catch (verifyErr) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid Google credential token',
+      });
+    }
 
     const payload = ticket.getPayload();
     const { sub: googleId, email, name, picture } = payload;
