@@ -3,9 +3,9 @@ FROM node:25-alpine AS build
 
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies (include devDependencies for build tools: vite, tailwindcss, postcss, etc.)
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 # Copy source code
 COPY . .
