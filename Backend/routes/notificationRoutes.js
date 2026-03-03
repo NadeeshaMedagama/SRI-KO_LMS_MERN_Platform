@@ -154,7 +154,7 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
     }
 
     // Sanitize parentNotification to avoid ObjectId cast errors from empty strings
-    let sanitizedParentNotification = {};
+    const sanitizedParentNotification = {};
     if (parentNotification && parentNotification.isParentNotification) {
       const maybeStudentId = parentNotification.studentId;
       const maybeParentId = parentNotification.parentId;
@@ -508,7 +508,7 @@ router.post('/send-to-parents', protect, authorize('admin'), async (req, res) =>
 router.get('/target-users', protect, authorize('admin'), async (req, res) => {
   try {
     const { role, courseId, search } = req.query;
-    let query = {};
+    const query = {};
 
     if (role) {
       query.role = role;

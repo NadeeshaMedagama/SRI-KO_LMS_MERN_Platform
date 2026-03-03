@@ -10,12 +10,12 @@ const router = express.Router();
 router.get('/', protect, authorize('admin'), async (req, res) => {
   try {
     let settings = await Settings.findOne();
-    
+
     // If no settings exist, create default settings
     if (!settings) {
       settings = await Settings.create({});
     }
-    
+
     res.status(200).json({
       success: true,
       settings,
@@ -38,9 +38,9 @@ router.put('/', protect, authorize('admin'), async (req, res) => {
       ...req.body,
       lastUpdatedBy: req.user.id,
     };
-    
+
     let settings = await Settings.findOne();
-    
+
     if (!settings) {
       // Create new settings if none exist
       settings = await Settings.create(updateData);
@@ -52,7 +52,7 @@ router.put('/', protect, authorize('admin'), async (req, res) => {
         { new: true, runValidators: true }
       );
     }
-    
+
     res.status(200).json({
       success: true,
       message: 'Settings updated successfully',
@@ -76,7 +76,7 @@ router.post('/reset', protect, authorize('admin'), async (req, res) => {
     const defaultSettings = await Settings.create({
       lastUpdatedBy: req.user.id,
     });
-    
+
     res.status(200).json({
       success: true,
       message: 'Settings reset to default successfully',
@@ -98,20 +98,20 @@ router.get('/:section', protect, authorize('admin'), async (req, res) => {
   try {
     const { section } = req.params;
     let settings = await Settings.findOne();
-    
+
     if (!settings) {
       settings = await Settings.create({});
     }
-    
+
     const sectionData = settings[section];
-    
+
     if (!sectionData) {
       return res.status(404).json({
         success: false,
         message: 'Settings section not found',
       });
     }
-    
+
     res.status(200).json({
       success: true,
       section,
@@ -133,19 +133,19 @@ router.put('/:section', protect, authorize('admin'), async (req, res) => {
   try {
     const { section } = req.params;
     const updateData = req.body;
-    
+
     let settings = await Settings.findOne();
-    
+
     if (!settings) {
       settings = await Settings.create({});
     }
-    
+
     // Update the specific section
     settings[section] = { ...settings[section], ...updateData };
     settings.lastUpdatedBy = req.user.id;
-    
+
     await settings.save();
-    
+
     res.status(200).json({
       success: true,
       message: `${section} settings updated successfully`,
@@ -166,11 +166,11 @@ router.put('/:section', protect, authorize('admin'), async (req, res) => {
 router.get('/export/json', protect, authorize('admin'), async (req, res) => {
   try {
     let settings = await Settings.findOne();
-    
+
     if (!settings) {
       settings = await Settings.create({});
     }
-    
+
     res.status(200).json({
       success: true,
       settings,
@@ -191,23 +191,23 @@ router.get('/export/json', protect, authorize('admin'), async (req, res) => {
 router.post('/import', protect, authorize('admin'), async (req, res) => {
   try {
     const { settings } = req.body;
-    
+
     if (!settings) {
       return res.status(400).json({
         success: false,
         message: 'Settings data is required',
       });
     }
-    
+
     // Delete existing settings
     await Settings.deleteMany({});
-    
+
     // Create new settings with imported data
     const newSettings = await Settings.create({
       ...settings,
       lastUpdatedBy: req.user.id,
     });
-    
+
     res.status(200).json({
       success: true,
       message: 'Settings imported successfully',

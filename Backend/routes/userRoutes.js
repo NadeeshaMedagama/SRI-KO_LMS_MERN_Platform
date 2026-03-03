@@ -8,7 +8,6 @@ const {
   handleValidationErrors,
 } = require('../middleware/validation');
 const { uploadSingle, handleUploadError } = require('../middleware/upload');
-const path = require('path');
 
 const router = express.Router();
 
@@ -51,18 +50,18 @@ router.get('/', protect, authorize('admin'), async (req, res) => {
 router.get('/dashboard', protect, async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     console.log('📊 Dashboard API: Fetching data for user:', userId);
 
     // Get user with enrolled courses - first get user to check enrolledCourses array
     const baseUser = await User.findById(userId);
-    
+
     console.log('📊 Base user enrolledCourses count:', baseUser.enrolledCourses?.length || 0);
     console.log('📊 Base user enrolledCourses IDs:', baseUser.enrolledCourses);
-    
+
     // Get user with enrolled courses populated
-    let user = await User.findById(userId);
-    
+    const user = await User.findById(userId);
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -76,16 +75,16 @@ router.get('/dashboard', protect, async (req, res) => {
         // Get course IDs
         const courseIds = user.enrolledCourses.map(id => id._id || id);
         console.log('📊 Fetching courses with IDs:', courseIds);
-        
+
         // Get courses directly with all fields
         const courses = await Course.find({ _id: { $in: courseIds } })
           .populate('instructor', 'name email avatar');
-        
+
         console.log('📊 Found courses:', courses.length);
         if (courses.length > 0) {
           console.log('📊 First course:', courses[0].title);
         }
-        
+
         user.enrolledCourses = courses;
       } catch (populateError) {
         console.error('⚠️ Error populating enrolledCourses:', populateError);
@@ -106,18 +105,18 @@ router.get('/dashboard', protect, async (req, res) => {
     const progressDataRaw = await Progress.find({ student: userId })
       .sort({ lastAccessed: -1 })
       .lean();
-    
+
     // Get all course IDs from progress records
     const progressCourseIds = progressDataRaw.map(p => p.course).filter(Boolean);
-    
+
     // Fetch courses that exist
     const progressCourses = await Course.find({ _id: { $in: progressCourseIds } })
       .select('_id title thumbnail category level duration price')
       .lean();
-    
+
     // Create a map for quick lookup
     const courseMap = new Map(progressCourses.map(c => [c._id.toString(), c]));
-    
+
     // Combine progress with course data and filter out deleted courses
     const validProgressData = progressDataRaw
       .map(p => {
@@ -129,10 +128,10 @@ router.get('/dashboard', protect, async (req, res) => {
         };
       })
       .filter(p => p != null);
-    
+
     console.log('📊 Dashboard API: Total progress records found:', progressDataRaw.length);
     console.log('📊 Dashboard API: Valid progress records (with course):', validProgressData.length);
-    
+
     // Log each progress record for debugging
     validProgressData.forEach((progress, index) => {
       console.log(`📊 Progress ${index + 1}:`, {
@@ -148,7 +147,7 @@ router.get('/dashboard', protect, async (req, res) => {
 
     // Calculate statistics
     const totalEnrolledCourses = user.enrolledCourses?.length || 0;
-    
+
     // Calculate total completed lessons - use validProgressData
     // If completedLessons array is populated, count those
     // If course is marked as completed but completedLessons is empty, count all lessons in the course
@@ -198,9 +197,9 @@ router.get('/dashboard', protect, async (req, res) => {
 
     // Count completed courses - use validProgressData
     const completedCourses = validProgressData.filter(progress => progress.isCompleted).length;
-    
+
     // Count certificates earned (check both certificate field and isCompleted) - use validProgressData
-    const certificatesEarned = validProgressData.filter(progress => 
+    const certificatesEarned = validProgressData.filter(progress =>
       progress.certificate || progress.isCompleted
     ).length;
 
@@ -208,7 +207,7 @@ router.get('/dashboard', protect, async (req, res) => {
     const totalTimeSpent = validProgressData.reduce((total, progress) => {
       return total + (progress.timeSpent || 0);
     }, 0);
-    
+
     console.log('📊 Dashboard API: Calculated Statistics:');
     console.log(`  - Total Enrolled Courses: ${totalEnrolledCourses}`);
     console.log(`  - Total Completed Lessons: ${totalCompletedLessons}`);
@@ -232,32 +231,32 @@ router.get('/dashboard', protect, async (req, res) => {
     // Format enrolled courses with progress
     console.log('📊 Starting to format enrolled courses...');
     console.log('📊 User enrolledCourses before formatting:', user.enrolledCourses?.length || 0);
-    
+
     const enrolledCoursesWithProgress = (user.enrolledCourses || []).map(course => {
       // Skip if course is null or undefined (possible if course was deleted)
       if (!course || !course._id) {
         console.warn('⚠️ Found invalid course in enrolledCourses:', course);
         return null;
       }
-      
+
       console.log('📊 Processing course:', course._id, course.title);
-      
+
       // Find progress from validProgressData
       // Match by course._id
       const progress = validProgressData.find(p => {
         if (!course._id || !p.course) return false;
         return p.course._id.toString() === course._id.toString();
       });
-      
+
       console.log('📊 Found progress for course:', !!progress);
       if (progress) {
         console.log('📊 Progress completedLessons:', Array.isArray(progress.completedLessons) ? progress.completedLessons.length : 'Not an array');
       }
-      
+
       // Calculate total lessons in course
-      const totalLessons = course.curriculum ? 
+      const totalLessons = course.curriculum ?
         course.curriculum.reduce((total, week) => total + (week.lessons ? week.lessons.length : 0), 0) : 0;
-      
+
       // Calculate completed lessons count
       // Priority: 1) completedLessons array if populated
       //          2) All lessons if course is completed or 100% progress
@@ -270,15 +269,15 @@ router.get('/dashboard', protect, async (req, res) => {
         // If course is completed but completedLessons array is empty, count all lessons
         completedLessonsCount = totalLessons;
       }
-      
+
       // Determine if course is completed:
       // 1. Explicit isCompleted flag is true, OR
       // 2. All lessons are completed (completedLessons === totalLessons) and totalLessons > 0
       const isCourseCompleted = progress ? (
-        progress.isCompleted || 
+        progress.isCompleted ||
         (completedLessonsCount === totalLessons && totalLessons > 0)
       ) : false;
-      
+
       const formattedCourse = {
         _id: course._id,
         title: course.title || 'Untitled Course',
@@ -293,7 +292,7 @@ router.get('/dashboard', protect, async (req, res) => {
         progress: progress ? {
           overallProgress: progress.overallProgress || 0,
           completedLessons: completedLessonsCount,
-          totalLessons: totalLessons,
+          totalLessons,
           timeSpent: progress.timeSpent || 0,
           lastAccessed: progress.lastAccessed,
           isCompleted: isCourseCompleted,
@@ -303,7 +302,7 @@ router.get('/dashboard', protect, async (req, res) => {
         } : {
           overallProgress: 0,
           completedLessons: 0,
-          totalLessons: totalLessons,
+          totalLessons,
           timeSpent: 0,
           lastAccessed: null,
           isCompleted: false,
@@ -312,14 +311,14 @@ router.get('/dashboard', protect, async (req, res) => {
           currentWeek: 1
         }
       };
-      
+
       console.log('📊 Formatted course:', formattedCourse.title);
       return formattedCourse;
     }).filter(course => course !== null); // Filter out null courses
-    
+
     console.log('📊 Dashboard API: Final enrolledCoursesWithProgress count:', enrolledCoursesWithProgress.length);
     console.log('📊 Dashboard API: Sample enrolled course:', enrolledCoursesWithProgress[0]?.title || 'None');
-    
+
     // Recalculate totalCompletedLessons from formatted courses for accuracy
     // This ensures consistency with what's displayed in the UI
     const recalculatedTotalCompletedLessons = enrolledCoursesWithProgress.reduce((total, course) => {
@@ -327,19 +326,19 @@ router.get('/dashboard', protect, async (req, res) => {
       console.log(`  - Course "${course.title}": ${completedCount} completed lessons`);
       return total + completedCount;
     }, 0);
-    
+
     // Recalculate completedCourses from formatted courses
-    const recalculatedCompletedCourses = enrolledCoursesWithProgress.filter(course => 
-      course.progress?.isCompleted || 
+    const recalculatedCompletedCourses = enrolledCoursesWithProgress.filter(course =>
+      course.progress?.isCompleted ||
       (course.progress?.completedLessons === course.progress?.totalLessons && course.progress?.totalLessons > 0)
     ).length;
-    
+
     console.log('📊 Dashboard API: Recalculated Statistics:');
     console.log(`  - Original Total Completed Lessons: ${totalCompletedLessons}`);
     console.log(`  - Recalculated Total Completed Lessons: ${recalculatedTotalCompletedLessons}`);
     console.log(`  - Original Completed Courses: ${completedCourses}`);
     console.log(`  - Recalculated Completed Courses: ${recalculatedCompletedCourses}`);
-    
+
     // Verify the response structure
     const responseData = {
       user: {
@@ -371,7 +370,7 @@ router.get('/dashboard', protect, async (req, res) => {
         currentWeek: progress.currentWeek || 1
       }))
     };
-    
+
     console.log('📊 Dashboard API: Response data structure:');
     console.log('  - enrolledCourses count:', responseData.enrolledCourses.length);
     console.log('  - statistics:', JSON.stringify(responseData.statistics, null, 2));
@@ -495,7 +494,7 @@ router.post('/avatar', protect, uploadSingle, handleUploadError, async (req, res
 
     // Generate the file URL
     const fileUrl = `/uploads/${req.file.filename}`;
-    
+
     // Update user's avatar in database
     const user = await User.findByIdAndUpdate(
       req.user.id,

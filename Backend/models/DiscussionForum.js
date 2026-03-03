@@ -105,11 +105,11 @@ discussionForumSchema.index({ postCount: -1 });
 // Static method to get forums by category
 discussionForumSchema.statics.getForumsByCategory = async function(category = null, level = null) {
   const query = { isActive: true };
-  
+
   if (category && category !== 'all') {
     query.category = category;
   }
-  
+
   if (level && level !== 'all') {
     query.level = { $in: [level, 'all'] };
   }

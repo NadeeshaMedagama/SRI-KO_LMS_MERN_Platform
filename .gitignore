@@ -53,6 +53,9 @@ build/
 */dist/
 */build/
 
+# Allow Frontend dist to be pushed
+!Frontend/dist/
+
 # IDE files
 .vscode/
 .idea/

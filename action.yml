@@ -14,7 +14,7 @@ inputs:
   node-version:
     description: 'Node.js version to use'
     required: false
-    default: '18'
+    default: '22'
   mongodb-uri:
     description: 'MongoDB connection URI'
     required: false

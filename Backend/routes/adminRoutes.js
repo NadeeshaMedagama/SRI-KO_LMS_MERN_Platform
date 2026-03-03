@@ -2,9 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Course = require('../models/Course');
-const Announcement = require('../models/Announcement');
-const DiscussionForum = require('../models/DiscussionForum');
-const Notification = require('../models/Notification');
 const Payment = require('../models/Payment');
 const { protect, authorize } = require('../middleware/auth');
 const {
@@ -134,10 +131,10 @@ async function getRollingMonthlyStatistics(startDate, endDate) {
 
       stats.push({
         month: monthNames[month - 1],
-        year: year,
-        users: users,
-        courses: courses,
-        revenue: revenue,
+        year,
+        users,
+        courses,
+        revenue,
         label: `${monthNames[month - 1].substring(0, 3)} ${year.toString().substring(2)}`, // e.g., "Jan 24"
         date: `${year}-${String(month).padStart(2, '0')}`
       });
@@ -161,7 +158,7 @@ async function getRollingMonthlyStatistics(startDate, endDate) {
 }
 
 // Helper function to get monthly statistics for a specific year (kept for backward compatibility)
-async function getMonthlyStatistics(year) {
+async function _getMonthlyStatistics(year) {
   try {
     const monthNames = [
       'January', 'February', 'March', 'April', 'May', 'June',
@@ -274,10 +271,10 @@ async function getMonthlyStatistics(year) {
 
       stats.push({
         month: monthNames[month - 1],
-        year: year,
-        users: users,
-        courses: courses,
-        revenue: revenue,
+        year,
+        users,
+        courses,
+        revenue,
         label: monthNames[month - 1].substring(0, 3) // Short month name for charts
       });
     }
@@ -290,9 +287,9 @@ async function getMonthlyStatistics(year) {
       'January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
-    return monthNames.map((month, index) => ({
-      month: month,
-      year: year,
+    return monthNames.map((month, _index) => ({
+      month,
+      year,
       users: 0,
       courses: 0,
       revenue: 0,
@@ -424,7 +421,7 @@ router.put('/payments/:id/status', protect, authorize('admin'), async (req, res)
 
     // Find and update payment
     const payment = await Payment.findById(req.params.id);
-    
+
     if (!payment) {
       return res.status(404).json({
         success: false,
@@ -435,7 +432,7 @@ router.put('/payments/:id/status', protect, authorize('admin'), async (req, res)
     // Update status
     const oldStatus = payment.status;
     payment.status = status;
-    
+
     if (notes) {
       payment.notes = notes;
     }

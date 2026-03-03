@@ -80,21 +80,21 @@ app.use('/api/', limiter);
 app.use((req, res, next) => {
   // Remove X-Powered-By header
   res.removeHeader('X-Powered-By');
-  
+
   // Content Security Policy
   res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'");
-  
+
   // Prevent clickjacking
   res.setHeader('X-Frame-Options', 'DENY');
-  
+
   // Prevent MIME type sniffing
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  
+
   // Ensure HTTPS redirects in production
   if (process.env.NODE_ENV === 'production' && req.header('x-forwarded-proto') !== 'https') {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   }
-  
+
   next();
 });
 
@@ -102,7 +102,7 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   // Basic SQL injection protection
   const sqlInjectionPattern = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION|OR|AND)\b)|(;|--|\/\*|\*\/)/i;
-  
+
   const checkBody = (obj) => {
     for (const key in obj) {
       if (typeof obj[key] === 'object') {
@@ -113,15 +113,15 @@ app.use((req, res, next) => {
     }
     return false;
   };
-  
+
   if (req.body && checkBody(req.body)) {
     return res.status(400).json({ success: false, message: 'Invalid input detected' });
   }
-  
+
   if (req.query && checkBody(req.query)) {
     return res.status(400).json({ success: false, message: 'Invalid input detected' });
   }
-  
+
   next();
 });
 
@@ -160,7 +160,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use((req, res, next) => {
   // Debug logging for all incoming requests
   console.log(`🔍 Incoming request: ${req.method} ${req.path} - Original URL: ${req.url}`);
-  
+
   // Check if this is a Choreo deployment request with the old format
   if (req.path.startsWith('/choreo-apis/sri-ko-lms-platform/backend/v1')) {
     // Remove the Choreo-specific prefix and rewrite the path
@@ -169,7 +169,7 @@ app.use((req, res, next) => {
     req.url = newPath;
     req.path = newPath;
   }
-  
+
   // Log the final path that will be processed
   console.log(`📝 Final path for processing: ${req.method} ${req.path}`);
   next();
@@ -224,7 +224,7 @@ if (process.env.SKIP_DB === 'true') {
     .then(() => {
       console.log('✅ MongoDB Atlas connected successfully');
       console.log('🔧 Connection state:', mongoose.connection.readyState);
-      
+
       // Test database connection
       const User = require('./models/User');
       User.countDocuments().then(count => {
@@ -240,7 +240,7 @@ if (process.env.SKIP_DB === 'true') {
         message: err.message,
         code: err.code
       });
-      
+
       // In production, try to continue without database for basic functionality
       console.log('⚠️ Continuing without database connection - some features may not work');
     });
@@ -334,7 +334,7 @@ if (process.env.SKIP_DB === 'true') {
 app.get('/health', (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
   const dbState = mongoose.connection.readyState;
-  
+
   res.status(200).json({
     status: 'OK',
     message: 'SRI-KO LMS API is running',
@@ -396,7 +396,7 @@ app.get('/choreo-apis/sri-ko-lms-platform/backend/v1/api/admin/test', (req, res)
 app.get('/api/health', (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
   const dbState = mongoose.connection.readyState;
-  
+
   res.status(200).json({
     success: true,
     message: 'SRI-KO LMS server is running',
@@ -458,7 +458,7 @@ app.get('/choreo-apis/sri-ko-lms-platform/backend/v1/api/health', (req, res) => 
 const checkDatabase = async (req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
     console.log(`⚠️ Database disconnected for ${req.method} ${req.path}. Attempting to reconnect...`);
-    
+
     try {
       // Attempt to reconnect with enhanced options
       const mongooseOptions = {
@@ -473,7 +473,7 @@ const checkDatabase = async (req, res, next) => {
         retryWrites: true,
         w: 'majority'
       };
-      
+
       await mongoose.connect(process.env.MONGODB_URI, mongooseOptions);
       console.log('✅ Database reconnected successfully');
       return next();
@@ -547,13 +547,13 @@ app.use('/api/admin/settings', checkDatabase, settingsRoutes);
 // Static assets in production
 if ((process.env.NODE_ENV || 'development') === 'production') {
   app.use(express.static(path.join(__dirname, '../Frontend/dist')));
-  app.get('*', (req, res) =>
+  app.get('{*path}', (req, res) =>
     res.sendFile(path.resolve(__dirname, '../Frontend', 'dist', 'index.html'))
   );
 }
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error('Error:', err.stack);
   res.status(500).json({
     success: false,
@@ -563,7 +563,7 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use('{*path}', (req, res) => {
   res.status(404).json({
     success: false,
     message: 'Route not found',
@@ -597,7 +597,7 @@ if (process.env.SKIP_SERVER !== 'true') {
       console.log('✅ Server successfully started!');
       console.log(`🚀 HTTP server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🌐 Health check: http://localhost:${PORT}/api/health`); 
+      console.log(`🌐 Health check: http://localhost:${PORT}/api/health`);
       console.log(`📡 API endpoints available at: http://localhost:${PORT}/api/`);
     });
   }

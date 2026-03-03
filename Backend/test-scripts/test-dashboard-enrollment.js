@@ -9,7 +9,7 @@ async function testEnrollment() {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✅ Connected to MongoDB');
-    
+
     // Get all users
     const users = await User.find().select('name email enrolledCourses');
     console.log('\n📊 All Users:');
@@ -19,7 +19,7 @@ async function testEnrollment() {
         console.log(`    Course IDs: ${user.enrolledCourses.map(c => c.toString()).join(', ')}`);
       }
     });
-    
+
     // Get all progress records
     const progressRecords = await Progress.find().populate('student course');
     console.log('\n📊 Progress Records:');
@@ -27,7 +27,7 @@ async function testEnrollment() {
     progressRecords.forEach(p => {
       console.log(`  - Student: ${p.student?.name || p.student}, Course: ${p.course?.title || p.course}`);
     });
-    
+
     // Get all published courses
     const courses = await Course.find({ isPublished: true }).select('title instructor');
     console.log('\n📊 Published Courses:');
@@ -35,7 +35,7 @@ async function testEnrollment() {
     courses.forEach(c => {
       console.log(`  - ${c.title} (ID: ${c._id})`);
     });
-    
+
     await mongoose.disconnect();
     console.log('\n✅ Test completed');
   } catch (error) {

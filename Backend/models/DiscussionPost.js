@@ -317,14 +317,14 @@ discussionPostSchema.statics.getPostStats = async function() {
 discussionPostSchema.methods.addReply = async function(authorId, content) {
   const reply = {
     author: authorId,
-    content: content,
+    content,
     createdAt: new Date(),
     updatedAt: new Date()
   };
-  
+
   this.replies.push(reply);
   await this.save();
-  
+
   return this;
 };
 
@@ -332,13 +332,13 @@ discussionPostSchema.methods.addReply = async function(authorId, content) {
 discussionPostSchema.methods.likePost = async function(userId) {
   // Remove from dislikes if exists
   this.dislikes = this.dislikes.filter(dislike => dislike.user.toString() !== userId.toString());
-  
+
   // Add to likes if not already liked
   const alreadyLiked = this.likes.some(like => like.user.toString() === userId.toString());
   if (!alreadyLiked) {
     this.likes.push({ user: userId });
   }
-  
+
   await this.save();
   return this;
 };
@@ -347,13 +347,13 @@ discussionPostSchema.methods.likePost = async function(userId) {
 discussionPostSchema.methods.dislikePost = async function(userId) {
   // Remove from likes if exists
   this.likes = this.likes.filter(like => like.user.toString() !== userId.toString());
-  
+
   // Add to dislikes if not already disliked
   const alreadyDisliked = this.dislikes.some(dislike => dislike.user.toString() === userId.toString());
   if (!alreadyDisliked) {
     this.dislikes.push({ user: userId });
   }
-  
+
   await this.save();
   return this;
 };
