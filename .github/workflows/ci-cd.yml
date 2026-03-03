@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  NODE_VERSION: '18.x'
+  NODE_VERSION: '22.x'
   MONGODB_VERSION: '6.0'
 
 jobs:
@@ -32,17 +32,17 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
 
     - name: Install backend dependencies
       run: |
         cd Backend
-        npm install
+        npm ci
 
     - name: Skip backend linting
       run: |
@@ -69,17 +69,17 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
 
     - name: Install frontend dependencies
       run: |
         cd Frontend
-        npm install
+        npm ci
 
     - name: Skip frontend linting
       run: |
@@ -96,7 +96,7 @@ jobs:
         npm run build
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v4
       with:
         name: frontend-build
         path: Frontend/dist/
@@ -109,10 +109,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
 
@@ -151,10 +151,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
 
@@ -272,10 +272,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
 

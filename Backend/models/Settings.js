@@ -20,7 +20,7 @@ const settingsSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
-    
+
     // Contact Information
     contactEmail: {
       type: String,
@@ -34,7 +34,7 @@ const settingsSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
-    
+
     // Social Media Links
     socialLinks: {
       facebook: { type: String, default: '' },
@@ -43,7 +43,7 @@ const settingsSchema = new mongoose.Schema(
       linkedin: { type: String, default: '' },
       youtube: { type: String, default: '' },
     },
-    
+
     // Email Settings
     emailSettings: {
       smtpHost: { type: String, default: '' },
@@ -53,7 +53,7 @@ const settingsSchema = new mongoose.Schema(
       fromEmail: { type: String, default: 'noreply@sri-ko-lms.com' },
       fromName: { type: String, default: 'SRI-KO LMS' },
     },
-    
+
     // Course Settings
     courseSettings: {
       maxCourseDuration: { type: Number, default: 120 }, // in minutes
@@ -64,7 +64,7 @@ const settingsSchema = new mongoose.Schema(
       requireCourseApproval: { type: Boolean, default: false },
       maxEnrolledStudents: { type: Number, default: 100 },
     },
-    
+
     // User Settings
     userSettings: {
       allowRegistration: { type: Boolean, default: true },
@@ -73,7 +73,7 @@ const settingsSchema = new mongoose.Schema(
       maxUserUploadSize: { type: Number, default: 10 }, // in MB
       userSessionTimeout: { type: Number, default: 24 }, // in hours
     },
-    
+
     // Payment Settings
     paymentSettings: {
       currency: { type: String, default: 'USD' },
@@ -83,19 +83,19 @@ const settingsSchema = new mongoose.Schema(
       paypalClientSecret: { type: String, default: '' },
       enablePayments: { type: Boolean, default: false },
     },
-    
+
     // Notification Settings
     notificationSettings: {
       emailNotifications: { type: Boolean, default: true },
       pushNotifications: { type: Boolean, default: true },
       smsNotifications: { type: Boolean, default: false },
-      notificationFrequency: { 
-        type: String, 
+      notificationFrequency: {
+        type: String,
         enum: ['immediate', 'daily', 'weekly'],
         default: 'immediate'
       },
     },
-    
+
     // Security Settings
     securitySettings: {
       enableTwoFactor: { type: Boolean, default: false },
@@ -105,18 +105,18 @@ const settingsSchema = new mongoose.Schema(
       maxLoginAttempts: { type: Number, default: 5 },
       lockoutDuration: { type: Number, default: 30 }, // in minutes
     },
-    
+
     // Maintenance Settings
     maintenanceSettings: {
       maintenanceMode: { type: Boolean, default: false },
-      maintenanceMessage: { 
-        type: String, 
-        default: 'We are currently performing maintenance. Please check back later.' 
+      maintenanceMessage: {
+        type: String,
+        default: 'We are currently performing maintenance. Please check back later.'
       },
       scheduledMaintenanceStart: { type: Date },
       scheduledMaintenanceEnd: { type: Date },
     },
-    
+
     // Analytics Settings
     analyticsSettings: {
       googleAnalyticsId: { type: String, default: '' },
@@ -124,24 +124,24 @@ const settingsSchema = new mongoose.Schema(
       enableAnalytics: { type: Boolean, default: false },
       trackUserBehavior: { type: Boolean, default: true },
     },
-    
+
     // File Upload Settings
     uploadSettings: {
       maxFileSize: { type: Number, default: 50 }, // in MB
-      allowedImageTypes: { 
-        type: [String], 
-        default: ['jpg', 'jpeg', 'png', 'gif', 'webp'] 
+      allowedImageTypes: {
+        type: [String],
+        default: ['jpg', 'jpeg', 'png', 'gif', 'webp']
       },
-      allowedVideoTypes: { 
-        type: [String], 
-        default: ['mp4', 'avi', 'mov', 'wmv', 'flv'] 
+      allowedVideoTypes: {
+        type: [String],
+        default: ['mp4', 'avi', 'mov', 'wmv', 'flv']
       },
-      allowedDocumentTypes: { 
-        type: [String], 
-        default: ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt'] 
+      allowedDocumentTypes: {
+        type: [String],
+        default: ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt']
       },
     },
-    
+
     // Theme Settings
     themeSettings: {
       primaryColor: { type: String, default: '#3B82F6' },
@@ -150,42 +150,42 @@ const settingsSchema = new mongoose.Schema(
       darkMode: { type: Boolean, default: false },
       customCSS: { type: String, default: '' },
     },
-    
+
     // Language Settings
     languageSettings: {
       defaultLanguage: { type: String, default: 'en' },
-      supportedLanguages: { 
-        type: [String], 
-        default: ['en', 'ko', 'ja', 'zh'] 
+      supportedLanguages: {
+        type: [String],
+        default: ['en', 'ko', 'ja', 'zh']
       },
       enableRTL: { type: Boolean, default: false },
     },
-    
+
     // Backup Settings
     backupSettings: {
       autoBackup: { type: Boolean, default: false },
-      backupFrequency: { 
-        type: String, 
+      backupFrequency: {
+        type: String,
         enum: ['daily', 'weekly', 'monthly'],
         default: 'weekly'
       },
       backupRetention: { type: Number, default: 30 }, // in days
       backupLocation: { type: String, default: 'local' },
     },
-    
+
     // System Settings
     systemSettings: {
       timezone: { type: String, default: 'UTC' },
       dateFormat: { type: String, default: 'MM/DD/YYYY' },
       timeFormat: { type: String, default: '12' }, // 12 or 24
       enableDebugMode: { type: Boolean, default: false },
-      logLevel: { 
-        type: String, 
+      logLevel: {
+        type: String,
         enum: ['error', 'warn', 'info', 'debug'],
         default: 'info'
       },
     },
-    
+
     // Last updated by
     lastUpdatedBy: {
       type: mongoose.Schema.ObjectId,

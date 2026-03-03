@@ -109,7 +109,7 @@ announcementSchema.statics.getActiveAnnouncements = async function(audience = 'a
 
   // If userId is provided, mark announcements as read
   if (userId) {
-    const unreadAnnouncements = announcements.filter(announcement => 
+    const unreadAnnouncements = announcements.filter(announcement =>
       !announcement.readBy.some(read => read.user.toString() === userId.toString())
     );
 
@@ -256,12 +256,12 @@ announcementSchema.statics.getAnnouncementStats = async function() {
 // Instance method to mark as read by a user
 announcementSchema.methods.markAsRead = async function(userId) {
   const alreadyRead = this.readBy.some(read => read.user.toString() === userId.toString());
-  
+
   if (!alreadyRead) {
     this.readBy.push({ user: userId });
     await this.save();
   }
-  
+
   return this;
 };
 

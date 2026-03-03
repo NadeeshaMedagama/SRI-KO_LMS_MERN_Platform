@@ -10,7 +10,7 @@ const { protect, authorize } = require('../middleware/auth');
 router.get('/', protect, async (req, res) => {
   try {
     const { category, level } = req.query;
-    
+
     const forums = await DiscussionForum.getForumsByCategory(category, level);
 
     res.json({

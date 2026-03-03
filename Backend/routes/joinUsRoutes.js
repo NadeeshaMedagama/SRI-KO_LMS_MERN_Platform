@@ -83,7 +83,7 @@ router.get('/submissions', protect, async (req, res) => {
     }
 
     const { status, page = 1, limit = 10, sortBy = 'submittedAt', sortOrder = 'desc' } = req.query;
-    
+
     // Build query
     const query = {};
     if (status) {

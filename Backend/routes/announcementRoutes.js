@@ -9,9 +9,9 @@ const { protect, authorize } = require('../middleware/auth');
 router.get('/', protect, async (req, res) => {
   try {
     console.log('📢 Fetching announcements for user:', req.user.email, 'role:', req.user.role);
-    const audience = req.user.role === 'admin' ? 'admins' : 
+    const audience = req.user.role === 'admin' ? 'admins' :
                    req.user.role === 'instructor' ? 'instructors' : 'students';
-    
+
     console.log('📢 Audience:', audience);
     const announcements = await Announcement.getActiveAnnouncements(audience, req.user._id);
     console.log('📢 Announcements found:', announcements.length);
@@ -99,9 +99,9 @@ router.get('/:id', protect, async (req, res) => {
     }
 
     // Check if user has access to this announcement
-    const audience = req.user.role === 'admin' ? 'admins' : 
+    const audience = req.user.role === 'admin' ? 'admins' :
                     req.user.role === 'instructor' ? 'instructors' : 'students';
-    
+
     if (announcement.targetAudience !== 'all' && announcement.targetAudience !== audience) {
       return res.status(403).json({
         success: false,
@@ -151,7 +151,7 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
     // Validate end date
     const endDateObj = new Date(endDate);
     const startDateObj = startDate ? new Date(startDate) : new Date();
-    
+
     if (endDateObj <= startDateObj) {
       return res.status(400).json({
         success: false,

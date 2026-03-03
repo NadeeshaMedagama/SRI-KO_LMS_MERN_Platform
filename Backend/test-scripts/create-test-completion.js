@@ -40,7 +40,7 @@ async function createTestCompletion() {
     const Progress = mongoose.model('Progress', progressSchema);
 
     // Find or create a test student
-    let student = await User.findOne({ role: 'student' });
+    const student = await User.findOne({ role: 'student' });
     if (!student) {
       console.log('❌ No students found in database!');
       console.log('   Please create a student account first.');
@@ -50,7 +50,7 @@ async function createTestCompletion() {
     console.log(`✅ Found student: ${student.name} (${student.email})`);
 
     // Find or create a test course
-    let course = await Course.findOne();
+    const course = await Course.findOne();
     if (!course) {
       console.log('❌ No courses found in database!');
       console.log('   Please create a course first.');

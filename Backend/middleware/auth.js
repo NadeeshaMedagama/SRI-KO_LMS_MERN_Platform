@@ -25,8 +25,8 @@ exports.protect = async (req, res, next) => {
     // Debug logging
     console.log('JWT_SECRET available:', !!process.env.JWT_SECRET);
     console.log('JWT_SECRET value:', process.env.JWT_SECRET);
-    console.log('Token received:', token.substring(0, 20) + '...');
-    
+    console.log('Token received:', `${token.substring(0, 20)  }...`);
+
     // Verify token using the same fallback as token generation
     const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
     const decoded = jwt.verify(token, jwtSecret);

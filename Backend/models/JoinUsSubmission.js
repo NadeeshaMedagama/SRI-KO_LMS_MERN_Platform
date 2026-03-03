@@ -31,7 +31,7 @@ const joinUsSubmissionSchema = new mongoose.Schema({
     type: String,
     enum: [
       'Complete Beginner',
-      'Beginner', 
+      'Beginner',
       'Intermediate',
       'Advanced',
       'Native Level'

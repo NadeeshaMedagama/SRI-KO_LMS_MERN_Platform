@@ -6,7 +6,6 @@ const User = require('../models/User');
 const Progress = require('../models/Progress');
 const { protect, authorize } = require('../middleware/auth');
 const { uploadCertificate, handleUploadError } = require('../middleware/upload');
-const path = require('path');
 
 // @desc    Get user's certificates
 // @route   GET /api/certificates/my-certificates
@@ -164,7 +163,7 @@ router.get('/eligible-students', protect, authorize('admin'), async (req, res) =
     const courseId = req.query.courseId;
 
     // Get all completed progress records
-    const completedProgress = await Progress.find({ 
+    const completedProgress = await Progress.find({
       isCompleted: true,
       ...(courseId && { course: courseId })
     })
@@ -179,7 +178,7 @@ router.get('/eligible-students', protect, authorize('admin'), async (req, res) =
     // Filter out students who already have certificates for these courses
     // Also filter out null students (instructors/admins excluded by populate match)
     const eligibleStudents = [];
-    
+
     for (const progress of completedProgress) {
       // Skip if student is null (instructor/admin filtered out by populate match)
       if (!progress.student) {
@@ -301,7 +300,7 @@ router.post('/', protect, authorize('admin'), uploadCertificate, handleUploadErr
       completionDate: progress.completionDate,
       issuedBy: req.user._id,
       notes: notes || '',
-      certificateUrl: certificateUrl,
+      certificateUrl,
       status: certificateUrl ? 'issued' : 'pending'
     });
 
@@ -321,7 +320,7 @@ router.post('/', protect, authorize('admin'), uploadCertificate, handleUploadErr
     });
   } catch (error) {
     console.error('Error creating certificate:', error);
-    
+
     // Return more detailed error message
     if (error.name === 'ValidationError') {
       return res.status(400).json({
@@ -330,14 +329,14 @@ router.post('/', protect, authorize('admin'), uploadCertificate, handleUploadErr
         error: error.message
       });
     }
-    
+
     if (error.name === 'MongoServerError' && error.code === 11000) {
       return res.status(400).json({
         success: false,
         message: 'Certificate already exists for this student and course'
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Server error',
