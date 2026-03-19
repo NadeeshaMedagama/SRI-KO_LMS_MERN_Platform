@@ -94,7 +94,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install Backend dependencies
         working-directory: Backend
@@ -102,11 +102,11 @@ jobs:
 
       - name: Normalize Frontend lint deps (eslint/react plugin compatibility)
         working-directory: Frontend
-        run: npm pkg set devDependencies.eslint="^9.0.0"
+        run: npm pkg set devDependencies.eslint="^9.39.0"
 
       - name: Install Frontend dependencies
         working-directory: Frontend
-        run: npm ci
+        run: npm install --no-fund --no-audit
 
       - name: Audit Backend dependencies
         id: backend-audit
