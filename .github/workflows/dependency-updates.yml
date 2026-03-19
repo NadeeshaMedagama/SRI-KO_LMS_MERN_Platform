@@ -94,15 +94,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
 
       - name: Install Backend dependencies
         working-directory: Backend
-        run: npm ci --legacy-peer-deps
+        run: npm ci
+
+      - name: Normalize Frontend lint deps (eslint/react plugin compatibility)
+        working-directory: Frontend
+        run: npm pkg set devDependencies.eslint="^9.0.0"
 
       - name: Install Frontend dependencies
         working-directory: Frontend
-        run: npm ci --legacy-peer-deps
+        run: npm ci
 
       - name: Audit Backend dependencies
         id: backend-audit
