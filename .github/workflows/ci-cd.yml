@@ -76,6 +76,12 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
+    - name: Normalize frontend lint deps for CI
+      run: |
+        cd Frontend
+        npm pkg set devDependencies.eslint="^9.39.0"
+        npm install --package-lock-only --no-audit --no-fund
+
     - name: Install frontend dependencies
       run: |
         cd Frontend
@@ -116,10 +122,21 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
-    - name: Install dependencies
+    - name: Install backend dependencies
       run: |
-        cd Backend && npm ci
-        cd ../Frontend && npm ci
+        cd Backend
+        npm ci
+
+    - name: Normalize frontend lint deps for CI
+      run: |
+        cd Frontend
+        npm pkg set devDependencies.eslint="^9.39.0"
+        npm install --package-lock-only --no-audit --no-fund
+
+    - name: Install frontend dependencies
+      run: |
+        cd Frontend
+        npm ci
 
     - name: Skip security audit
       run: |
@@ -158,10 +175,21 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
-    - name: Install dependencies
+    - name: Install backend dependencies
       run: |
-        cd Backend && npm ci
-        cd ../Frontend && npm ci
+        cd Backend
+        npm ci
+
+    - name: Normalize frontend lint deps for CI
+      run: |
+        cd Frontend
+        npm pkg set devDependencies.eslint="^9.39.0"
+        npm install --package-lock-only --no-audit --no-fund
+
+    - name: Install frontend dependencies
+      run: |
+        cd Frontend
+        npm ci
 
     - name: Start backend server
       run: |
@@ -279,10 +307,21 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
-    - name: Install dependencies
+    - name: Install backend dependencies
       run: |
-        cd Backend && npm ci
-        cd ../Frontend && npm ci
+        cd Backend
+        npm ci
+
+    - name: Normalize frontend lint deps for CI
+      run: |
+        cd Frontend
+        npm pkg set devDependencies.eslint="^9.39.0"
+        npm install --package-lock-only --no-audit --no-fund
+
+    - name: Install frontend dependencies
+      run: |
+        cd Frontend
+        npm ci
 
     - name: Build frontend
       run: |
