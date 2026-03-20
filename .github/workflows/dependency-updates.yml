@@ -142,7 +142,7 @@ jobs:
         continue-on-error: true
 
       - name: Comment audit summary on PR
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: dependency-audit
           path: audit-report.md
