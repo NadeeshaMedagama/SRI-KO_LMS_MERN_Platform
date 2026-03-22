@@ -76,12 +76,6 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
-    - name: Normalize frontend lint deps for CI
-      run: |
-        cd Frontend
-        npm pkg set devDependencies.eslint="^9.39.0"
-        npm install --package-lock-only --no-audit --no-fund
-
     - name: Install frontend dependencies
       run: |
         cd Frontend
@@ -126,12 +120,6 @@ jobs:
       run: |
         cd Backend
         npm ci
-
-    - name: Normalize frontend lint deps for CI
-      run: |
-        cd Frontend
-        npm pkg set devDependencies.eslint="^9.39.0"
-        npm install --package-lock-only --no-audit --no-fund
 
     - name: Install frontend dependencies
       run: |
@@ -179,12 +167,6 @@ jobs:
       run: |
         cd Backend
         npm ci
-
-    - name: Normalize frontend lint deps for CI
-      run: |
-        cd Frontend
-        npm pkg set devDependencies.eslint="^9.39.0"
-        npm install --package-lock-only --no-audit --no-fund
 
     - name: Install frontend dependencies
       run: |
@@ -312,11 +294,6 @@ jobs:
         cd Backend
         npm ci
 
-    - name: Normalize frontend lint deps for CI
-      run: |
-        cd Frontend
-        npm pkg set devDependencies.eslint="^9.39.0"
-        npm install --package-lock-only --no-audit --no-fund
 
     - name: Install frontend dependencies
       run: |
