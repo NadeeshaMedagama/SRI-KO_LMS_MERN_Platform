@@ -43,8 +43,30 @@ const LoginPage = () => {
 
   // Handle Google credential response (one-tap / popup)
   const handleGoogleCredentialResponse = async (credentialResponse) => {
+    // Decode the credential to get user info
+    const base64Url = credentialResponse.credential.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    const payload = JSON.parse(jsonPayload);
+
+    // Try to login first (existing user)
     const result = await googleLogin(credentialResponse.credential);
-    if (result.success) {
+    
+    // If user doesn't exist, redirect to register page
+    if (!result.success && result.error && result.error.includes('register')) {
+      navigate('/register', {
+        state: {
+          googleData: {
+            credential: credentialResponse.credential,
+            name: payload.name,
+            email: payload.email,
+            picture: payload.picture,
+          }
+        }
+      });
+    } else if (result.success) {
       if (result.user && result.user.role === 'admin') {
         navigate('/admin/dashboard', { replace: true });
       } else {

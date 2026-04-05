@@ -231,16 +231,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Google OAuth login function
-  const googleLogin = async (credential) => {
+  const googleLogin = async (credential, role = null) => {
     dispatch({ type: 'LOGIN_START' });
     try {
       const workingApiUrl = await getWorkingApiUrl();
+      const body = role ? { credential, role } : { credential };
+      
       const response = await fetch(`${workingApiUrl}/auth/google`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ credential }),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
@@ -259,6 +261,10 @@ export const AuthProvider = ({ children }) => {
         }
       } else {
         const errorData = await response.json();
+        // If user doesn't exist, return special error for registration flow
+        if (errorData.message && errorData.message.includes('not found')) {
+          return { success: false, error: 'Please complete registration to continue' };
+        }
         throw new Error(errorData.message || 'Google login failed');
       }
     } catch (error) {

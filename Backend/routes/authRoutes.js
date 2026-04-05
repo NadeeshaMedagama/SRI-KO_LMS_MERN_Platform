@@ -250,7 +250,7 @@ router.post('/admin-login', validateUserLogin, handleValidationErrors, async (re
 // @access  Public
 router.post('/google', async (req, res) => {
   try {
-    const { credential } = req.body;
+    const { credential, role } = req.body;
 
     if (!credential) {
       return res.status(400).json({
@@ -276,7 +276,7 @@ router.post('/google', async (req, res) => {
     const payload = ticket.getPayload();
     const { sub: googleId, email, name, picture } = payload;
 
-    // Find or create user
+    // Find user by Google ID or email
     let user = await User.findOne({ $or: [{ googleId }, { email }] });
 
     if (user) {
@@ -288,7 +288,23 @@ router.post('/google', async (req, res) => {
         await user.save();
       }
     } else {
-      // New user - create account via Google
+      // New user - role must be provided
+      if (!role) {
+        return res.status(400).json({
+          success: false,
+          message: 'User not found. Please complete registration to continue.',
+        });
+      }
+
+      // Validate role
+      if (!['student', 'instructor'].includes(role)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid role. Must be student or instructor.',
+        });
+      }
+
+      // Create new user via Google with specified role
       user = await User.create({
         name,
         email,
@@ -296,7 +312,7 @@ router.post('/google', async (req, res) => {
         authProvider: 'google',
         avatar: picture || '',
         emailVerified: true, // Google emails are verified
-        role: 'student',
+        role,
       });
     }
 
