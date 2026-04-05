@@ -11,6 +11,9 @@ const RegisterPage = () => {
     role: 'student',
   });
 
+  const passwordValid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(formData.password);
+  const passwordTouched = formData.password.length > 0;
+
   const { register, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -23,6 +26,10 @@ const RegisterPage = () => {
 
   const handleSubmit = async e => {
     e.preventDefault();
+
+    if (!passwordValid) {
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       alert('Passwords do not match');
@@ -139,11 +146,20 @@ const RegisterPage = () => {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="input-field mt-1"
+                className={`input-field mt-1 ${passwordTouched && !passwordValid ? 'border-red-500 focus:ring-red-500' : ''}`}
                 placeholder="Create a password"
                 value={formData.password}
                 onChange={handleChange}
               />
+              {passwordTouched && !passwordValid ? (
+                <p className="mt-1 text-xs text-red-600">
+                  At least 6 characters with one uppercase letter, one lowercase letter, and one number.
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-gray-500">
+                  At least 6 characters with one uppercase letter, one lowercase letter, and one number.
+                </p>
+              )}
             </div>
 
             <div>
@@ -170,8 +186,8 @@ const RegisterPage = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
-              className={`w-full btn-primary ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={loading || !passwordValid}
+              className={`w-full btn-primary ${loading || !passwordValid ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {loading ? 'Creating account...' : 'Create account'}
             </button>

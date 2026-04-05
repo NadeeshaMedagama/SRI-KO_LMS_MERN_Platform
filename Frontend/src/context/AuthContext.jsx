@@ -82,8 +82,9 @@ export const AuthProvider = ({ children }) => {
           const timeoutPromise = new Promise((_, reject) => 
             setTimeout(() => reject(new Error('API timeout')), 5000)
           );
-          
-          const apiPromise = fetch(`http://localhost:5001/api/auth/me`, {
+
+          const workingApiUrl = await getWorkingApiUrl();
+          const apiPromise = fetch(`${workingApiUrl}/auth/me`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -229,24 +230,86 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Google OAuth login function
+  const googleLogin = async (credential, role = null) => {
+    dispatch({ type: 'LOGIN_START' });
+    try {
+      const workingApiUrl = await getWorkingApiUrl();
+      const body = role ? { credential, role } : { credential };
+      
+      const response = await fetch(`${workingApiUrl}/auth/google`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const { token, user } = data;
+          localStorage.setItem('token', token);
+          dispatch({
+            type: 'LOGIN_SUCCESS',
+            payload: { user, token },
+          });
+          toast.success('Signed in with Google!');
+          return { success: true, user };
+        } else {
+          throw new Error(data.message || 'Google login failed');
+        }
+      } else {
+        const errorData = await response.json();
+        // If user doesn't exist, return special error for registration flow
+        if (errorData.message && errorData.message.includes('not found')) {
+          return { success: false, error: 'Please complete registration to continue' };
+        }
+        throw new Error(errorData.message || 'Google login failed');
+      }
+    } catch (error) {
+      const message = error.message || 'Google login failed';
+      dispatch({ type: 'LOGIN_FAILURE', payload: message });
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
+
   // Register function
   const register = async (name, email, password, role = 'student') => {
     dispatch({ type: 'LOGIN_START' });
     try {
-      const authResponse = await apiService.register({ name, email, password, role });
-      const { token, user } = authResponse;
-
-      localStorage.setItem('token', token);
-
-      dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: { user, token },
+      const workingApiUrl = await getWorkingApiUrl();
+      const response = await fetch(`${workingApiUrl}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password, role }),
       });
 
-      toast.success('Registration successful!');
-      return { success: true };
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      if (data.success) {
+        const { token, user } = data;
+        localStorage.setItem('token', token);
+
+        dispatch({
+          type: 'LOGIN_SUCCESS',
+          payload: { user, token },
+        });
+
+        toast.success('Registration successful!');
+        return { success: true };
+      } else {
+        throw new Error(data.message || 'Registration failed');
+      }
     } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed';
+      const message = error.message || 'Registration failed';
       dispatch({
         type: 'LOGIN_FAILURE',
         payload: message,
@@ -277,6 +340,7 @@ export const AuthProvider = ({ children }) => {
     ...state,
     login,
     adminLogin,
+    googleLogin,
     register,
     logout,
     updateUser,

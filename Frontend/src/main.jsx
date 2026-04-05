@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { AdminAuthProvider } from './context/AdminAuthContext.jsx';
@@ -19,7 +20,8 @@ const queryClient = new QueryClient({
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
+      <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <AdminAuthProvider>
@@ -52,5 +54,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>
+    </GoogleOAuthProvider>
   </React.StrictMode>,
 );

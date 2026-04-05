@@ -211,7 +211,7 @@ if (process.env.SKIP_DB === 'true') {
     socketTimeoutMS: 45000, // 45 seconds
     maxPoolSize: 10, // Maximum number of connections in the connection pool
     minPoolSize: 1, // Minimum number of connections in the connection pool
-    bufferCommands: false, // Disable mongoose buffering
+    bufferCommands: true, // Buffer commands while connecting (prevents failures during startup)
     connectTimeoutMS: 30000, // Connection timeout
     heartbeatFrequencyMS: 10000, // Heartbeat frequency
     maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity

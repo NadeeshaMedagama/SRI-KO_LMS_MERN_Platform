@@ -142,8 +142,8 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}/Frontend
       run: |
-        echo "📦 Installing Frontend dependencies..."
-        ${{ inputs.install-command }}
+        echo "📦 Installing Frontend dependencies (including devDependencies for build tools)..."
+        ${{ inputs.install-command }} --include=dev
 
     # ───────────────────────────────────────────
     # Lint Backend
