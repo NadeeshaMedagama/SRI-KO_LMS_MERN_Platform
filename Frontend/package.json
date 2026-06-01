@@ -23,7 +23,7 @@
     "react-hook-form": "^7.76.1",
     "react-hot-toast": "^2.4.1",
     "react-query": "^3.39.3",
-    "react-router-dom": "^7.15.1",
+    "react-router-dom": "^7.16.0",
     "react-toastify": "^11.1.0"
   },
   "devDependencies": {
