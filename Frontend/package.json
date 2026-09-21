@@ -21,7 +21,7 @@
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.88.0",
-    "react-hot-toast": "^2.4.1",
+    "react-hot-toast": "^2.6.1",
     "react-query": "^3.39.3",
     "react-router-dom": "^7.18.4",
     "react-toastify": "^11.1.0"
